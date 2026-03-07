@@ -2,13 +2,9 @@ name: CI
 
 on:
   push:
-    branches:
-      - main
-      - dev
+    branches: [main, dev]
   pull_request:
-    branches:
-      - main
-      - dev
+    branches: [main, dev]
 
 permissions:
   contents: read
@@ -20,49 +16,43 @@ concurrency:
 
 jobs:
   build-test:
-    name: Lint, Typecheck, Test, Build
+    name: Lint • Typecheck • Test • Build
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
+      # Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # Setup Node
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
           cache: pnpm
 
+      # Setup pnpm
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
           version: latest
           run_install: false
 
-      - name: Get pnpm store directory
-        id: pnpm-store
-        shell: bash
-        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
-
-      - name: Cache pnpm store
-        uses: actions/cache@v4
-        with:
-          path: ${{ steps.pnpm-store.outputs.path }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-
+      # Install dependencies
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # Lint
       - name: Run ESLint
         run: pnpm exec eslint .
 
+      # TypeScript type check
       - name: Run TypeScript type check
         run: pnpm exec tsc --noEmit
 
-      - name: Run tests if present
+      # Run tests (only if test script exists)
+      - name: Run tests
         shell: bash
         run: |
           if pnpm run | grep -qE '^[[:space:]]+test($|:)'; then
@@ -71,65 +61,49 @@ jobs:
             echo "No test script found. Skipping tests."
           fi
 
-      - name: Generate Prisma client
-        shell: bash
-        run: |
-          if [ -f prisma/schema.prisma ]; then
-            pnpm exec prisma generate
-          else
-            echo "No prisma/schema.prisma found. Skipping Prisma client generation."
-          fi
-
+      # Build Next.js
       - name: Build Next.js application
         env:
           CI: true
           NEXT_TELEMETRY_DISABLED: 1
         run: pnpm build
 
+      # Security audit
       - name: Run dependency security audit
         continue-on-error: true
         run: pnpm audit --prod --audit-level high
 
-      - name: Build Docker image if Dockerfile exists
+      # Build Docker if Dockerfile exists
+      - name: Build Docker image
         shell: bash
         run: |
           if [ -f Dockerfile ]; then
-            docker build \
-              --file Dockerfile \
-              --tag portfolio:${{ github.sha }} \
-              --tag portfolio:ci \
-              .
+            docker build -t portfolio:${{ github.sha }} .
           else
             echo "No Dockerfile found. Skipping Docker build."
           fi
 
-      # Future deployment stage can be added here once registry and environment secrets are ready.
-      # - name: Log in to container registry
-      #   run: echo "Add registry login here"
-      #
-      # - name: Push Docker image
-      #   run: echo "Add docker push here"
-
   notify-failure:
-    name: Notify on failure
+    name: Notify on CI failure
     runs-on: ubuntu-latest
-    needs:
-      - build-test
+    needs: build-test
     if: failure()
 
     steps:
+      # Comment on PR
       - name: Comment on pull request failure
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
         with:
           script: |
-            const body = [
-              'CI failed for this pull request.',
-              '',
-              `Workflow: ${context.workflow}`,
-              `Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`,
-              `Commit: ${context.sha}`
-            ].join('\n');
+            const body = `
+            ❌ CI failed for this pull request.
+
+            Workflow: ${context.workflow}
+            Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
+            Commit: ${context.sha}
+            `;
+
             await github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -137,21 +111,25 @@ jobs:
               body
             });
 
-      - name: Send failure webhook notification
-        if: ${{ secrets.FAILURE_WEBHOOK_URL != '' }}
-        env:
-          FAILURE_WEBHOOK_URL: ${{ secrets.FAILURE_WEBHOOK_URL }}
-        shell: bash
-        run: |
-          payload=$(cat <<'JSON'
-          {
-            "text": "GitHub Actions CI failed",
-            "repository": "${{ github.repository }}",
-            "branch": "${{ github.ref_name }}",
-            "workflow": "${{ github.workflow }}",
-            "run_url": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}",
-            "commit": "${{ github.sha }}"
-          }
-          JSON
-          )
-          curl -X POST -H "Content-Type: application/json" -d "$payload" "$FAILURE_WEBHOOK_URL"
+      # Send email notification
+      - name: Send email notification
+        uses: dawidd6/action-send-mail@v3
+        with:
+          server_address: smtp.gmail.com
+          server_port: 465
+          username: ${{ secrets.EMAIL_USERNAME }}
+          password: ${{ secrets.EMAIL_PASSWORD }}
+          subject: "❌ CI Failed - ${{ github.repository }}"
+          to: ${{ secrets.NOTIFICATION_EMAIL }}
+          from: GitHub CI
+          body: |
+            GitHub CI workflow failed.
+
+            Repository: ${{ github.repository }}
+            Branch: ${{ github.ref_name }}
+            Workflow: ${{ github.workflow }}
+
+            Commit: ${{ github.sha }}
+
+            View details:
+            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
