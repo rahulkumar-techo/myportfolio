@@ -1,5 +1,6 @@
 import "@testing-library/jest-dom"
 import { webcrypto } from "node:crypto"
+import { ReadableStream, TransformStream, WritableStream } from "node:stream/web"
 import { TextDecoder, TextEncoder } from "node:util"
 
 if (!global.TextEncoder) {
@@ -11,6 +12,24 @@ if (!global.TextEncoder) {
 if (!global.TextDecoder) {
   Object.defineProperty(global, "TextDecoder", {
     value: TextDecoder
+  })
+}
+
+if (!global.ReadableStream) {
+  Object.defineProperty(global, "ReadableStream", {
+    value: ReadableStream
+  })
+}
+
+if (!global.TransformStream) {
+  Object.defineProperty(global, "TransformStream", {
+    value: TransformStream
+  })
+}
+
+if (!global.WritableStream) {
+  Object.defineProperty(global, "WritableStream", {
+    value: WritableStream
   })
 }
 
