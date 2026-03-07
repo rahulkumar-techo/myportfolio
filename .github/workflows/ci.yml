@@ -73,6 +73,12 @@ jobs:
         env:
           CI: true
           NEXT_TELEMETRY_DISABLED: 1
+          MONGODB_URI: mongodb://127.0.0.1:27017/portfolio-ci
+          NEXTAUTH_URL: http://localhost:3000
+          NEXTAUTH_SECRET: ci-nextauth-secret
+          JWT_SECRET: ci-jwt-secret
+          GOOGLE_CLIENT_ID: ci-google-client-id
+          GOOGLE_CLIENT_SECRET: ci-google-client-secret
         run: pnpm build
 
       - name: Run dependency security audit

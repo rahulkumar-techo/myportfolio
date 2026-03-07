@@ -1,29 +1,40 @@
 /**
- * MongoDB Connection Utility
- * Prevents multiple DB connections in Next.js hot reload
+ * MongoDB connection utility.
+ * Keeps a cached connection across hot reloads and avoids throwing during module import.
  */
 
 import mongoose from "mongoose"
 
-const MONGODB_URI = process.env.MONGODB_URI!
-
-if (!MONGODB_URI) {
-  throw new Error("Please define MONGODB_URI in .env")
+type MongooseCache = {
+  conn: typeof mongoose | null
+  promise: Promise<typeof mongoose> | null
 }
 
-let cached = (global as any).mongoose
+declare global {
+  var mongoose: MongooseCache | undefined
+}
 
-if (!cached) {
-  cached = (global as any).mongoose = { conn: null, promise: null }
+const cached: MongooseCache = global.mongoose ?? { conn: null, promise: null }
+
+if (!global.mongoose) {
+  global.mongoose = cached
 }
 
 export async function connectDB() {
-  if (cached.conn) return cached.conn
+  const mongoUri = process.env.MONGODB_URI
+
+  if (!mongoUri) {
+    throw new Error("Please define MONGODB_URI in .env")
+  }
+
+  if (cached.conn) {
+    return cached.conn
+  }
 
   if (!cached.promise) {
-    cached.promise = mongoose.connect(MONGODB_URI, {
+    cached.promise = mongoose.connect(mongoUri, {
       dbName: "portfolio",
-      bufferCommands: false,
+      bufferCommands: false
     })
   }
 
