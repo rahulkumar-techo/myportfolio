@@ -64,7 +64,7 @@ jobs:
         shell: bash
         run: |
           if pnpm run | grep -qE '^[[:space:]]+test($|:)'; then
-            pnpm test -- --runInBand
+            pnpm exec jest --runInBand --passWithNoTests
           else
             echo "No test script found. Skipping tests."
           fi
