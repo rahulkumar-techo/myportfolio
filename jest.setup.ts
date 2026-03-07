@@ -1,5 +1,18 @@
 import "@testing-library/jest-dom"
 import { webcrypto } from "node:crypto"
+import { TextDecoder, TextEncoder } from "node:util"
+
+if (!global.TextEncoder) {
+  Object.defineProperty(global, "TextEncoder", {
+    value: TextEncoder
+  })
+}
+
+if (!global.TextDecoder) {
+  Object.defineProperty(global, "TextDecoder", {
+    value: TextDecoder
+  })
+}
 
 const { fetch: undiciFetch, Headers: UndiciHeaders, Request: UndiciRequest, Response: UndiciResponse } = require("undici")
 
