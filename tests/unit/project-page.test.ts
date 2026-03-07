@@ -1,5 +1,10 @@
 import { generateMetadata, generateStaticParams } from "@/app/projects/[id]/page"
 
+jest.mock("@/app/projects/[id]/project-detail-client", () => ({
+  __esModule: true,
+  default: () => null
+}))
+
 jest.mock("@/lib/data", () => ({
   projects: [
     {
