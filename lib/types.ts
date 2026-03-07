@@ -12,7 +12,7 @@ export interface Project {
   githubUrl?: string;
   featured: boolean;
   category: string;
-  createdAt: Date;
+  createdAt: string | Date;
 }
 
 export interface Skill {

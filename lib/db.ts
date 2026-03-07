@@ -3,7 +3,13 @@
  * Keeps a cached connection across hot reloads and avoids throwing during module import.
  */
 
-import mongoose from "mongoose"
+import mongoose from "mongoose";
+import dns from "node:dns"
+
+// import dns from "node:dns/promises"
+
+dns.setServers(["8.8.8.8", "1.1.1.1"])
+
 
 type MongooseCache = {
   conn: typeof mongoose | null
@@ -21,6 +27,7 @@ if (!global.mongoose) {
 }
 
 export async function connectDB() {
+  console.log(await dns.getServers())
   const mongoUri = process.env.MONGODB_URI
 
   if (!mongoUri) {

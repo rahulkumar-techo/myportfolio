@@ -1,18 +1,54 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowLeft, ExternalLink, Github, Calendar, Folder, Code2, Layers } from 'lucide-react';
+import { ArrowLeft, ExternalLink, Github, Calendar, Folder, Code2, Layers, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Navigation from '@/components/navigation';
 import Footer from '@/components/footer';
 import { Project } from '@/lib/types';
+import { useProject } from '@/hooks/useProject';
 
 interface ProjectDetailClientProps {
-  project: Project;
+  projectId: string;
+  initialProject?: Project;
 }
 
-export default function ProjectDetailClient({ project }: ProjectDetailClientProps) {
+export default function ProjectDetailClient({ projectId, initialProject }: ProjectDetailClientProps) {
+  const { project, isLoading, error } = useProject(projectId, initialProject);
+
+  if (isLoading && !project) {
+    return (
+      <main className="min-h-screen">
+        <Navigation />
+        <section className="flex min-h-[60vh] items-center justify-center pt-32">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </section>
+        <Footer />
+      </main>
+    );
+  }
+
+  if (error || !project) {
+    return (
+      <main className="min-h-screen">
+        <Navigation />
+        <section className="container mx-auto px-4 pt-32 pb-24">
+          <div className="glass-card mx-auto max-w-2xl rounded-2xl p-8 text-center">
+            <h1 className="mb-4 text-3xl font-bold text-foreground">Project not found</h1>
+            <p className="mb-6 text-muted-foreground">
+              The requested project could not be loaded.
+            </p>
+            <Button asChild>
+              <Link href="/projects">Back to Projects</Link>
+            </Button>
+          </div>
+        </section>
+        <Footer />
+      </main>
+    );
+  }
+
   return (
     <main className="min-h-screen">
       <Navigation />

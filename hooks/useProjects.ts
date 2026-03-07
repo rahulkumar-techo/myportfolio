@@ -4,6 +4,7 @@
 
 import useSWR from "swr"
 import api from "@/lib/axios"
+import { normalizeProjects } from "@/lib/project-utils"
 
 const fetcher = (url: string) => api.get(url).then(res => res.data)
 
@@ -26,7 +27,7 @@ export function useProjects() {
   }
 
   return {
-    projects: data?.data || [],
+    projects: normalizeProjects(data?.data),
     isLoading,
     error,
     createProject,

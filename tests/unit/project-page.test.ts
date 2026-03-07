@@ -1,36 +1,43 @@
-import { generateMetadata, generateStaticParams } from "@/app/projects/[id]/page"
+jest.mock("next/headers", () => ({
+  headers: jest.fn().mockResolvedValue({
+    get: (key: string) => {
+      if (key === "host") {
+        return "localhost:3000"
+      }
+
+      return null
+    }
+  })
+}))
 
 jest.mock("@/app/projects/[id]/project-detail-client", () => ({
   __esModule: true,
   default: () => null
 }))
 
-jest.mock("@/lib/data", () => ({
-  projects: [
-    {
-      id: "alpha",
-      title: "Alpha Project",
-      description: "Alpha description"
-    },
-    {
-      id: "beta",
-      title: "Beta Project",
-      description: "Beta description"
-    }
-  ]
-}))
+import { generateMetadata } from "@/app/projects/[id]/page"
 
 describe("project page helpers", () => {
-  it("returns all static params for pre-rendering project pages", async () => {
-    const params = await generateStaticParams()
-
-    expect(params).toEqual([
-      { id: "alpha" },
-      { id: "beta" }
-    ])
+  beforeEach(() => {
+    global.fetch = jest.fn()
   })
 
   it("builds metadata for a known project id", async () => {
+    ;(global.fetch as jest.Mock).mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        data: {
+          id: "alpha",
+          title: "Alpha Project",
+          description: "Alpha description",
+          techStack: [],
+          featured: false,
+          category: "Web",
+          createdAt: "2026-03-07T00:00:00.000Z"
+        }
+      })
+    })
+
     const metadata = await generateMetadata({
       params: Promise.resolve({ id: "alpha" })
     })
@@ -42,12 +49,16 @@ describe("project page helpers", () => {
   })
 
   it("returns a fallback title when the project does not exist", async () => {
+    ;(global.fetch as jest.Mock).mockResolvedValue({
+      ok: false
+    })
+
     const metadata = await generateMetadata({
       params: Promise.resolve({ id: "missing-project" })
     })
 
     expect(metadata).toEqual({
-      title: "Project Not Found"
+      title: "Project Not Found | Portfolio"
     })
   })
 })

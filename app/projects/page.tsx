@@ -1,16 +1,15 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Folder, ExternalLink, Github, ArrowRight, Filter, ArrowLeft } from 'lucide-react';
+import { Folder, ExternalLink, Github, ArrowRight, Filter, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { projects } from '@/lib/data';
 import Navigation from '@/components/navigation';
 import Footer from '@/components/footer';
+import { useProjects } from '@/hooks/useProjects';
+import type { Project } from '@/lib/types';
 
-const categories = ['All', ...new Set(projects.map(p => p.category))];
-
-function ProjectCard({ project, index }: { project: typeof projects[0]; index: number }) {
+function ProjectCard({ project, index }: { project: Project; index: number }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -103,10 +102,16 @@ function ProjectCard({ project, index }: { project: typeof projects[0]; index: n
 
 export default function ProjectsPage() {
   const [activeCategory, setActiveCategory] = useState('All');
+  const { projects, isLoading, error } = useProjects();
+
+  const categories = useMemo(
+    () => ['All', ...new Set(projects.map((project) => project.category).filter(Boolean))],
+    [projects]
+  );
 
   const filteredProjects = activeCategory === 'All'
     ? projects
-    : projects.filter(p => p.category === activeCategory);
+    : projects.filter((project) => project.category === activeCategory);
 
   return (
     <main className="min-h-screen">
@@ -187,11 +192,25 @@ export default function ProjectsPage() {
           </motion.p>
 
           {/* Projects Grid */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {filteredProjects.map((project, index) => (
-              <ProjectCard key={project.id} project={project} index={index} />
-            ))}
-          </div>
+          {isLoading ? (
+            <div className="flex items-center justify-center py-16">
+              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            </div>
+          ) : error ? (
+            <div className="glass-card rounded-2xl p-8 text-center text-muted-foreground">
+              Unable to load projects right now.
+            </div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="glass-card rounded-2xl p-8 text-center text-muted-foreground">
+              No projects found for this category.
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filteredProjects.map((project, index) => (
+                <ProjectCard key={project.id} project={project} index={index} />
+              ))}
+            </div>
+          )}
         </div>
       </section>
 
