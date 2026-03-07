@@ -2,13 +2,16 @@ name: CI
 
 on:
   push:
-    branches: [main, dev]
+    branches:
+      - main
+      - dev
   pull_request:
-    branches: [main, dev]
+    branches:
+      - main
+      - dev
 
 permissions:
   contents: read
-  pull-requests: write
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -16,43 +19,48 @@ concurrency:
 
 jobs:
   build-test:
-    name: Lint • Typecheck • Test • Build
+    name: Lint, Typecheck, Test, Build
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
     steps:
-      # Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Setup Node
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: pnpm
 
-      # Setup pnpm
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+      - name: Get pnpm store directory
+        id: pnpm-store
+        shell: bash
+        run: echo "path=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
         with:
-          version: latest
-          run_install: false
+          path: ${{ steps.pnpm-store.outputs.path }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
 
-      # Install dependencies
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # Lint
       - name: Run ESLint
         run: pnpm exec eslint .
 
-      # TypeScript type check
       - name: Run TypeScript type check
         run: pnpm exec tsc --noEmit
 
-      # Run tests (only if test script exists)
-      - name: Run tests
+      - name: Run tests if present
         shell: bash
         run: |
           if pnpm run | grep -qE '^[[:space:]]+test($|:)'; then
@@ -61,75 +69,60 @@ jobs:
             echo "No test script found. Skipping tests."
           fi
 
-      # Build Next.js
+      - name: Generate Prisma client
+        shell: bash
+        run: |
+          if [ -f prisma/schema.prisma ]; then
+            pnpm exec prisma generate
+          else
+            echo "No prisma/schema.prisma found. Skipping Prisma client generation."
+          fi
+
       - name: Build Next.js application
         env:
           CI: true
           NEXT_TELEMETRY_DISABLED: 1
         run: pnpm build
 
-      # Security audit
       - name: Run dependency security audit
         continue-on-error: true
         run: pnpm audit --prod --audit-level high
 
-      # Build Docker if Dockerfile exists
-      - name: Build Docker image
+      - name: Build Docker image if Dockerfile exists
         shell: bash
         run: |
           if [ -f Dockerfile ]; then
-            docker build -t portfolio:${{ github.sha }} .
+            docker build \
+              --file Dockerfile \
+              --tag portfolio:${{ github.sha }} \
+              --tag portfolio:ci \
+              .
           else
             echo "No Dockerfile found. Skipping Docker build."
           fi
 
+      # Future deployment stage can be added here once registry and environment secrets are ready.
+      # - name: Log in to container registry
+      #   run: echo "Add registry login here"
+      #
+      # - name: Push Docker image
+      #   run: echo "Add docker push here"
+
   notify-failure:
-    name: Notify on CI failure
+    name: Telegram notification
     runs-on: ubuntu-latest
-    needs: build-test
-    if: failure()
+    needs:
+      - build-test
+    if: failure() && secrets.TELEGRAM_BOT_TOKEN != '' && secrets.TELEGRAM_CHAT_ID != ''
 
     steps:
-      # Comment on PR
-      - name: Comment on pull request failure
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v7
-        with:
-          script: |
-            const body = `
-            ❌ CI failed for this pull request.
-
-            Workflow: ${context.workflow}
-            Run: ${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}
-            Commit: ${context.sha}
-            `;
-
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body
-            });
-
-      # Send email notification
-      - name: Send email notification
-        uses: dawidd6/action-send-mail@v3
-        with:
-          server_address: smtp.gmail.com
-          server_port: 465
-          username: ${{ secrets.EMAIL_USERNAME }}
-          password: ${{ secrets.EMAIL_PASSWORD }}
-          subject: "❌ CI Failed - ${{ github.repository }}"
-          to: ${{ secrets.NOTIFICATION_EMAIL }}
-          from: GitHub CI
-          body: |
-            GitHub CI workflow failed.
-
-            Repository: ${{ github.repository }}
-            Branch: ${{ github.ref_name }}
-            Workflow: ${{ github.workflow }}
-
-            Commit: ${{ github.sha }}
-
-            View details:
-            ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      - name: Send Telegram failure notification
+        shell: bash
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          message="❌ CI failed%0ARepository: ${{ github.repository }}%0ABranch: ${{ github.ref_name }}%0AWorkflow: ${{ github.workflow }}%0ACommit: ${{ github.sha }}%0ARun: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          curl -s "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
+            -d chat_id="${TELEGRAM_CHAT_ID}" \
+            -d text="$message"
