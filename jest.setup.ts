@@ -2,6 +2,7 @@ import "@testing-library/jest-dom"
 import { webcrypto } from "node:crypto"
 import { ReadableStream, TransformStream, WritableStream } from "node:stream/web"
 import { TextDecoder, TextEncoder } from "node:util"
+import { MessageChannel, MessagePort } from "node:worker_threads"
 
 if (!global.TextEncoder) {
   Object.defineProperty(global, "TextEncoder", {
@@ -30,6 +31,18 @@ if (!global.TransformStream) {
 if (!global.WritableStream) {
   Object.defineProperty(global, "WritableStream", {
     value: WritableStream
+  })
+}
+
+if (!global.MessageChannel) {
+  Object.defineProperty(global, "MessageChannel", {
+    value: MessageChannel
+  })
+}
+
+if (!global.MessagePort) {
+  Object.defineProperty(global, "MessagePort", {
+    value: MessagePort
   })
 }
 
