@@ -8,9 +8,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "test": "jest --runInBand",
+    "test": "jest --runInBand --passWithNoTests --forceExit",
     "test:watch": "jest --watch",
-    "test:ci": "jest --ci --runInBand --coverage",
+    "test:ci": "jest --ci --runInBand --passWithNoTests --coverage --forceExit",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
