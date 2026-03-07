@@ -1,3 +1,5 @@
+/// <reference types="jest" />
+
 import "@testing-library/jest-dom"
 import { webcrypto } from "node:crypto"
 import { ReadableStream, TransformStream, WritableStream } from "node:stream/web"

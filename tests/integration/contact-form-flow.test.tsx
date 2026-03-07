@@ -6,8 +6,13 @@
 import { FormEvent, useState } from "react"
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { POST } from "@/app/api/messages/route"
 import { createPortfolioItem } from "@/repositories/portfolio-repository"
+
+jest.mock("@/lib/auth", () => ({
+  requireAdminApiSession: jest.fn()
+}))
+
+import { POST } from "@/app/api/messages/route"
 
 jest.mock("@/repositories/portfolio-repository", () => ({
   createPortfolioItem: jest.fn()
