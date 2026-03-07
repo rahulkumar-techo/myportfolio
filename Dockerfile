@@ -16,8 +16,21 @@ RUN pnpm install --frozen-lockfile
 FROM base AS builder
 WORKDIR /app
 
+ARG MONGODB_URI=mongodb://host.docker.internal:27017/portfolio-ci
+ARG NEXTAUTH_URL=http://localhost:3000
+ARG NEXTAUTH_SECRET=ci-nextauth-secret
+ARG JWT_SECRET=ci-jwt-secret
+ARG GOOGLE_CLIENT_ID=ci-google-client-id
+ARG GOOGLE_CLIENT_SECRET=ci-google-client-secret
+
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
+ENV MONGODB_URI=$MONGODB_URI
+ENV NEXTAUTH_URL=$NEXTAUTH_URL
+ENV NEXTAUTH_SECRET=$NEXTAUTH_SECRET
+ENV JWT_SECRET=$JWT_SECRET
+ENV GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID
+ENV GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET
 
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .

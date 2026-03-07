@@ -114,7 +114,14 @@ jobs:
         run: |
           if [ -f Dockerfile ]; then
             docker build \
+              --add-host host.docker.internal:host-gateway \
               --file Dockerfile \
+              --build-arg MONGODB_URI=mongodb://host.docker.internal:27017/portfolio-ci \
+              --build-arg NEXTAUTH_URL=http://localhost:3000 \
+              --build-arg NEXTAUTH_SECRET=ci-nextauth-secret \
+              --build-arg JWT_SECRET=ci-jwt-secret \
+              --build-arg GOOGLE_CLIENT_ID=ci-google-client-id \
+              --build-arg GOOGLE_CLIENT_SECRET=ci-google-client-secret \
               --tag portfolio:${{ github.sha }} \
               --tag portfolio:ci \
               .
