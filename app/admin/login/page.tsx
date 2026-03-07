@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Lock, Mail, Eye, EyeOff, AlertCircle, Cpu } from 'lucide-react'
@@ -9,7 +9,7 @@ import { Lock, Mail, Eye, EyeOff, AlertCircle, Cpu } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { useAuth } from '@/hooks/useAuth';
+import { useAuth } from '@/hooks/useAuth'
 
 function getErrorMessage(error: string | null) {
   switch (error) {
@@ -26,8 +26,7 @@ function getErrorMessage(error: string | null) {
   }
 }
 
-export default function AdminLoginPage() {
-
+function AdminLoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { login, loginWithGoogle } = useAuth()
@@ -38,10 +37,9 @@ export default function AdminLoginPage() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+
   const callbackUrl = searchParams.get('callbackUrl') || '/admin'
   const queryError = getErrorMessage(searchParams.get('error'))
-
-  /* ================= LOGIN ================= */
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,7 +48,6 @@ export default function AdminLoginPage() {
     setLoading(true)
 
     try {
-
       const result = await login({
         email,
         password
@@ -61,9 +58,8 @@ export default function AdminLoginPage() {
         return
       }
 
-      router.push(searchParams.get('callbackUrl') || '/admin')
+      router.push(callbackUrl)
       router.refresh()
-
     } catch {
       setError('Login failed. Please try again.')
     } finally {
@@ -84,8 +80,6 @@ export default function AdminLoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-
-      {/* Background */}
       <div className="absolute inset-0 grid-bg opacity-30" />
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
@@ -96,10 +90,7 @@ export default function AdminLoginPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
-
-        {/* Logo */}
         <div className="text-center mb-8">
-
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -109,24 +100,15 @@ export default function AdminLoginPage() {
             <Cpu className="w-10 h-10 text-primary" />
           </motion.div>
 
-          <h1 className="text-2xl font-bold text-foreground mb-2">
-            Admin Access
-          </h1>
+          <h1 className="text-2xl font-bold text-foreground mb-2">Admin Access</h1>
 
           <p className="text-muted-foreground text-sm">
             Sign in with Google or use your admin email and password
           </p>
-
         </div>
 
-        {/* Card */}
-
         <div className="glass-card rounded-2xl p-8">
-
           <form onSubmit={handleSubmit} className="space-y-6">
-
-            {/* Error */}
-
             {(error || queryError) && (
               <motion.div
                 initial={{ opacity: 0, y: -10 }}
@@ -161,14 +143,10 @@ export default function AdminLoginPage() {
               </div>
             </div>
 
-            {/* Email */}
-
             <div className="space-y-2">
-
               <Label htmlFor="email">Email</Label>
 
               <div className="relative">
-
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
 
                 <Input
@@ -180,19 +158,13 @@ export default function AdminLoginPage() {
                   className="pl-10 bg-background/50 border-border/50 focus:border-primary"
                   required
                 />
-
               </div>
-
             </div>
 
-            {/* Password */}
-
             <div className="space-y-2">
-
               <Label htmlFor="password">Password</Label>
 
               <div className="relative">
-
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
 
                 <Input
@@ -210,43 +182,30 @@ export default function AdminLoginPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
-                  {showPassword
-                    ? <EyeOff className="w-5 h-5" />
-                    : <Eye className="w-5 h-5" />
-                  }
+                  {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
-
               </div>
-
             </div>
-
-            {/* Submit */}
 
             <Button
               type="submit"
               disabled={loading}
               className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-primary-foreground"
             >
-
-              {loading
-                ? <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
-                    className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full"
-                  />
-                : 'Sign In'
-              }
-
+              {loading ? (
+                <motion.div
+                  animate={{ rotate: 360 }}
+                  transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                  className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full"
+                />
+              ) : (
+                'Sign In'
+              )}
             </Button>
-
           </form>
-
         </div>
 
-        {/* Back */}
-
         <div className="text-center mt-6">
-
           <Link href="/" className="text-sm text-muted-foreground hover:text-primary">
             Back to Portfolio
           </Link>
@@ -254,11 +213,16 @@ export default function AdminLoginPage() {
           <Link href="/admin/register" className="text-sm text-muted-foreground hover:text-primary">
             Register
           </Link>
-
         </div>
-
       </motion.div>
-
     </div>
+  )
+}
+
+export default function AdminLoginPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <AdminLoginContent />
+    </Suspense>
   )
 }
