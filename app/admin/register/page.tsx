@@ -6,7 +6,7 @@
  */
 
 import Link from 'next/link'
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Lock, Mail, Eye, EyeOff, AlertCircle, Cpu, User } from 'lucide-react'
@@ -27,8 +27,7 @@ function getErrorMessage(error: string | null) {
   }
 }
 
-export default function AdminRegisterPage() {
-
+function AdminRegisterContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { register, login, loginWithGoogle } = useAuth()
@@ -37,18 +36,15 @@ export default function AdminRegisterPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [googleLoading, setGoogleLoading] = useState(false)
+
   const queryError = getErrorMessage(searchParams.get('error'))
 
-  /* ================= REGISTER ================= */
-
   const handleSubmit = async (e: React.FormEvent) => {
-
     e.preventDefault()
 
     setError(null)
@@ -73,30 +69,24 @@ export default function AdminRegisterPage() {
       })
 
       if (!result.success) {
-        setError(result.error || "Registration failed")
+        setError(result.error || 'Registration failed')
         return
       }
 
       const signInResult = await login({ email, password })
 
       if (!signInResult.success) {
-        setError(signInResult.error || "Account created, but sign-in failed")
+        setError(signInResult.error || 'Account created, but sign-in failed')
         return
       }
 
-      router.push("/admin")
+      router.push('/admin')
       router.refresh()
-
     } catch {
-
-      setError("Something went wrong")
-
+      setError('Something went wrong')
     } finally {
-
       setLoading(false)
-
     }
-
   }
 
   const handleGoogleRegister = async () => {
@@ -111,11 +101,7 @@ export default function AdminRegisterPage() {
   }
 
   return (
-
     <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
-
-      {/* Background */}
-
       <div className="absolute inset-0 grid-bg opacity-30" />
       <div className="absolute top-1/4 -left-32 w-96 h-96 bg-primary/20 rounded-full blur-3xl" />
       <div className="absolute bottom-1/4 -right-32 w-96 h-96 bg-accent/20 rounded-full blur-3xl" />
@@ -126,11 +112,7 @@ export default function AdminRegisterPage() {
         transition={{ duration: 0.5 }}
         className="w-full max-w-md relative z-10"
       >
-
-        {/* Logo */}
-
         <div className="text-center mb-8">
-
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -140,35 +122,24 @@ export default function AdminRegisterPage() {
             <Cpu className="w-10 h-10 text-primary" />
           </motion.div>
 
-          <h1 className="text-2xl font-bold mb-2">
-            Admin Register
-          </h1>
+          <h1 className="text-2xl font-bold mb-2">Admin Register</h1>
 
           <p className="text-muted-foreground text-sm">
             Create an admin account or continue with Google
           </p>
-
         </div>
 
-        {/* Card */}
-
         <div className="glass-card rounded-2xl p-8">
-
           <form onSubmit={handleSubmit} className="space-y-6">
-
             {(error || queryError) && (
-
               <motion.div
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 className="flex items-center gap-2 p-3 rounded-lg bg-destructive/10 border border-destructive/30 text-destructive text-sm"
               >
-
                 <AlertCircle className="w-4 h-4" />
                 {error || queryError}
-
               </motion.div>
-
             )}
 
             <Button
@@ -190,14 +161,10 @@ export default function AdminRegisterPage() {
               </div>
             </div>
 
-            {/* Name */}
-
             <div className="space-y-2">
-
               <Label>Name</Label>
 
               <div className="relative">
-
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
 
                 <Input
@@ -207,19 +174,13 @@ export default function AdminRegisterPage() {
                   className="pl-10"
                   required
                 />
-
               </div>
-
             </div>
 
-            {/* Email */}
-
             <div className="space-y-2">
-
               <Label>Email</Label>
 
               <div className="relative">
-
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
 
                 <Input
@@ -230,19 +191,13 @@ export default function AdminRegisterPage() {
                   className="pl-10"
                   required
                 />
-
               </div>
-
             </div>
 
-            {/* Password */}
-
             <div className="space-y-2">
-
               <Label>Password</Label>
 
               <div className="relative">
-
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
 
                 <Input
@@ -259,19 +214,15 @@ export default function AdminRegisterPage() {
                   onClick={() => setShowPassword(!showPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2"
                 >
-                  {showPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
-
               </div>
-
             </div>
 
             <div className="space-y-2">
-
               <Label>Confirm Password</Label>
 
               <div className="relative">
-
                 <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
 
                 <Input
@@ -288,27 +239,15 @@ export default function AdminRegisterPage() {
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2"
                 >
-                  {showConfirmPassword ? <EyeOff size={18}/> : <Eye size={18}/>}
+                  {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
                 </button>
-
               </div>
-
             </div>
 
-            {/* Submit */}
-
-            <Button
-              type="submit"
-              disabled={loading}
-              className="w-full"
-            >
-
-              {loading ? "Creating..." : "Create Account"}
-
+            <Button type="submit" disabled={loading} className="w-full">
+              {loading ? 'Creating...' : 'Create Account'}
             </Button>
-
           </form>
-
         </div>
 
         <div className="text-center mt-6">
@@ -316,11 +255,15 @@ export default function AdminRegisterPage() {
             Already have an account? Sign in
           </Link>
         </div>
-
       </motion.div>
-
     </div>
-
   )
+}
 
+export default function AdminRegisterPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+      <AdminRegisterContent />
+    </Suspense>
+  )
 }
