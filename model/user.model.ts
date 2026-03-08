@@ -78,11 +78,6 @@ const ContactMessageSchema = new Schema({
 });
 
 const SettingsSchema = new Schema({
-  theme: {
-    type: String,
-    enum: ["light", "dark", "system"],
-    default: "dark"
-  },
   siteTitle: { type: String, default: "Developer Portfolio" },
   siteTagline: { type: String, default: "Futuristic Developer Portfolio" },
   adminPanelTitle: { type: String, default: "Admin Panel" },

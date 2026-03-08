@@ -65,6 +65,8 @@ export function useAdminSettings() {
       },
       { revalidate: false }
     )
+
+    return response.data.data as SiteSettings
   }
 
   return {

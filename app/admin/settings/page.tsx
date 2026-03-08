@@ -1,8 +1,7 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { Loader2, Monitor, Moon, Save, Sun } from 'lucide-react'
-import { useTheme } from 'next-themes'
+import { Loader2, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -11,7 +10,6 @@ import { useAdminSettings } from '@/hooks/useSettings'
 import type { SiteSettings } from '@/lib/types'
 
 const defaultSettings: SiteSettings = {
-  theme: 'dark',
   siteTitle: 'Developer Portfolio',
   siteTagline: 'Futuristic Developer Portfolio',
   adminPanelTitle: 'Admin Panel',
@@ -25,29 +23,26 @@ const defaultSettings: SiteSettings = {
   websiteUrl: ''
 }
 
-const themeOptions = [
-  { value: 'light', label: 'Light', icon: Sun },
-  { value: 'dark', label: 'Dark', icon: Moon },
-  { value: 'system', label: 'System', icon: Monitor }
-] as const
-
 export default function AdminSettingsPage() {
-  const { settings, isLoading, error, updateSettings, setSettingsLocally } = useAdminSettings()
-  const { setTheme } = useTheme()
+  const { settings, isLoading, error, updateSettings } = useAdminSettings()
   const [formData, setFormData] = useState<SiteSettings>(defaultSettings)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState<string | null>(null)
+  const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
 
   useEffect(() => {
     if (settings) {
-      setFormData({ ...defaultSettings, ...settings })
+      const mergedSettings = { ...defaultSettings, ...settings }
+      if (!hasUnsavedChanges) {
+        setFormData(mergedSettings)
+      }
     }
-  }, [settings])
+  }, [hasUnsavedChanges, settings])
 
-  const handleThemeChange = (theme: SiteSettings['theme']) => {
-    setFormData((current) => ({ ...current, theme }))
-    void setSettingsLocally({ theme })
-    setTheme(theme)
+  const updateFormData = (updates: Partial<SiteSettings>) => {
+    setFormData((current) => ({ ...current, ...updates }))
+    setHasUnsavedChanges(true)
+    setSubmitMessage(null)
   }
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -56,8 +51,10 @@ export default function AdminSettingsPage() {
     setSubmitMessage(null)
 
     try {
-      await updateSettings(formData)
-      setTheme(formData.theme)
+      const nextSettings = await updateSettings(formData)
+      const mergedSettings = { ...defaultSettings, ...nextSettings }
+      setFormData(mergedSettings)
+      setHasUnsavedChanges(false)
       setSubmitMessage('Settings saved successfully.')
     } catch {
       setSubmitMessage('Unable to save settings right now.')
@@ -82,7 +79,7 @@ export default function AdminSettingsPage() {
     <div className="space-y-6">
       <div>
         <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-        <p className="text-muted-foreground">Control theme, branding, and public profile details from one place.</p>
+        <p className="text-muted-foreground">Control branding and public profile details from one place.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -99,7 +96,7 @@ export default function AdminSettingsPage() {
                 <Input
                   id="site-title"
                   value={formData.siteTitle}
-                  onChange={(event) => setFormData((current) => ({ ...current, siteTitle: event.target.value }))}
+                  onChange={(event) => updateFormData({ siteTitle: event.target.value })}
                 />
               </div>
 
@@ -108,7 +105,7 @@ export default function AdminSettingsPage() {
                 <Input
                   id="admin-panel-title"
                   value={formData.adminPanelTitle}
-                  onChange={(event) => setFormData((current) => ({ ...current, adminPanelTitle: event.target.value }))}
+                  onChange={(event) => updateFormData({ adminPanelTitle: event.target.value })}
                 />
               </div>
             </div>
@@ -118,7 +115,7 @@ export default function AdminSettingsPage() {
               <Input
                 id="site-tagline"
                 value={formData.siteTagline}
-                onChange={(event) => setFormData((current) => ({ ...current, siteTagline: event.target.value }))}
+                onChange={(event) => updateFormData({ siteTagline: event.target.value })}
               />
             </div>
 
@@ -128,7 +125,7 @@ export default function AdminSettingsPage() {
                 id="bio"
                 rows={5}
                 value={formData.bio}
-                onChange={(event) => setFormData((current) => ({ ...current, bio: event.target.value }))}
+                onChange={(event) => updateFormData({ bio: event.target.value })}
               />
             </div>
           </section>
@@ -145,7 +142,7 @@ export default function AdminSettingsPage() {
                 <Input
                   id="contact-email"
                   value={formData.contactEmail}
-                  onChange={(event) => setFormData((current) => ({ ...current, contactEmail: event.target.value }))}
+                  onChange={(event) => updateFormData({ contactEmail: event.target.value })}
                 />
               </div>
 
@@ -154,7 +151,7 @@ export default function AdminSettingsPage() {
                 <Input
                   id="location"
                   value={formData.location}
-                  onChange={(event) => setFormData((current) => ({ ...current, location: event.target.value }))}
+                  onChange={(event) => updateFormData({ location: event.target.value })}
                 />
               </div>
             </div>
@@ -165,7 +162,7 @@ export default function AdminSettingsPage() {
                 <Input
                   id="resume-url"
                   value={formData.resumeUrl || ''}
-                  onChange={(event) => setFormData((current) => ({ ...current, resumeUrl: event.target.value }))}
+                  onChange={(event) => updateFormData({ resumeUrl: event.target.value })}
                 />
               </div>
 
@@ -174,7 +171,7 @@ export default function AdminSettingsPage() {
                 <Input
                   id="website-url"
                   value={formData.websiteUrl || ''}
-                  onChange={(event) => setFormData((current) => ({ ...current, websiteUrl: event.target.value }))}
+                  onChange={(event) => updateFormData({ websiteUrl: event.target.value })}
                 />
               </div>
             </div>
@@ -185,7 +182,7 @@ export default function AdminSettingsPage() {
                 <Input
                   id="github-url"
                   value={formData.githubUrl || ''}
-                  onChange={(event) => setFormData((current) => ({ ...current, githubUrl: event.target.value }))}
+                  onChange={(event) => updateFormData({ githubUrl: event.target.value })}
                 />
               </div>
 
@@ -194,7 +191,7 @@ export default function AdminSettingsPage() {
                 <Input
                   id="linkedin-url"
                   value={formData.linkedinUrl || ''}
-                  onChange={(event) => setFormData((current) => ({ ...current, linkedinUrl: event.target.value }))}
+                  onChange={(event) => updateFormData({ linkedinUrl: event.target.value })}
                 />
               </div>
 
@@ -203,7 +200,7 @@ export default function AdminSettingsPage() {
                 <Input
                   id="twitter-url"
                   value={formData.twitterUrl || ''}
-                  onChange={(event) => setFormData((current) => ({ ...current, twitterUrl: event.target.value }))}
+                  onChange={(event) => updateFormData({ twitterUrl: event.target.value })}
                 />
               </div>
             </div>
@@ -211,39 +208,6 @@ export default function AdminSettingsPage() {
         </div>
 
         <div className="space-y-6">
-          <section className="glass-card rounded-2xl p-6 space-y-5">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">Theme</h2>
-              <p className="text-sm text-muted-foreground">Persist the dashboard and site theme across sessions.</p>
-            </div>
-
-            <div className="grid gap-3">
-              {themeOptions.map((option) => {
-                const Icon = option.icon
-                const active = formData.theme === option.value
-
-                return (
-                  <button
-                    key={option.value}
-                    type="button"
-                    onClick={() => handleThemeChange(option.value)}
-                    className={`flex items-center justify-between rounded-xl border px-4 py-3 text-left transition-colors ${
-                      active ? 'border-primary bg-primary/10 text-primary' : 'border-border/60 hover:bg-secondary/40'
-                    }`}
-                  >
-                    <span className="inline-flex items-center gap-3">
-                      <Icon className="h-4 w-4" />
-                      {option.label}
-                    </span>
-                    <span className="text-xs uppercase tracking-wide">
-                      {active ? 'Active' : 'Select'}
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
-          </section>
-
           <section className="glass-card rounded-2xl p-6 space-y-4">
             <h2 className="text-lg font-semibold text-foreground">Live Preview</h2>
             <div className="rounded-2xl border border-border/60 bg-background/70 p-5">
@@ -256,6 +220,12 @@ export default function AdminSettingsPage() {
             {submitMessage ? (
               <p className={`text-sm ${submitMessage.includes('Unable') ? 'text-destructive' : 'text-primary'}`}>
                 {submitMessage}
+              </p>
+            ) : null}
+
+            {hasUnsavedChanges ? (
+              <p className="text-sm text-muted-foreground">
+                You have unsaved branding or profile changes.
               </p>
             ) : null}
 

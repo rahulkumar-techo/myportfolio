@@ -60,7 +60,6 @@ export interface ContactMessage {
 }
 
 export interface SiteSettings {
-  theme: 'light' | 'dark' | 'system';
   siteTitle: string;
   siteTagline: string;
   adminPanelTitle: string;

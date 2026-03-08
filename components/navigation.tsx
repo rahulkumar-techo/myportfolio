@@ -3,9 +3,10 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Github, Linkedin, Twitter, Settings } from 'lucide-react';
+import { Menu, X, Github, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SiInstagram } from 'react-icons/si';
+import ThemeToggle from '@/components/theme-toggle';
 
 const navItems = [
   { href: '#about', label: 'About' },
@@ -70,6 +71,7 @@ export default function Navigation() {
 
           {/* Social Links & CTA */}
           <div className="hidden md:flex items-center gap-4">
+            <ThemeToggle />
             <div className="flex items-center gap-2">
               <Link
                 href="https://github.com/rahulkumar-techo"
@@ -155,9 +157,12 @@ export default function Navigation() {
               </ul>
 
               <div className="mt-8 pt-8 border-t border-border/30">
+                <div className="mb-6">
+                  <ThemeToggle className="w-full justify-center" />
+                </div>
                 <div className="flex items-center gap-4 mb-6">
                   <Link
-                    href="https://github.com"
+                    href="https://github.com/rahulkumar-techo"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-3 glass rounded-lg text-muted-foreground hover:text-primary transition-colors"
@@ -166,7 +171,7 @@ export default function Navigation() {
                     <Github className="w-5 h-5" />
                   </Link>
                   <Link
-                    href="https://linkedin.com"
+                    href="https://www.linkedin.com/in/rahul-kumar-6a225127a/"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-3 glass rounded-lg text-muted-foreground hover:text-primary transition-colors"
@@ -175,13 +180,13 @@ export default function Navigation() {
                     <Linkedin className="w-5 h-5" />
                   </Link>
                   <Link
-                    href="https://twitter.com"
+                    href="https://www.instagram.com/mr_rpraja?igsh=MTl3amhnNmF4MXJ4Ng=="
                     target="_blank"
                     rel="noopener noreferrer"
                     className="p-3 glass rounded-lg text-muted-foreground hover:text-primary transition-colors"
-                    aria-label="Twitter"
+                    aria-label="Instagram"
                   >
-                    <Twitter className="w-5 h-5" />
+                    <SiInstagram className="w-5 h-5" />
                   </Link>
                 </div>
                 <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">

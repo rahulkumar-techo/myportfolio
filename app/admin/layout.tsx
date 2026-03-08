@@ -155,9 +155,6 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                 <span className="hidden sm:inline">Welcome back, </span>
                 <span className="text-primary">{user?.name || 'Admin'}</span>
               </div>
-              <div className="hidden md:block text-xs text-muted-foreground">
-                Theme: {settings?.theme || 'dark'}
-              </div>
             </div>
           </div>
         </header>

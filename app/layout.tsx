@@ -3,9 +3,7 @@ import { Orbitron, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import AuthProvider from '@/components/provider/auth-provider';
-import ThemeSettingsSync from '@/components/provider/theme-settings-sync';
 import { ThemeProvider } from '@/components/theme-provider';
-import { getPublicSiteSettings } from '@/repositories/user-repository';
 
 const orbitron = Orbitron({
   subsets: ["latin"],
@@ -60,21 +58,21 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
-export default async function RootLayout({
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const settings = await getPublicSiteSettings()
-  const themeClass = settings.theme === 'dark' ? 'dark' : undefined
-  const defaultTheme = settings.theme === 'system' ? 'system' : settings.theme
-
   return (
-    <html lang="en" className={themeClass} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body className={`${orbitron.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
-        <ThemeProvider attribute="class" defaultTheme={defaultTheme} enableSystem>
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="dark"
+          enableSystem
+          disableTransitionOnChange
+        >
           <AuthProvider>
-            <ThemeSettingsSync />
             {children}
           </AuthProvider>
         </ThemeProvider>

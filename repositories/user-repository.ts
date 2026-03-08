@@ -5,7 +5,6 @@ import type { SiteSettings } from "@/lib/types"
 export type UserRole = "admin" | "user"
 
 const defaultSettings: SiteSettings = {
-  theme: "dark",
   siteTitle: "Developer Portfolio",
   siteTagline: "Futuristic Developer Portfolio",
   adminPanelTitle: "Admin Panel",
@@ -99,11 +98,13 @@ export async function findOrCreateOAuthUser(input: OAuthUserInput): Promise<OAut
 }
 
 export function getMergedSettings(user: any): SiteSettings {
+  const rawSettings = user?.settings?.toObject?.() ?? user?.settings ?? {}
+  const { theme: _theme, ...safeSettings } = rawSettings
+
   return {
     ...defaultSettings,
     contactEmail: user?.email ?? defaultSettings.contactEmail,
-    ...user?.settings?.toObject?.(),
-    ...user?.settings
+    ...safeSettings
   }
 }
 
@@ -134,9 +135,13 @@ export async function updateUserSettings(userId: string, updates: Partial<SiteSe
     throw new Error("User not found")
   }
 
+  const { theme: _theme, ...safeUpdates } = updates as Partial<SiteSettings> & {
+    theme?: "light" | "dark" | "system"
+  }
+
   user.settings = {
     ...getMergedSettings(user),
-    ...updates
+    ...safeUpdates
   }
 
   await user.save()
