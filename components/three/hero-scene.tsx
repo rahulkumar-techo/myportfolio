@@ -8,7 +8,6 @@ import {
   MeshDistortMaterial,
   Sparkles,
   Stars,
-  Text,
   Html,
   PerspectiveCamera,
 } from '@react-three/drei';
@@ -221,31 +220,6 @@ function FloatingParticles() {
   );
 }
 
-function HeroText() {
-  return (
-    <group position={[0, 2.5, -2]}>
-      <Text
-        fontSize={0.8}
-        color="#ffffff"
-        anchorX="center"
-        anchorY="middle"
-        maxWidth={10}
-      >
-        Welcome to the Future
-      </Text>
-      <Text
-        position={[0, -0.8, 0]}
-        fontSize={0.25}
-        color="#00d4ff"
-        anchorX="center"
-        anchorY="middle"
-      >
-        Full-Stack Developer & Creative Technologist
-      </Text>
-    </group>
-  );
-}
-
 function Scene() {
   return (
     <>
@@ -257,7 +231,6 @@ function Scene() {
       <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
       
       {/* Main Elements */}
-      <HeroText />
       <DeskSetup />
       <ReactorCore />
       

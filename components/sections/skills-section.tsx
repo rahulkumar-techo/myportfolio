@@ -33,7 +33,7 @@ import {
 /* ------------------------------------------------ */
 
 type Skill = typeof skillsData[number]
-type Category = "frontend" | "backend" | "devops" | "languages"
+type Category = "frontend" | "backend" | "devops" | "languages"|"tools"
 
 
 /* ------------------------------------------------ */
@@ -67,7 +67,9 @@ const categoryConfig = {
     frontend: { icon: Globe, label: "Frontend" },
     backend: { icon: Server, label: "Backend" },
     devops: { icon: Settings, label: "DevOps" },
-    languages: { icon: Code, label: "Languages" }
+    languages: { icon: Code, label: "Languages" },
+    tools: { icon: Code, label: "Tools" }
+
 
 }
 
@@ -313,6 +315,7 @@ export default function SkillsSection() {
     const backendCards = cardSkillSource.filter((skill: ManagedSkill | Skill) => skill.category === "backend")
     const devopsCards = cardSkillSource.filter((skill: ManagedSkill | Skill) => skill.category === "devops")
     const languageCards = cardSkillSource.filter((skill: ManagedSkill | Skill) => skill.category === "languages")
+    const toolsCards = cardSkillSource.filter((skill: ManagedSkill | Skill) => skill.category === "tools")
 
     return (
 
@@ -443,12 +446,13 @@ left-1/2 top-1/2
 
                 {/* CATEGORY GRID */}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" >
 
                     <CategoryCard category="frontend" skills={frontendCards} />
                     <CategoryCard category="backend" skills={backendCards} />
                     <CategoryCard category="devops" skills={devopsCards} />
                     <CategoryCard category="languages" skills={languageCards} />
+                    <CategoryCard category="tools" skills={toolsCards} />
 
                 </div>
 
