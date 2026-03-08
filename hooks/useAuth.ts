@@ -3,6 +3,7 @@ import { getCsrfToken, signIn, signOut, useSession } from "next-auth/react"
 interface LoginPayload {
   email: string
   password: string
+  callbackUrl?: string
 }
 
 interface RegisterPayload {
@@ -33,18 +34,21 @@ export function useAuth() {
       const result = await signIn("credentials", {
         email: payload.email.trim().toLowerCase(),
         password: payload.password,
+        callbackUrl: payload.callbackUrl ?? "/admin",
         redirect: false
       })
 
       return {
         success: !result?.error,
-        error: normalizeAuthError(result?.error)
+        error: normalizeAuthError(result?.error),
+        url: result?.url ?? payload.callbackUrl ?? "/admin"
       }
     } catch (err) {
       console.error("Login error:", err)
       return {
         success: false,
-        error: "Unable to sign in"
+        error: "Unable to sign in",
+        url: null
       }
     }
   }

@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Suspense, useState } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Lock, Mail, Eye, EyeOff, AlertCircle, Cpu } from 'lucide-react'
 
@@ -27,7 +27,6 @@ function getErrorMessage(error: string | null) {
 }
 
 function AdminLoginContent() {
-  const router = useRouter()
   const searchParams = useSearchParams()
   const { login, loginWithGoogle } = useAuth()
 
@@ -50,7 +49,8 @@ function AdminLoginContent() {
     try {
       const result = await login({
         email,
-        password
+        password,
+        callbackUrl
       })
 
       if (!result.success) {
@@ -58,8 +58,7 @@ function AdminLoginContent() {
         return
       }
 
-      router.push(callbackUrl)
-      router.refresh()
+      window.location.assign(result.url || callbackUrl)
     } catch {
       setError('Login failed. Please try again.')
     } finally {
