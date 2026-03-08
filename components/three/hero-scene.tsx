@@ -100,7 +100,7 @@ function DeskSetup() {
             <span style={{ color: '#00d4ff' }}>developer</span> = {'{'}
             <br />
             {'  '}<span style={{ color: '#22c55e' }}>name</span>:{' '}
-            <span style={{ color: '#fbbf24' }}>&apos;Alex Chen&apos;</span>,
+            <span style={{ color: '#fbbf24' }}>&apos;Rahul kumar&apos;</span>,
             <br />
             {'  '}<span style={{ color: '#22c55e' }}>skills</span>: [
             <span style={{ color: '#fbbf24' }}>&apos;React&apos;</span>,{' '}
@@ -261,7 +261,7 @@ function LoadingFallback() {
     </div>
   );
 }
-
+// Rahul kumar
 export default function HeroScene() {
   return (
     <div className="w-full h-screen relative">
