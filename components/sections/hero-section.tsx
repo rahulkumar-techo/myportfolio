@@ -1,6 +1,5 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { ChevronDown, Sparkles, Zap } from 'lucide-react';
 import dynamic from 'next/dynamic';
@@ -20,20 +19,12 @@ const HeroScene = dynamic(() => import('@/components/three/hero-scene'), {
 });
 
 export default function HeroSection() {
-  const [mounted, setMounted] = useState(false);
-
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
   return (
     <section id="hero" className="relative min-h-screen overflow-hidden">
       {/* 3D Scene */}
-      {mounted && (
-        <div className="absolute inset-0 z-0">
-          {/* <HeroScene /> */}
-        </div>
-      )}
+      <div className="absolute inset-0 z-0">
+        <HeroScene />
+      </div>
 
       {/* Grid Background */}
       <div className="absolute inset-0 grid-bg opacity-30 z-0" />
