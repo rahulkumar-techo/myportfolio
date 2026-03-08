@@ -22,32 +22,44 @@ const providers: NextAuthOptions["providers"] = [
       password: { label: "Password", type: "password" }
     },
     async authorize(credentials) {
-      const email = credentials?.email?.trim().toLowerCase()
-      const password = credentials?.password
+      try {
+        const email = credentials?.email?.trim().toLowerCase()
+        const password = credentials?.password
 
-      if (!email || !password) {
+        if (!email || !password) {
+          return null
+        }
+
+        const user = await findUserByEmail(email)
+
+        if (!user?.password || user.role !== "admin") {
+          console.error("Admin authorize rejected user", {
+            email,
+            hasUser: Boolean(user),
+            role: user?.role ?? null,
+            hasPassword: Boolean(user?.password)
+          })
+          return null
+        }
+
+        const isValid = await bcrypt.compare(password, user.password)
+
+        if (!isValid) {
+          console.error("Admin authorize password mismatch", { email })
+          return null
+        }
+
+        return {
+          id: user._id.toString(),
+          name: user.name,
+          email: user.email,
+          role: user.role,
+          image: user.image ?? null
+        } satisfies AuthUser
+      } catch (error) {
+        console.error("Admin authorize failed", error)
         return null
       }
-
-      const user = await findUserByEmail(email)
-
-      if (!user?.password || user.role !== "admin") {
-        return null
-      }
-
-      const isValid = await bcrypt.compare(password, user.password)
-
-      if (!isValid) {
-        return null
-      }
-
-      return {
-        id: user._id.toString(),
-        name: user.name,
-        email: user.email,
-        role: user.role,
-        image: user.image ?? null
-      } satisfies AuthUser
     }
   })
 ]
@@ -64,7 +76,6 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
-  trustHost: true,
   useSecureCookies: process.env.NODE_ENV === "production",
   providers,
   session: {
