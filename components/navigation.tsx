@@ -7,6 +7,7 @@ import { Menu, X, Github, Linkedin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { SiInstagram } from 'react-icons/si';
 import ThemeToggle from '@/components/theme-toggle';
+import Image from 'next/image';
 
 const navItems = [
   { href: '#about', label: 'About' },
@@ -42,13 +43,19 @@ export default function Navigation() {
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <div className="relative w-10 h-10">
-              <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-primary to-accent opacity-80 group-hover:opacity-100 transition-opacity" />
+              <div className="absolute inset-0 rounded-lg  opacity-80 group-hover:opacity-100 transition-opacity" />
               <div className="absolute inset-0.5 rounded-lg bg-background flex items-center justify-center">
-                <span className="text-primary font-bold text-lg font-mono">AC</span>
+                <Image
+                  src={"/favicon_io/android-chrome-192x192.png"}
+                  alt='RK'
+                  width={100}
+                  height={100}
+                  className=' rounded-full'
+                />
               </div>
             </div>
             <span className="hidden sm:block text-foreground font-semibold">
-              Alex Chen
+              Rahul kumar
             </span>
           </Link>
 

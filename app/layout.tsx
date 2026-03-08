@@ -1,24 +1,31 @@
 import type { Metadata, Viewport } from 'next'
-import { Orbitron, JetBrains_Mono } from 'next/font/google'
+import { Roboto, Orbitron, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import AuthProvider from '@/components/provider/auth-provider';
 import { ThemeProvider } from '@/components/theme-provider';
 
+const roboto = Roboto({
+  subsets: ['latin'],
+  variable: '--font-roboto',
+  weight: ['300', '400', '500', '700'],
+  display: 'swap',
+});
+
 const orbitron = Orbitron({
-  subsets: ["latin"],
+  subsets: ['latin'],
   variable: '--font-orbitron',
   display: 'swap',
 });
 
 const jetbrainsMono = JetBrains_Mono({
-  subsets: ["latin"],
-  variable: '--font-mono',
+  subsets: ['latin'],
+  variable: '--font-jetbrains-mono',
   display: 'swap',
 });
 
 export const metadata: Metadata = {
-  title: 'Futuristic Developer Portfolio | 3D Interactive Experience',
+  title: 'Rahul kumar',
   description: 'A high-tech futuristic developer portfolio with 3D scenes, AI assistant guide, and immersive holographic UI. Built with Next.js, React Three Fiber, and cutting-edge web technologies.',
   keywords: ['developer', 'portfolio', '3D', 'futuristic', 'react', 'nextjs', 'three.js'],
   authors: [{ name: 'Developer' }],
@@ -35,21 +42,14 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      {
-        url: '/icon-light-32x32.png',
-        media: '(prefers-color-scheme: light)',
-      },
-      {
-        url: '/icon-dark-32x32.png',
-        media: '(prefers-color-scheme: dark)',
-      },
-      {
-        url: '/icon.svg',
-        type: 'image/svg+xml',
-      },
+      { url: '/favicon_io/favicon.ico' },
+      { url: '/favicon_io/favicon-16x16.png', sizes: '16x16', type: 'image/png' },
+      { url: '/favicon_io/favicon-32x32.png', sizes: '32x32', type: 'image/png' },
     ],
-    apple: '/apple-icon.png',
+    apple: [{ url: '/favicon_io/apple-touch-icon.png', sizes: '180x180', type: 'image/png' }],
+    shortcut: ['/favicon_io/favicon.ico'],
   },
+  manifest: '/favicon_io/site.webmanifest',
 }
 
 export const viewport: Viewport = {
@@ -65,7 +65,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
-      <body className={`${orbitron.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
+      <body className={`${roboto.variable} ${orbitron.variable} ${jetbrainsMono.variable} font-sans antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="dark"
