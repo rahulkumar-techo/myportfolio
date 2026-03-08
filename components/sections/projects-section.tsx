@@ -32,9 +32,9 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                   href={project.liveUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 glass rounded-lg hover:bg-primary/20 transition-colors"
+                  className="rounded-lg border border-transparent p-2 glass-card transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10"
                 >
-                  <ExternalLink className="w-5 h-5 text-primary" />
+                  <ExternalLink className="w-5 h-5 text-primary transition-colors duration-300 hover:text-accent" />
                 </Link>
               )}
               {project.githubUrl && (
@@ -42,9 +42,9 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
                   href={project.githubUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="p-2 glass rounded-lg hover:bg-primary/20 transition-colors"
+                  className="rounded-lg border border-transparent p-2 glass-card transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10"
                 >
-                  <Github className="w-5 h-5 text-foreground" />
+                  <Github className="w-5 h-5 text-foreground transition-colors duration-300 hover:text-primary" />
                 </Link>
               )}
             </div>
@@ -160,10 +160,10 @@ export default function ProjectsSection() {
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`px-4 py-2 rounded-lg text-sm font-mono transition-all ${
+              className={`rounded-lg border px-4 py-2 text-sm font-mono transition-all duration-300 ${
                 activeCategory === category
-                  ? 'bg-primary text-primary-foreground'
-                  : 'glass text-muted-foreground hover:text-foreground hover:bg-primary/10'
+                  ? 'border-primary bg-primary text-primary-foreground shadow-[0_0_20px_rgba(34,211,238,0.18)]'
+                  : 'glass-card border-transparent text-muted-foreground hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10 hover:text-foreground'
               }`}
             >
               {category}

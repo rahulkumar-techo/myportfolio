@@ -167,7 +167,7 @@ export default function AboutSection() {
 
               {/* STATS */}
 
-              <div className="grid grid-cols-3 gap-3 md:gap-4">
+              <div className="grid grid-cols-3 gap-3 md:gap-4 ">
 
                 {stats.map((stat, index) => (
 
@@ -176,18 +176,18 @@ export default function AboutSection() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={isInView ? { opacity: 1, y: 0 } : {}}
                     transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
-                    className="glass rounded-xl p-3 md:p-4 text-center group hover:bg-primary/5 transition"
+                    className="glass-card rounded-xl border border-transparent p-3 text-center group transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:bg-primary/10 md:p-4"
                   >
 
-                    <stat.icon className="w-5 h-5 md:w-6 md:h-6 mx-auto mb-2 text-primary group-hover:scale-110 transition" />
+                    <stat.icon className="mx-auto mb-2 h-5 w-5 text-primary transition duration-300 group-hover:scale-110 group-hover:text-accent md:h-6 md:w-6" />
 
-                    <div className="text-lg md:text-2xl font-bold text-foreground">
+                    <div className="text-lg font-bold text-foreground transition-colors duration-300 group-hover:text-primary md:text-2xl">
 
                       {stat.value.toLocaleString()}{stat.suffix}
 
                     </div>
 
-                    <div className="text-[10px] md:text-xs text-muted-foreground">
+                    <div className="text-[10px] text-muted-foreground transition-colors duration-300 group-hover:text-foreground/80 md:text-xs">
                       {stat.label}
                     </div>
 

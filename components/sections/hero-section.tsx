@@ -123,7 +123,7 @@ export default function HeroSection() {
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 1.8 + index * 0.1 }}
-                className="px-3 py-1 text-xs font-mono text-muted-foreground glass rounded-md hover:text-primary transition-colors cursor-default"
+                className="cursor-default rounded-md border border-transparent px-3 py-1 text-xs font-mono text-muted-foreground glass-card transition-all duration-300 hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10 hover:text-primary"
               >
                 {tech}
               </motion.span>
