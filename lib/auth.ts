@@ -64,6 +64,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 export const authOptions: NextAuthOptions = {
   secret: process.env.NEXTAUTH_SECRET,
   debug: process.env.NODE_ENV === "development",
+  trustHost: true,
+  useSecureCookies: process.env.NODE_ENV === "production",
   providers,
   session: {
     strategy: "jwt"
