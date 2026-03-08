@@ -1,6 +1,7 @@
 'use client';
 
-import { motion } from 'framer-motion';
+import { motion, useInView } from 'framer-motion';
+import { useRef } from 'react';
 import { ChevronDown, Sparkles, Zap } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
@@ -19,11 +20,14 @@ const HeroScene = dynamic(() => import('@/components/three/hero-scene'), {
 });
 
 export default function HeroSection() {
+  const ref = useRef<HTMLElement | null>(null);
+  const isHeroActive = useInView(ref, { margin: '20% 0px -20% 0px' });
+
   return (
-    <section id="hero" className="relative min-h-screen overflow-hidden">
+    <section id="hero" ref={ref} className="relative min-h-screen overflow-hidden">
       {/* 3D Scene */}
       <div className="absolute inset-0 z-0">
-        <HeroScene />
+        {isHeroActive ? <HeroScene /> : <div className="h-full w-full bg-background" />}
       </div>
 
       {/* Grid Background */}

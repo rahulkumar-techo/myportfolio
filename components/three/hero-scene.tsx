@@ -31,7 +31,7 @@ function GlowingOrb({ position, color, size = 1, intensity = 1 }: {
   return (
     <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
       <mesh ref={meshRef} position={position}>
-        <sphereGeometry args={[size, 64, 64]} />
+        <sphereGeometry args={[size, 32, 32]} />
         <MeshDistortMaterial
           color={color}
           emissive={color}
@@ -85,12 +85,12 @@ function DeskSetup() {
           position={[0, 0, 0.04]}
           scale={0.12}
           style={{
-            width: '400px',
+            width: '320px',
             background: 'rgba(10, 10, 26, 0.9)',
             padding: '20px',
             borderRadius: '8px',
             fontFamily: 'monospace',
-            fontSize: '12px',
+            fontSize: '11px',
             color: '#00d4ff',
             overflow: 'hidden',
           }}
@@ -170,7 +170,7 @@ function ReactorCore() {
       
       {/* Energy Field */}
       <Sparkles
-        count={100}
+        count={60}
         scale={3}
         size={2}
         speed={0.5}
@@ -186,8 +186,8 @@ function FloatingParticles() {
   const particlesRef = useRef<THREE.Points>(null);
   
   const particles = useMemo(() => {
-    const positions = new Float32Array(200 * 3);
-    for (let i = 0; i < 200; i++) {
+    const positions = new Float32Array(120 * 3);
+    for (let i = 0; i < 120; i++) {
       positions[i * 3] = (Math.random() - 0.5) * 20;
       positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
       positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
@@ -228,7 +228,7 @@ function Scene() {
       <directionalLight position={[5, 5, 5]} intensity={0.5} />
       
       {/* Background */}
-      <Stars radius={100} depth={50} count={5000} factor={4} saturation={0} fade speed={1} />
+      <Stars radius={80} depth={40} count={2000} factor={3} saturation={0} fade speed={0.6} />
       
       {/* Main Elements */}
       <DeskSetup />
@@ -267,8 +267,9 @@ export default function HeroScene() {
     <div className="w-full h-screen relative">
       <Suspense fallback={<LoadingFallback />}>
         <Canvas
-          gl={{ antialias: true, alpha: true }}
-          dpr={[1, 2]}
+          gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
+          dpr={[1, 1.25]}
+          performance={{ min: 0.5 }}
           style={{ background: 'transparent' }}
         >
           <Scene />
