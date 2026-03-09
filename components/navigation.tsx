@@ -36,26 +36,29 @@ export default function Navigation() {
         initial={{ y: -100 }}
         animate={{ y: 0 }}
         transition={{ type: 'spring', damping: 20, stiffness: 100 }}
-        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${isScrolled ? 'glass-card border-b border-border/50' : ''
+        className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-2xl ${isScrolled ? 'glass-card backdrop-blur-2xl border-b border-border/50' : ''
           }`}
       >
-        <nav className="container mx-auto px-4 py-4 flex items-center justify-between">
+        <nav className="container mx-auto px-4 py-2 md:py-4 flex items-center justify-between ">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <div className="relative w-10 h-10">
               <div className="absolute inset-0 rounded-lg  opacity-80 group-hover:opacity-100 transition-opacity" />
+
               <div className="absolute inset-0.5 rounded-lg bg-background flex items-center justify-center">
                 <Image
-                  src={"/favicon_io/android-chrome-192x192.png"}
-                  alt='RK'
-                  width={100}
-                  height={100}
-                  className=' rounded-full'
+                  src="/logo.png"
+                  alt="Rahul Kumar Logo"
+                  width={32}
+                  height={32}
+                  className="object-contain rounded-full"
+                  priority
                 />
               </div>
             </div>
-            <span className="hidden sm:block text-foreground font-semibold">
-              Rahul kumar
+
+            <span className="hidden sm:block text-foreground font-semibold tracking-wide">
+              Rahul Kumar
             </span>
           </Link>
 
@@ -113,14 +116,54 @@ export default function Navigation() {
             </Button>
           </div>
 
-          {/* Mobile Menu Button */}
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 text-foreground"
-            aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+          {/* Mobile Actions */}
+          <div className="flex items-center gap-1 md:hidden">
+            <ThemeToggle />
+
+            {/* Social icons */}
+            <Link
+              href="https://github.com/rahulkumar-techo"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 text-muted-foreground hover:text-primary transition-colors"
+              aria-label="GitHub"
+            >
+              <Github className="w-4 h-4" />
+            </Link>
+
+            <Link
+              href="https://www.linkedin.com/in/rahul-kumar-6a225127a/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 text-muted-foreground hover:text-primary transition-colors"
+              aria-label="LinkedIn"
+            >
+              <Linkedin className="w-4 h-4" />
+            </Link>
+
+            <Link
+              href="https://www.instagram.com/mr_rpraja"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="p-2 text-muted-foreground hover:text-primary transition-colors"
+              aria-label="Instagram"
+            >
+              <SiInstagram className="w-4 h-4" />
+            </Link>
+
+            {/* Mobile menu button */}
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="p-2 text-foreground"
+              aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
+            >
+              {isMobileMenuOpen ? (
+                <X className="w-6 h-6" />
+              ) : (
+                <Menu className="w-6 h-6" />
+              )}
+            </button>
+          </div>
         </nav>
       </motion.header>
 
@@ -163,45 +206,6 @@ export default function Navigation() {
                 ))}
               </ul>
 
-              <div className="mt-8 pt-8 border-t border-border/30">
-                <div className="mb-6">
-                  <ThemeToggle className="w-full justify-center" />
-                </div>
-                <div className="flex items-center gap-4 mb-6">
-                  <Link
-                    href="https://github.com/rahulkumar-techo"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-3 glass rounded-lg text-muted-foreground hover:text-primary transition-colors"
-                    aria-label="GitHub"
-                  >
-                    <Github className="w-5 h-5" />
-                  </Link>
-                  <Link
-                    href="https://www.linkedin.com/in/rahul-kumar-6a225127a/"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-3 glass rounded-lg text-muted-foreground hover:text-primary transition-colors"
-                    aria-label="LinkedIn"
-                  >
-                    <Linkedin className="w-5 h-5" />
-                  </Link>
-                  <Link
-                    href="https://www.instagram.com/mr_rpraja?igsh=MTl3amhnNmF4MXJ4Ng=="
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="p-3 glass rounded-lg text-muted-foreground hover:text-primary transition-colors"
-                    aria-label="Instagram"
-                  >
-                    <SiInstagram className="w-5 h-5" />
-                  </Link>
-                </div>
-                <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                  <Link href="#contact" onClick={() => setIsMobileMenuOpen(false)}>
-                    Get in Touch
-                  </Link>
-                </Button>
-              </div>
             </motion.nav>
           </motion.div>
         )}
