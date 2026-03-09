@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Loader2, Pencil, Plus, Quote, Star, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -8,6 +8,14 @@ import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { useTestimonials } from '@/hooks/useTestimonials'
 import type { Testimonial } from '@/lib/types'
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious
+} from '@/components/ui/pagination'
 
 type TestimonialFormState = {
   name: string
@@ -34,6 +42,19 @@ export default function AdminTestimonialsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const testimonialsPerPage = 5
+  const totalPages = Math.max(1, Math.ceil(testimonials.length / testimonialsPerPage))
+  const paginatedTestimonials = testimonials.slice(
+    (currentPage - 1) * testimonialsPerPage,
+    currentPage * testimonialsPerPage
+  )
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages)
+    }
+  }, [currentPage, totalPages])
 
   const resetForm = () => {
     setEditingTestimonial(null)
@@ -204,7 +225,7 @@ export default function AdminTestimonialsPage() {
         </form>
 
         <div className="space-y-4">
-          {testimonials.map((testimonial: Testimonial) => (
+          {paginatedTestimonials.map((testimonial: Testimonial) => (
             <div key={testimonial.id} className="glass-card rounded-2xl p-6">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
                 <div className="space-y-3">
@@ -246,6 +267,47 @@ export default function AdminTestimonialsPage() {
               </div>
             </div>
           ))}
+
+          {totalPages > 1 ? (
+            <Pagination>
+              <PaginationContent>
+                <PaginationItem>
+                  <PaginationPrevious
+                    href="#"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      setCurrentPage((page) => Math.max(1, page - 1))
+                    }}
+                    className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+                {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                  <PaginationItem key={page}>
+                    <PaginationLink
+                      href="#"
+                      isActive={page === currentPage}
+                      onClick={(event) => {
+                        event.preventDefault()
+                        setCurrentPage(page)
+                      }}
+                    >
+                      {page}
+                    </PaginationLink>
+                  </PaginationItem>
+                ))}
+                <PaginationItem>
+                  <PaginationNext
+                    href="#"
+                    onClick={(event) => {
+                      event.preventDefault()
+                      setCurrentPage((page) => Math.min(totalPages, page + 1))
+                    }}
+                    className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                  />
+                </PaginationItem>
+              </PaginationContent>
+            </Pagination>
+          ) : null}
         </div>
       </div>
     </div>

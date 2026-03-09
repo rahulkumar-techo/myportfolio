@@ -5,6 +5,7 @@
 
 import { connectDB } from "@/lib/db"
 import { UserModel } from "@/model/user.model"
+import { recordUserLogin } from "@/repositories/user-repository"
 import bcrypt from "bcryptjs"
 import jwt from "jsonwebtoken"
 
@@ -22,6 +23,13 @@ export async function POST(req: Request) {
         )
     }
 
+    if (user.blocked) {
+        return Response.json(
+            { message: "This account has been blocked" },
+            { status: 403 }
+        )
+    }
+
     const valid = await bcrypt.compare(password, user.password)
 
     if (!valid) {
@@ -36,6 +44,8 @@ export async function POST(req: Request) {
         process.env.JWT_SECRET!,
         { expiresIn: "7d" }
     )
+
+    await recordUserLogin(user._id.toString(), "credentials")
 
     return Response.json({
         message: "Login successful",

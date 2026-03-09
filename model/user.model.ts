@@ -103,7 +103,10 @@ const UserSchema = new Schema({
     enum: ["admin", "user"],
     default: "user"
   },
+  blocked: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },
+  lastLoginAt: { type: Date, default: null },
+  lastLoginProvider: { type: String, default: null },
 
   projects: [ProjectSchema],
   skills: [SkillSchema],

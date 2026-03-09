@@ -3,7 +3,7 @@ import { getServerSession, type NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
 import GoogleProvider from "next-auth/providers/google"
 import bcrypt from "bcryptjs"
-import { findOrCreateOAuthUser, findUserByEmail, type UserRole } from "@/repositories/user-repository"
+import { findOrCreateOAuthUser, findUserByEmail, recordUserLogin, type UserRole } from "@/repositories/user-repository"
 
 type AuthUser = {
   id: string
@@ -32,12 +32,13 @@ const providers: NextAuthOptions["providers"] = [
 
         const user = await findUserByEmail(email)
 
-        if (!user?.password || user.role !== "admin") {
+        if (!user?.password || user.role !== "admin" || user.blocked) {
           console.error("Admin authorize rejected user", {
             email,
             hasUser: Boolean(user),
             role: user?.role ?? null,
-            hasPassword: Boolean(user?.password)
+            hasPassword: Boolean(user?.password),
+            blocked: Boolean(user?.blocked)
           })
           return null
         }
@@ -48,6 +49,8 @@ const providers: NextAuthOptions["providers"] = [
           console.error("Admin authorize password mismatch", { email })
           return null
         }
+
+        await recordUserLogin(user._id.toString(), "credentials")
 
         return {
           id: user._id.toString(),
@@ -94,10 +97,16 @@ export const authOptions: NextAuthOptions = {
           image: user.image
         })
 
+        if (result.user.blocked) {
+          return false
+        }
+
         ;(user as AuthUser).id = result.user._id.toString()
         ;(user as AuthUser).role = result.user.role
         ;(user as AuthUser).provider = account.provider
         ;(user as AuthUser).image = result.user.image ?? user.image ?? null
+
+        await recordUserLogin(result.user._id.toString(), account.provider)
       }
 
       return true

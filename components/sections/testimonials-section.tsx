@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { MessageSquare, Star, Quote, Loader2, Send, CheckCircle2 } from 'lucide-react';
+import { MessageSquare, Star, Quote, Loader2, Send, CheckCircle2, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -10,6 +10,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
 import { useTestimonials } from '@/hooks/useTestimonials';
 import type { Testimonial } from '@/lib/types';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious
+} from '@/components/ui/pagination';
 
 function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; index: number }) {
   const [imageFailed, setImageFailed] = useState(false);
@@ -99,16 +107,29 @@ export default function TestimonialsSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const { testimonials, isLoading, createTestimonial } = useTestimonials();
-  const { user, loginWithGoogle } = useAuth();
+  const { user, loginWithGoogle, logout } = useAuth();
   const [formData, setFormData] = useState({
     role: '',
     company: '',
     content: '',
     rating: 5
   });
+  const [currentPage, setCurrentPage] = useState(1);
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const testimonialsPerPage = 6;
+  const totalPages = Math.max(1, Math.ceil(testimonials.length / testimonialsPerPage));
+  const paginatedTestimonials = testimonials.slice(
+    (currentPage - 1) * testimonialsPerPage,
+    currentPage * testimonialsPerPage
+  );
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
   const hasSubmittedAlready = useMemo(
     () =>
       Boolean(
@@ -182,15 +203,56 @@ export default function TestimonialsSection() {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto" style={{ perspective: '1000px' }}>
-            {testimonials.map((testimonial: Testimonial, index: number) => (
+            {paginatedTestimonials.map((testimonial: Testimonial, index: number) => (
               <TestimonialCard
                 key={testimonial.id}
                 testimonial={testimonial}
-                index={index}
+                index={(currentPage - 1) * testimonialsPerPage + index}
               />
             ))}
           </div>
         )}
+
+        {!isLoading && totalPages > 1 ? (
+          <Pagination className="mt-8">
+            <PaginationContent>
+              <PaginationItem>
+                <PaginationPrevious
+                  href="#testimonials"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setCurrentPage((page) => Math.max(1, page - 1));
+                  }}
+                  className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                />
+              </PaginationItem>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                <PaginationItem key={page}>
+                  <PaginationLink
+                    href="#testimonials"
+                    isActive={currentPage === page}
+                    onClick={(event) => {
+                      event.preventDefault();
+                      setCurrentPage(page);
+                    }}
+                  >
+                    {page}
+                  </PaginationLink>
+                </PaginationItem>
+              ))}
+              <PaginationItem>
+                <PaginationNext
+                  href="#testimonials"
+                  onClick={(event) => {
+                    event.preventDefault();
+                    setCurrentPage((page) => Math.min(totalPages, page + 1));
+                  }}
+                  className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                />
+              </PaginationItem>
+            </PaginationContent>
+          </Pagination>
+        ) : null}
 
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -232,7 +294,15 @@ export default function TestimonialsSection() {
             ) : (
               <form onSubmit={handleSubmit} className="space-y-5">
                 <div className="rounded-xl border border-border/60 bg-secondary/20 px-4 py-3 text-sm text-muted-foreground">
-                  Signed in as <span className="text-foreground">{user?.name || user?.email}</span>
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <span>
+                      Signed in as <span className="text-foreground">{user?.name || user?.email}</span>
+                    </span>
+                    <Button type="button" variant="outline" size="sm" onClick={() => void logout('/#testimonials')}>
+                      <LogOut className="mr-2 h-4 w-4" />
+                      Logout
+                    </Button>
+                  </div>
                 </div>
 
                 <div className="grid gap-4 sm:grid-cols-2">

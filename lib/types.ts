@@ -59,6 +59,33 @@ export interface ContactMessage {
   archived?: boolean;
 }
 
+export interface AnalyticsUser {
+  id: string;
+  name: string;
+  email: string;
+  role: 'admin' | 'user';
+  blocked?: boolean;
+  image?: string | null;
+  lastLoginAt?: string | Date | null;
+  lastLoginProvider?: string | null;
+}
+
+export interface AdminAnalytics {
+  totals: {
+    users: number;
+    admins: number;
+    members: number;
+    activeNow: number;
+    blocked: number;
+  };
+  growth: {
+    label: string;
+    totalUsers: number;
+  }[];
+  activeUsers: AnalyticsUser[];
+  users: AnalyticsUser[];
+}
+
 export interface SiteSettings {
   siteTitle: string;
   siteTagline: string;

@@ -78,10 +78,10 @@ export function useAuth() {
     }
   }
 
-  const logout = () => {
+  const logout = (callbackUrl = "/admin/login") => {
     return signOut({
       redirect: true,
-      callbackUrl: "/admin/login"
+      callbackUrl
     })
   }
 
