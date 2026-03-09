@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import {
   FolderKanban,
+  FolderOpen,
   Cpu,
   Briefcase,
   MessageSquare,
@@ -82,6 +83,7 @@ export default function AdminDashboard() {
     { label: 'Manage Projects', icon: FolderKanban, href: '/admin/projects' },
     { label: 'Manage Skills', icon: Cpu, href: '/admin/skills' },
     { label: 'Manage Experience', icon: Briefcase, href: '/admin/experience' },
+    { label: 'Open Assets', icon: FolderOpen, href: '/admin/assets' },
     { label: 'Open Settings', icon: Settings, href: '/admin/settings' },
   ];
 

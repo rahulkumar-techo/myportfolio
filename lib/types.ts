@@ -59,6 +59,18 @@ export interface ContactMessage {
   archived?: boolean;
 }
 
+export interface AssetItem {
+  id: string;
+  label: string;
+  category: 'cv' | 'achievement' | 'image' | 'certificate' | 'other';
+  fileName: string;
+  originalName: string;
+  fileUrl: string;
+  fileType: string;
+  size: number;
+  uploadedAt: string | Date;
+}
+
 export interface AnalyticsUser {
   id: string;
   name: string;

@@ -61,8 +61,8 @@ export default function Home() {
       
       {/* Skills Section */}
       <SkillsSection />
-      
-      {/* Projects Section */}
+
+      {/* Projects Showcase */}
       <ProjectsSection />
       
       {/* Experience Section */}

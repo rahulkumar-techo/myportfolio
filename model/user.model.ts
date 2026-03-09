@@ -77,6 +77,22 @@ const ContactMessageSchema = new Schema({
   archived: { type: Boolean, default: false }
 });
 
+const AssetSchema = new Schema({
+  id: { type: String, required: true },
+  label: { type: String, required: true },
+  category: {
+    type: String,
+    enum: ["cv", "achievement", "image", "certificate", "other"],
+    default: "other"
+  },
+  fileName: { type: String, required: true },
+  originalName: { type: String, required: true },
+  fileUrl: { type: String, required: true },
+  fileType: { type: String, required: true },
+  size: { type: Number, required: true },
+  uploadedAt: { type: Date, default: Date.now }
+});
+
 const SettingsSchema = new Schema({
   siteTitle: { type: String, default: "Developer Portfolio" },
   siteTagline: { type: String, default: "Futuristic Developer Portfolio" },
@@ -113,6 +129,7 @@ const UserSchema = new Schema({
   experiences: [ExperienceSchema],
   testimonials: [TestimonialSchema],
   contactMessages: [ContactMessageSchema],
+  assets: [AssetSchema],
   settings: { type: SettingsSchema, default: () => ({}) }
 });
 

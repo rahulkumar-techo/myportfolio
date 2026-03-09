@@ -1,8 +1,8 @@
 'use client';
 
-import { useMemo, useRef, useState } from 'react';
+import { useRef } from 'react';
 import { motion, useInView } from 'framer-motion';
-import { Folder, ExternalLink, Github, ArrowRight, Filter, Loader2 } from 'lucide-react';
+import { Folder, ExternalLink, Github, ArrowRight, Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { useProjects } from '@/hooks/useProjects';
@@ -108,17 +108,11 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
 export default function ProjectsSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
-  const [activeCategory, setActiveCategory] = useState('All');
   const { projects, isLoading } = useProjects();
-
-  const categories = useMemo<string[]>(
-    () => ['All', ...Array.from(new Set(projects.map((project: Project) => project.category).filter(Boolean) as string[]))],
-    [projects]
-  );
-
-  const filteredProjects = activeCategory === 'All'
-    ? projects
-    : projects.filter((project: Project) => project.category === activeCategory);
+  const showcaseProjects =
+    projects.filter((project: Project) => project.featured).slice(0, 3).length > 0
+      ? projects.filter((project: Project) => project.featured).slice(0, 3)
+      : projects.slice(0, 3);
 
   return (
     <section id="projects" className="relative py-24 md:py-32 overflow-hidden" ref={ref}>
@@ -148,29 +142,6 @@ export default function ProjectsSection() {
           </p>
         </motion.div>
 
-        {/* Category Filter */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={isInView ? { opacity: 1, y: 0 } : {}}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex flex-wrap items-center justify-center gap-2 mb-12"
-        >
-          <Filter className="w-4 h-4 text-muted-foreground mr-2" />
-          {categories.map((category: string) => (
-            <button
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              className={`rounded-lg border px-4 py-2 text-sm font-mono transition-all duration-300 ${
-                activeCategory === category
-                  ? 'border-primary bg-primary text-primary-foreground shadow-[0_0_20px_rgba(34,211,238,0.18)]'
-                  : 'glass-card border-transparent text-muted-foreground hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10 hover:text-foreground'
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </motion.div>
-
         {/* Projects Grid */}
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
@@ -178,7 +149,7 @@ export default function ProjectsSection() {
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.map((project: Project, index: number) => (
+            {showcaseProjects.map((project: Project, index: number) => (
               <ProjectCard key={project.id} project={project} index={index} />
             ))}
           </div>

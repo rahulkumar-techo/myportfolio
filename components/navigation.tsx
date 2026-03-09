@@ -10,11 +10,12 @@ import ThemeToggle from '@/components/theme-toggle';
 import Image from 'next/image';
 
 const navItems = [
-  { href: '#about', label: 'About' },
-  { href: '#skills', label: 'Skills' },
-  { href: '#projects', label: 'Projects' },
-  { href: '#experience', label: 'Experience' },
-  { href: '#contact', label: 'Contact' },
+  { href: '/#about', label: 'About' },
+  { href: '/#skills', label: 'Skills' },
+  { href: '/projects', label: 'Projects' },
+  { href: '/assets', label: 'Assets' },
+  { href: '/#experience', label: 'Experience' },
+  { href: '/#contact', label: 'Contact' },
 ];
 
 export default function Navigation() {
@@ -112,7 +113,7 @@ export default function Navigation() {
               </Link>
             </div>
             <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Link href="#contact">Get in Touch</Link>
+              <Link href="/#contact">Get in Touch</Link>
             </Button>
           </div>
 

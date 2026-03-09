@@ -11,6 +11,7 @@ import {
   MessageSquare,
   Mail,
   Settings,
+  FolderOpen,
   Menu,
   X,
   LogOut,
@@ -27,6 +28,7 @@ const navItems = [
   { href: '/admin/experience', icon: Briefcase, label: 'Experience' },
   { href: '/admin/testimonials', icon: MessageSquare, label: 'Testimonials' },
   { href: '/admin/messages', icon: Mail, label: 'Messages' },
+  { href: '/admin/assets', icon: FolderOpen, label: 'Assets' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 

@@ -1,13 +1,20 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Folder, ExternalLink, Github, ArrowRight, Filter, ArrowLeft, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import Navigation from '@/components/navigation';
 import Footer from '@/components/footer';
 import { useProjects } from '@/hooks/useProjects';
 import type { Project } from '@/lib/types';
+import {
+  Pagination,
+  PaginationContent,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious
+} from '@/components/ui/pagination';
 
 function ProjectCard({ project, index }: { project: Project; index: number }) {
   return (
@@ -102,7 +109,9 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
 
 export default function ProjectsPage() {
   const [activeCategory, setActiveCategory] = useState('All');
+  const [currentPage, setCurrentPage] = useState(1);
   const { projects, isLoading, error } = useProjects();
+  const projectsPerPage = 6;
 
   const categories = useMemo(
     () => ['All', ...new Set(projects.map((project) => project.category).filter(Boolean))],
@@ -112,12 +121,25 @@ export default function ProjectsPage() {
   const filteredProjects = activeCategory === 'All'
     ? projects
     : projects.filter((project) => project.category === activeCategory);
+  const totalPages = Math.max(1, Math.ceil(filteredProjects.length / projectsPerPage));
+  const paginatedProjects = filteredProjects.slice(
+    (currentPage - 1) * projectsPerPage,
+    currentPage * projectsPerPage
+  );
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeCategory]);
+
+  useEffect(() => {
+    if (currentPage > totalPages) {
+      setCurrentPage(totalPages);
+    }
+  }, [currentPage, totalPages]);
 
   return (
     <main className="min-h-screen">
-      <Navigation />
-      
-      <section className="relative pt-32 pb-24 overflow-hidden">
+      <section className="relative pt-16 pb-24 overflow-hidden md:pt-20">
         {/* Background */}
         <div className="absolute inset-0 grid-bg opacity-20" />
         <div className="absolute top-1/4 right-0 w-96 h-96 bg-primary/5 rounded-full blur-3xl" />
@@ -205,10 +227,57 @@ export default function ProjectsPage() {
               No projects found for this category.
             </div>
           ) : (
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {filteredProjects.map((project, index) => (
-                <ProjectCard key={project.id} project={project} index={index} />
-              ))}
+            <div className="space-y-8">
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {paginatedProjects.map((project, index) => (
+                  <ProjectCard
+                    key={project.id}
+                    project={project}
+                    index={(currentPage - 1) * projectsPerPage + index}
+                  />
+                ))}
+              </div>
+
+              {totalPages > 1 ? (
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          setCurrentPage((page) => Math.max(1, page - 1));
+                        }}
+                        className={currentPage === 1 ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                    {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                      <PaginationItem key={page}>
+                        <PaginationLink
+                          href="#"
+                          isActive={currentPage === page}
+                          onClick={(event) => {
+                            event.preventDefault();
+                            setCurrentPage(page);
+                          }}
+                        >
+                          {page}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={(event) => {
+                          event.preventDefault();
+                          setCurrentPage((page) => Math.min(totalPages, page + 1));
+                        }}
+                        className={currentPage === totalPages ? 'pointer-events-none opacity-50' : ''}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              ) : null}
             </div>
           )}
         </div>
