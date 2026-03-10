@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useRef, useMemo } from 'react';
+import { Suspense, useMemo, useRef } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { 
   Float, 
@@ -251,21 +251,10 @@ function Scene() {
   );
 }
 
-function LoadingFallback() {
-  return (
-    <div className="w-full h-full flex items-center justify-center">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-        <p className="text-primary text-sm font-mono">Initializing 3D Environment...</p>
-      </div>
-    </div>
-  );
-}
-// Rahul kumar
 export default function HeroScene() {
   return (
     <div className="w-full h-screen relative">
-      <Suspense fallback={<LoadingFallback />}>
+      <Suspense fallback={null}>
         <Canvas
           gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
           dpr={[1, 1.25]}

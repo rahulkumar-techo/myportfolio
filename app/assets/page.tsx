@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { ArrowLeft, Download, FileImage, FileText, FolderOpen, Loader2 } from 'lucide-react';
+import { ArrowLeft, Download, FileImage, FileText, FolderOpen } from 'lucide-react';
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import Footer from '@/components/footer';
@@ -102,8 +102,8 @@ export default function AssetsPage() {
           </motion.p>
 
           {isLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="rounded-2xl p-8 text-center text-muted-foreground glass-card">
+              Loading assets...
             </div>
           ) : error ? (
             <div className="rounded-2xl p-8 text-center text-muted-foreground glass-card">

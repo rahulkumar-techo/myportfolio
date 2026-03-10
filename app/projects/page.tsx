@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import { motion } from 'framer-motion';
-import { Folder, ExternalLink, Github, ArrowRight, Filter, ArrowLeft, Loader2 } from 'lucide-react';
+import { Folder, ExternalLink, Github, ArrowRight, Filter, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import Footer from '@/components/footer';
 import { useProjects } from '@/hooks/useProjects';
@@ -215,8 +215,8 @@ export default function ProjectsPage() {
 
           {/* Projects Grid */}
           {isLoading ? (
-            <div className="flex items-center justify-center py-16">
-              <Loader2 className="w-8 h-8 animate-spin text-primary" />
+            <div className="glass-card rounded-2xl p-8 text-center text-muted-foreground">
+              Loading projects...
             </div>
           ) : error ? (
             <div className="glass-card rounded-2xl p-8 text-center text-muted-foreground">

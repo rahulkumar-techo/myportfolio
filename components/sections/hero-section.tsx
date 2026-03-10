@@ -9,14 +9,7 @@ import Link from 'next/link';
 
 const HeroScene = dynamic(() => import('@/components/three/hero-scene'), {
   ssr: false,
-  loading: () => (
-    <div className="w-full h-screen flex items-center justify-center bg-background">
-      <div className="flex flex-col items-center gap-4">
-        <div className="w-16 h-16 border-4 border-primary/30 border-t-primary rounded-full animate-spin" />
-        <p className="text-primary text-sm font-mono">Initializing 3D Environment...</p>
-      </div>
-    </div>
-  ),
+  loading: () => <div className="h-full w-full bg-background" />,
 });
 
 export default function HeroSection() {
