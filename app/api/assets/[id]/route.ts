@@ -30,6 +30,7 @@ function uploadToCloudinary(file: File, originalName: string) {
     public_id: string
     bytes: number
   }>(async (resolve, reject) => {
+    cloudinary.config()
     const buffer = Buffer.from(await file.arrayBuffer())
     const publicId = buildPublicId(originalName)
     const stream = cloudinary.uploader.upload_stream(
@@ -63,6 +64,7 @@ async function destroyCloudinaryAsset(fileId?: string) {
     return
   }
 
+  cloudinary.config()
   await Promise.allSettled([
     cloudinary.uploader.destroy(fileId, { resource_type: "image", invalidate: true }),
     cloudinary.uploader.destroy(fileId, { resource_type: "raw", invalidate: true }),

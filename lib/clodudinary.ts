@@ -1,16 +1,32 @@
-import { v2 as cloudinary } from 'cloudinary';
-import "dotenv/config";
+import { v2 as cloudinary } from "cloudinary"
 
-if( !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET)
-    throw new Error("Missing Cloudinary configuration");
+let configured = false
 
-cloudinary.config({
-    cloud_name: 'dxefgwzgz',
-    api_key: process.env.CLOUDINARY_API_KEY,
-    api_secret: process.env.CLOUDINARY_API_SECRET,
-    secure: true,
-    
-});
+function ensureConfigured() {
+  if (configured) {
+    return
+  }
 
-export default cloudinary;
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME
+  const apiKey = process.env.CLOUDINARY_API_KEY
+  const apiSecret = process.env.CLOUDINARY_API_SECRET
+
+  if (!cloudName || !apiKey || !apiSecret) {
+    throw new Error("Missing Cloudinary configuration")
+  }
+
+  cloudinary.config({
+    cloud_name: cloudName,
+    api_key: apiKey,
+    api_secret: apiSecret,
+    secure: true
+  })
+
+  configured = true
+}
+
+export default {
+  uploader: cloudinary.uploader,
+  config: ensureConfigured
+}
 
