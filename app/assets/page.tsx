@@ -19,6 +19,19 @@ function assetIcon(asset: AssetItem) {
   return FileText;
 }
 
+function buildDownloadUrl(fileUrl: string) {
+  const marker = '/upload/';
+  const index = fileUrl.indexOf(marker);
+
+  if (index === -1) {
+    return fileUrl;
+  }
+
+  const transform = 'fl_attachment';
+
+  return `${fileUrl.slice(0, index + marker.length)}${transform}/${fileUrl.slice(index + marker.length)}`;
+}
+
 export default function AssetsPage() {
   const { assets, isLoading, error } = usePublicAssets();
   const [activeCategory, setActiveCategory] = useState<'all' | AssetItem['category']>('all');
@@ -117,6 +130,7 @@ export default function AssetsPage() {
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {filteredAssets.map((asset, index) => {
                 const Icon = assetIcon(asset);
+                const downloadUrl = buildDownloadUrl(asset.fileUrl);
 
                 return (
                   <motion.div
@@ -144,7 +158,7 @@ export default function AssetsPage() {
 
                       <div className="mt-auto">
                         <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                          <a href={asset.fileUrl} download={asset.originalName}>
+                          <a href={downloadUrl} download={asset.originalName} rel="noopener">
                             <Download className="mr-2 h-4 w-4" />
                             Download
                           </a>
