@@ -3,7 +3,7 @@
  */
 
 import { Queue, DefaultJobOptions } from "bullmq";
-import { redisConnection } from "./redis";
+import { getRedisConnection } from "./redis";
 
 const defaultJobOptions: DefaultJobOptions = {
   attempts: 3,
@@ -16,7 +16,7 @@ const defaultJobOptions: DefaultJobOptions = {
 };
 
 export const emailQueue = new Queue("email-queue", {
-  connection: redisConnection as any,
+  connection: getRedisConnection() as any,
   defaultJobOptions
 });
 

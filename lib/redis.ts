@@ -1,12 +1,19 @@
 import Redis from "ioredis";
 import "dotenv/config";
 
-const redisUrl = process.env.REDIS_URL;
+let cached: Redis | null = null;
 
-if (!redisUrl) {
-  throw new Error("REDIS_URL is not set");
+export function getRedisConnection() {
+  if (cached) return cached;
+
+  const redisUrl = process.env.REDIS_URL;
+  if (!redisUrl) {
+    throw new Error("REDIS_URL is not set");
+  }
+
+  cached = new Redis(redisUrl, {
+    maxRetriesPerRequest: null,
+  });
+
+  return cached;
 }
-
-export const redisConnection = new Redis(redisUrl, {
-  maxRetriesPerRequest: null,
-});

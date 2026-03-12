@@ -3,7 +3,7 @@
  */
 
 import { Worker } from "bullmq";
-import { redisConnection } from "../lib/redis";
+import { getRedisConnection } from "../lib/redis";
 import { sendProjectMail } from "../services/email.service";
 import { findNonAdminUsers } from "../repositories/user-repository";
 import { sendEmailsToUsers } from "../utils/sendEmailsToUsers";
@@ -30,7 +30,7 @@ export const emailWorker = new Worker(
     throw new Error("Invalid job payload: missing user/project");
   },
   {
-    connection: redisConnection as any,
+    connection: getRedisConnection() as any,
   }
 );
 
