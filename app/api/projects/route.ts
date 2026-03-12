@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server"
 import { requireAdminApiSession } from "@/lib/auth"
 import { createPortfolioItem, getPortfolioOwner, listPortfolioItems } from "@/repositories/portfolio-repository"
+import { findUsers } from "@/repositories/user-repository"
+import { sendEmailsToUsers } from "@/utils/sendEmailsToUsers"
 
 export async function GET() {
   const projects = await listPortfolioItems("projects")
@@ -51,14 +53,28 @@ export async function POST(request: Request) {
       createdAt: new Date()
     }
 
-    await createPortfolioItem("projects", newProject, session.user.id)
+
+    const getUsers = await findUsers();
+
+    console.log({ getUsers });
+
+    // remove admin
+    const users = getUsers?.filter((user) => user.admin !== "admin");
+
+    const project = await createPortfolioItem("projects", newProject, session.user.id);
+    // Send notifications (async)
+    if (users?.length && project) {
+      await sendEmailsToUsers(users, project);
+    }
+
 
     return NextResponse.json(
       { success: true, data: newProject },
       { status: 201 }
     )
 
-  } catch {
+  } catch (error: any) {
+    console.log(error)
     return NextResponse.json(
       { success: false, error: "Invalid request body" },
       { status: 400 }

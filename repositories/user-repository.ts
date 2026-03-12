@@ -54,6 +54,10 @@ export async function findUserById(id: string) {
   await connectDB()
   return UserModel.findById(id)
 }
+export async function findUsers() {
+  await connectDB()
+  return UserModel.find();
+}
 
 export async function findFirstAdmin() {
   await connectDB()
