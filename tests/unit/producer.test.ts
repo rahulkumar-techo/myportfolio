@@ -15,7 +15,7 @@ jest.mock("bullmq", () => {
 });
 
 jest.mock("@/lib/redis", () => ({
-  redisConnection: {},
+  getRedisConnection: jest.fn(() => ({})),
 }));
 
 describe("lib/producer addJobs", () => {
