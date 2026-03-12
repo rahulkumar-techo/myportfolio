@@ -6,6 +6,8 @@ import { NextResponse } from "next/server"
 import { GET, POST } from "@/app/api/projects/route"
 import { createPortfolioItem, listPortfolioItems } from "@/repositories/portfolio-repository"
 import { requireAdminApiSession } from "@/lib/auth"
+import { findUsers } from "@/repositories/user-repository"
+import { sendEmailsToUsers } from "@/utils/sendEmailsToUsers"
 
 jest.mock("@/repositories/portfolio-repository", () => ({
   createPortfolioItem: jest.fn(),
@@ -16,13 +18,24 @@ jest.mock("@/lib/auth", () => ({
   requireAdminApiSession: jest.fn()
 }))
 
+jest.mock("@/repositories/user-repository", () => ({
+  findUsers: jest.fn()
+}))
+
+jest.mock("@/utils/sendEmailsToUsers", () => ({
+  sendEmailsToUsers: jest.fn()
+}))
+
 const mockedCreatePortfolioItem = jest.mocked(createPortfolioItem)
 const mockedListPortfolioItems = jest.mocked(listPortfolioItems)
 const mockedRequireAdminApiSession = jest.mocked(requireAdminApiSession)
+const mockedFindUsers = jest.mocked(findUsers)
+const mockedSendEmailsToUsers = jest.mocked(sendEmailsToUsers)
 
 describe("/api/projects route", () => {
   beforeEach(() => {
     jest.clearAllMocks()
+    mockedFindUsers.mockResolvedValue([])
   })
 
   it("returns all projects for GET requests", async () => {
@@ -115,6 +128,8 @@ describe("/api/projects route", () => {
       }),
       "admin-1"
     )
+    expect(mockedFindUsers).toHaveBeenCalled()
+    expect(mockedSendEmailsToUsers).not.toHaveBeenCalled()
   })
 
   it("returns 400 for malformed JSON request bodies", async () => {
