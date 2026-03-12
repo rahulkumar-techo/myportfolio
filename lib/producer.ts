@@ -15,10 +15,18 @@ const defaultJobOptions: DefaultJobOptions = {
   removeOnFail: 100
 };
 
-export const emailQueue = new Queue("email-queue", {
-  connection: getRedisConnection() as any,
-  defaultJobOptions
-});
+let cachedQueue: Queue | null = null;
+
+function getEmailQueue() {
+  if (!cachedQueue) {
+    cachedQueue = new Queue("email-queue", {
+      connection: getRedisConnection() as any,
+      defaultJobOptions
+    });
+  }
+
+  return cachedQueue;
+}
 
 export async function addEmailJobs(users: any[], project: any) {
   if (!users?.length) return [];
@@ -27,10 +35,10 @@ export async function addEmailJobs(users: any[], project: any) {
     data: { user, project },
   }));
 
-  return emailQueue.addBulk(jobs);
+  return getEmailQueue().addBulk(jobs);
 }
 
 // Faster: enqueue a single job; worker will fetch users.
 export async function addProjectEmailJob(project: any) {
-  return emailQueue.add("send-project-email", { project });
+  return getEmailQueue().add("send-project-email", { project });
 }
