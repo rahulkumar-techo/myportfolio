@@ -6,8 +6,7 @@ import { NextResponse } from "next/server"
 import { GET, POST } from "@/app/api/projects/route"
 import { createPortfolioItem, listPortfolioItems } from "@/repositories/portfolio-repository"
 import { requireAdminApiSession } from "@/lib/auth"
-import { findUsers } from "@/repositories/user-repository"
-import { sendEmailsToUsers } from "@/utils/sendEmailsToUsers"
+import { addProjectEmailJob } from "@/lib/producer"
 
 jest.mock("@/repositories/portfolio-repository", () => ({
   createPortfolioItem: jest.fn(),
@@ -18,24 +17,18 @@ jest.mock("@/lib/auth", () => ({
   requireAdminApiSession: jest.fn()
 }))
 
-jest.mock("@/repositories/user-repository", () => ({
-  findUsers: jest.fn()
-}))
-
-jest.mock("@/utils/sendEmailsToUsers", () => ({
-  sendEmailsToUsers: jest.fn()
+jest.mock("@/lib/producer", () => ({
+  addProjectEmailJob: jest.fn()
 }))
 
 const mockedCreatePortfolioItem = jest.mocked(createPortfolioItem)
 const mockedListPortfolioItems = jest.mocked(listPortfolioItems)
 const mockedRequireAdminApiSession = jest.mocked(requireAdminApiSession)
-const mockedFindUsers = jest.mocked(findUsers)
-const mockedSendEmailsToUsers = jest.mocked(sendEmailsToUsers)
+const mockedAddProjectEmailJob = jest.mocked(addProjectEmailJob)
 
 describe("/api/projects route", () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    mockedFindUsers.mockResolvedValue([])
   })
 
   it("returns all projects for GET requests", async () => {
@@ -104,6 +97,14 @@ describe("/api/projects route", () => {
       response: null
     } as any)
 
+    mockedCreatePortfolioItem.mockResolvedValue({
+      id: "p1",
+      title: "Portfolio",
+      description: "A personal site",
+      category: "Web"
+    } as any)
+    mockedAddProjectEmailJob.mockResolvedValue(undefined as any)
+
     const request = new Request("http://localhost/api/projects", {
       method: "POST",
       body: JSON.stringify({
@@ -128,8 +129,39 @@ describe("/api/projects route", () => {
       }),
       "admin-1"
     )
-    expect(mockedFindUsers).toHaveBeenCalled()
-    expect(mockedSendEmailsToUsers).not.toHaveBeenCalled()
+    expect(mockedAddProjectEmailJob).toHaveBeenCalled()
+  })
+
+  it("returns response without waiting for email job enqueue", async () => {
+    mockedRequireAdminApiSession.mockResolvedValue({
+      session: { user: { id: "admin-1" } },
+      response: null
+    } as any)
+
+    mockedCreatePortfolioItem.mockResolvedValue({
+      id: "p1",
+      title: "Portfolio",
+      description: "A personal site",
+      category: "Web"
+    } as any)
+
+    mockedAddProjectEmailJob.mockReturnValue(new Promise(() => {}) as any)
+
+    const request = new Request("http://localhost/api/projects", {
+      method: "POST",
+      body: JSON.stringify({
+        title: "Portfolio",
+        description: "A personal site",
+        category: "Web"
+      })
+    })
+
+    const response = await POST(request)
+    const body = await response.json()
+
+    expect(response.status).toBe(201)
+    expect(body.success).toBe(true)
+    expect(mockedAddProjectEmailJob).toHaveBeenCalled()
   })
 
   it("returns 400 for malformed JSON request bodies", async () => {

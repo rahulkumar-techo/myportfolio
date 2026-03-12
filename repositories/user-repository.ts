@@ -59,6 +59,11 @@ export async function findUsers() {
   return UserModel.find();
 }
 
+export async function findNonAdminUsers() {
+  await connectDB()
+  return UserModel.find({ role: { $ne: "admin" } });
+}
+
 export async function findFirstAdmin() {
   await connectDB()
   return UserModel.findOne({ role: "admin" }).sort({ createdAt: 1 })

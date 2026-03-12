@@ -2,9 +2,32 @@
 
 import { sendProjectMail } from "@/services/email.service";
 
-export async function sendEmailsToUsers(users: any[], project: any) {
+type EmailUser = {
+  name: string;
+  email: string;
+  image?: string;
+};
+
+type EmailProject = {
+  title: string;
+  description: string;
+  slug?: string;
+  id?: string;
+};
+
+function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export async function sendEmailsToUsers(
+  users: EmailUser[],
+  project: EmailProject,
+  delayMs = 400
+) {
+  if (!users?.length) return;
 
   for (const user of users) {
+    if (!user?.email || !user?.name) continue;
 
     await sendProjectMail({
       user: {
@@ -15,12 +38,12 @@ export async function sendEmailsToUsers(users: any[], project: any) {
       project: {
         title: project.title,
         description: project.description,
-        slug: project.id||project.slug,
+        slug: project.id as string,
       },
     });
 
-    // delay to avoid Gmail blocking
-    await new Promise((r) => setTimeout(r, 800));
+    if (delayMs > 0) {
+      await sleep(delayMs);
+    }
   }
-
 }

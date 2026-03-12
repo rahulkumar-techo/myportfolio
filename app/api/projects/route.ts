@@ -1,8 +1,7 @@
 import { NextResponse } from "next/server"
 import { requireAdminApiSession } from "@/lib/auth"
 import { createPortfolioItem, getPortfolioOwner, listPortfolioItems } from "@/repositories/portfolio-repository"
-import { findUsers } from "@/repositories/user-repository"
-import { sendEmailsToUsers } from "@/utils/sendEmailsToUsers"
+import { addProjectEmailJob } from "@/lib/producer"
 
 export async function GET() {
   const projects = await listPortfolioItems("projects")
@@ -54,17 +53,24 @@ export async function POST(request: Request) {
     }
 
 
-    const getUsers = await findUsers();
-
-    console.log({ getUsers });
-
-    // remove admin
-    const users = getUsers?.filter((user) => user.admin !== "admin");
-
+    const startMs = Date.now();
     const project = await createPortfolioItem("projects", newProject, session.user.id);
-    // Send notifications (async)
-    if (users?.length && project) {
-      await sendEmailsToUsers(users, project);
+    const createMs = Date.now() - startMs;
+    console.log("createPortfolioItem ms:", createMs);
+
+    // Send notifications in background (do not block the response)
+    if (project) {
+      const enqueueStart = Date.now();
+      const enqueuePromise = addProjectEmailJob(project);
+      if (enqueuePromise && typeof (enqueuePromise as Promise<unknown>).then === "function") {
+        void (enqueuePromise as Promise<unknown>)
+          .then(() => {
+            console.log("enqueue email job ms:", Date.now() - enqueueStart);
+          })
+          .catch((err) => {
+            console.error("Failed to enqueue project email job:", err);
+          });
+      }
     }
 
 
