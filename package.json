@@ -4,15 +4,15 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "next dev",
+    "dev": "concurrently \"next dev\" \"pnpm worker\"",
     "build": "next build",
-    "start": "next start",
+    "start": "concurrently \"next start\" \"pnpm worker\"",
     "lint": "eslint .",
     "test": "jest --runInBand --passWithNoTests --forceExit",
     "test:watch": "jest --watch",
     "test:ci": "jest --ci --runInBand --passWithNoTests --forceExit",
-    "typecheck": "tsc --noEmit"
-
+    "typecheck": "tsc --noEmit",
+    "worker": "tsx workers/email.worker.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
@@ -94,6 +94,7 @@
     "@types/react": "19.2.14",
     "@types/react-dom": "19.2.3",
     "@types/three": "^0.172.0",
+    "concurrently": "^9.2.1",
     "eslint": "^9.22.0",
     "eslint-config-next": "16.1.6",
     "jest": "^30.0.5",

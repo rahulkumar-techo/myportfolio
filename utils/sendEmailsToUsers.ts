@@ -1,6 +1,5 @@
-// Send email to all users
-
-import { sendProjectMail } from "@/services/email.service";
+// Enqueue email job for all users
+import { enqueueProjectEmails } from "@/lib/queue/email.queue";
 
 type EmailUser = {
   name: string;
@@ -15,35 +14,9 @@ type EmailProject = {
   id?: string;
 };
 
-function sleep(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
-}
-
 export async function sendEmailsToUsers(
   users: EmailUser[],
-  project: EmailProject,
-  delayMs = 400
+  project: EmailProject
 ) {
-  if (!users?.length) return;
-
-  for (const user of users) {
-    if (!user?.email || !user?.name) continue;
-
-    await sendProjectMail({
-      user: {
-        name: user.name,
-        email: user.email,
-        image: user.image,
-      },
-      project: {
-        title: project.title,
-        description: project.description,
-        slug: project.id as string,
-      },
-    });
-
-    if (delayMs > 0) {
-      await sleep(delayMs);
-    }
-  }
+  await enqueueProjectEmails(users, project);
 }

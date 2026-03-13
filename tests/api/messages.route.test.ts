@@ -41,6 +41,7 @@ describe("/api/messages route", () => {
     const body = await response.json()
 
     expect(response.status).toBe(200)
+    expect(mockedListPortfolioItems).toHaveBeenCalledWith("contactMessages", "admin-1")
     expect(body.meta.total).toBe(2)
     expect(body.meta.unread).toBe(1)
     expect(body.data.map((message: { id: string }) => message.id)).toEqual(["new", "old"])
@@ -57,6 +58,23 @@ describe("/api/messages route", () => {
 
     expect(response.status).toBe(401)
     expect(body.error).toBe("Unauthorized")
+  })
+
+  it("returns empty metadata when no messages exist", async () => {
+    mockedRequireAdminApiSession.mockResolvedValue({
+      session: { user: { id: "admin-1" } },
+      response: null
+    } as any)
+
+    mockedListPortfolioItems.mockResolvedValue([])
+
+    const response = await GET()
+    const body = await response.json()
+
+    expect(response.status).toBe(200)
+    expect(body.meta.total).toBe(0)
+    expect(body.meta.unread).toBe(0)
+    expect(body.data).toEqual([])
   })
 
   it("creates a public message through POST", async () => {
@@ -81,7 +99,12 @@ describe("/api/messages route", () => {
       expect.objectContaining({
         subject: "Need help",
         archived: false,
-        read: false
+        read: false,
+        name: "Visitor",
+        email: "visitor@example.com",
+        message: "Can we collaborate?",
+        createdAt: expect.any(Date),
+        id: expect.any(String)
       })
     )
   })
