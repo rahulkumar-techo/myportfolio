@@ -1,26 +1,12 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import { Edit, ExternalLink, Github, Loader2, Plus, Star, StarOff, Trash2 } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Switch } from '@/components/ui/switch'
-import { Textarea } from '@/components/ui/textarea'
+import { useEffect, useMemo, useState } from 'react'
+import { Loader2 } from 'lucide-react'
 import { useProjects } from '@/hooks/useProjects'
-import type { Project } from '@/lib/types'
-
-type ProjectFormState = {
-  title: string
-  description: string
-  longDescription: string
-  category: string
-  techStack: string
-  imageUrl: string
-  liveUrl: string
-  githubUrl: string
-  featured: boolean
-}
+import type { CloudinaryImage, Project } from '@/lib/types'
+import { ProjectForm, ProjectFormState } from '@/app/admin/projects/components/project-form'
+import { ProjectsHeader } from '@/app/admin/projects/components/projects-header'
+import { ProjectsList } from '@/app/admin/projects/components/projects-list'
 
 const initialForm: ProjectFormState = {
   title: '',
@@ -28,7 +14,8 @@ const initialForm: ProjectFormState = {
   longDescription: '',
   category: '',
   techStack: '',
-  imageUrl: '',
+  coverImage: null,
+  galleryImages: [],
   liveUrl: '',
   githubUrl: '',
   featured: false
@@ -43,11 +30,40 @@ export default function AdminProjectsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
   const [deleteId, setDeleteId] = useState<string | null>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  const [imageUrlInput, setImageUrlInput] = useState('')
+  const [galleryUrlInput, setGalleryUrlInput] = useState('')
+  const [tempUploads, setTempUploads] = useState<string[]>([])
 
   const categories = useMemo<string[]>(
     () => ['All', ...Array.from(new Set(projects.map((project: Project) => project.category).filter(Boolean) as string[]))],
     [projects]
   )
+
+  useEffect(() => {
+    void fetch('/api/projects/cleanup-temp', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ttlMs: 2 * 60 * 60 * 1000 })
+    })
+  }, [])
+
+
+  useEffect(() => {
+    const handleUnload = () => {
+      if (tempUploads.length === 0) {
+        return
+      }
+
+      const payload = JSON.stringify({ publicIds: tempUploads })
+      navigator.sendBeacon('/api/projects/cleanup-temp', payload)
+    }
+
+    window.addEventListener('beforeunload', handleUnload)
+    return () => window.removeEventListener('beforeunload', handleUnload)
+  }, [tempUploads])
 
   const filteredProjects = projects.filter((project: Project) => {
     const query = searchQuery.toLowerCase()
@@ -60,10 +76,34 @@ export default function AdminProjectsPage() {
     return matchesSearch && matchesCategory
   })
 
-  const resetForm = () => {
+  const cleanupTempUploads = async () => {
+    if (tempUploads.length === 0) {
+      return
+    }
+
+    await Promise.allSettled(
+      tempUploads.map((publicId) =>
+        fetch('/api/projects/upload', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ publicId })
+        })
+      )
+    )
+
+    setTempUploads([])
+  }
+
+  const resetForm = async (options?: { cleanupTemp?: boolean }) => {
+    if (options?.cleanupTemp) {
+      await cleanupTempUploads()
+    }
     setEditingProject(null)
     setFormData(initialForm)
     setSubmitError(null)
+    setUploadError(null)
+    setImageUrlInput('')
+    setGalleryUrlInput('')
   }
 
   const startEdit = (project: Project) => {
@@ -75,11 +115,150 @@ export default function AdminProjectsPage() {
       longDescription: project.longDescription || '',
       category: project.category,
       techStack: project.techStack.join(', '),
-      imageUrl: project.imageUrl || '',
+      coverImage: project.coverImage ?? null,
+      galleryImages: project.galleryImages ?? [],
       liveUrl: project.liveUrl || '',
       githubUrl: project.githubUrl || '',
       featured: project.featured
     })
+  }
+
+  const uploadProjectImage = async (file: File) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    const response = await fetch('/api/projects/upload', {
+      method: 'POST',
+      body: formData
+    })
+
+    const payload = await response.json()
+
+    if (!response.ok || !payload?.success) {
+      throw new Error(payload?.error ?? 'Upload failed.')
+    }
+
+    return payload.data as CloudinaryImage
+  }
+
+  const deleteProjectImage = async (publicId: string) => {
+    await fetch('/api/projects/upload', {
+      method: 'DELETE',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ publicId })
+    })
+  }
+
+  const extractCloudinaryPublicId = (url: string) => {
+    const match = url.match(/\/upload\/(?:v\d+\/)?(.+)\.[a-zA-Z0-9]+(?:\?.*)?$/)
+    return match?.[1] ?? null
+  }
+
+  const handleImageUpload = async (file: File | null) => {
+    if (!file) {
+      return
+    }
+
+    setIsUploadingImage(true)
+    setUploadError(null)
+
+    try {
+      const uploaded = await uploadProjectImage(file)
+      if (formData.coverImage?.publicId && tempUploads.includes(formData.coverImage.publicId)) {
+        await deleteProjectImage(formData.coverImage.publicId)
+        setTempUploads((current) => current.filter((id) => id !== formData.coverImage?.publicId))
+      }
+      if (uploaded.publicId) {
+        setTempUploads((current) => [...current, uploaded.publicId as string])
+      }
+      setFormData((current) => ({ ...current, coverImage: uploaded }))
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Unable to upload image.')
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
+
+  const handleGalleryUpload = async (files: FileList | null) => {
+    if (!files || files.length === 0) {
+      return
+    }
+
+    const remainingSlots = 5 - formData.galleryImages.length
+    if (remainingSlots <= 0) {
+      setUploadError('Gallery limit reached (max 5 images).')
+      return
+    }
+
+    setIsUploadingGallery(true)
+    setUploadError(null)
+
+    try {
+      const uploads = Array.from(files).slice(0, remainingSlots)
+      const uploadedImages: CloudinaryImage[] = []
+
+      for (const file of uploads) {
+        const uploaded = await uploadProjectImage(file)
+        if (uploaded.publicId) {
+          setTempUploads((current) => [...current, uploaded.publicId as string])
+        }
+        uploadedImages.push(uploaded)
+      }
+
+      setFormData((current) => ({
+        ...current,
+        galleryImages: [...current.galleryImages, ...uploadedImages].slice(0, 5)
+      }))
+    } catch (error) {
+      setUploadError(error instanceof Error ? error.message : 'Unable to upload gallery images.')
+    } finally {
+      setIsUploadingGallery(false)
+    }
+  }
+
+  const addImageUrl = () => {
+    const url = imageUrlInput.trim()
+    if (!url) {
+      return
+    }
+    if (!url.includes('res.cloudinary.com')) {
+      setUploadError('Please use a Cloudinary image URL for the cover image.')
+      return
+    }
+    const publicId = extractCloudinaryPublicId(url)
+    setFormData((current) => ({ ...current, coverImage: { url, publicId: publicId ?? undefined } }))
+    setImageUrlInput('')
+  }
+
+  const addGalleryUrl = () => {
+    const url = galleryUrlInput.trim()
+    if (!url) {
+      return
+    }
+    if (!url.includes('res.cloudinary.com')) {
+      setUploadError('Please use Cloudinary URLs for gallery images.')
+      return
+    }
+    if (formData.galleryImages.length >= 5) {
+      setUploadError('Gallery limit reached (max 5 images).')
+      return
+    }
+    setFormData((current) => ({
+      ...current,
+      galleryImages: [...current.galleryImages, { url }].slice(0, 5)
+    }))
+    setGalleryUrlInput('')
+  }
+
+  const removeGalleryImage = async (index: number) => {
+    const image = formData.galleryImages[index]
+    if (image?.publicId && tempUploads.includes(image.publicId)) {
+      await deleteProjectImage(image.publicId)
+      setTempUploads((current) => current.filter((id) => id !== image.publicId))
+    }
+    setFormData((current) => ({
+      ...current,
+      galleryImages: current.galleryImages.filter((_, imageIndex) => imageIndex !== index)
+    }))
   }
 
   const handleSubmit = async (event: React.FormEvent) => {
@@ -88,6 +267,15 @@ export default function AdminProjectsPage() {
     setSubmitError(null)
 
     try {
+      if (formData.galleryImages.length > 5) {
+        setSubmitError('Gallery images must be 5 or fewer.')
+        return
+      }
+      if (!formData.coverImage?.url) {
+        setSubmitError('Cover image is required.')
+        return
+      }
+
       const payload = {
         ...formData,
         techStack: formData.techStack.split(',').map((item) => item.trim()).filter(Boolean)
@@ -99,7 +287,8 @@ export default function AdminProjectsPage() {
         await createProject(payload)
       }
 
-      resetForm()
+      setTempUploads([])
+      await resetForm()
     } catch {
       setSubmitError('Unable to save the project right now.')
     } finally {
@@ -138,227 +327,53 @@ export default function AdminProjectsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Projects</h1>
-          <p className="text-muted-foreground">Create, edit, feature, and remove portfolio projects.</p>
-        </div>
+    <div className="flex h-full min-h-0 flex-col space-y-6 overflow-hidden">
+      <ProjectsHeader
+        searchQuery={searchQuery}
+        onSearchChange={setSearchQuery}
+        selectedCategory={selectedCategory}
+        onCategoryChange={setSelectedCategory}
+        categories={categories}
+      />
 
-        <div className="flex flex-col gap-3 sm:flex-row">
-          <Input
-            value={searchQuery}
-            onChange={(event) => setSearchQuery(event.target.value)}
-            placeholder="Search projects"
-            className="sm:w-64"
+      <div className="grid flex-1 min-h-0 gap-6 overflow-hidden xl:grid-cols-[420px_minmax(0,1fr)]">
+        <ProjectForm
+          formData={formData}
+          setFormData={setFormData}
+          editingProject={editingProject}
+          isSubmitting={isSubmitting}
+          submitError={submitError}
+          uploadError={uploadError}
+          isUploadingImage={isUploadingImage}
+          isUploadingGallery={isUploadingGallery}
+          imageUrlInput={imageUrlInput}
+          setImageUrlInput={setImageUrlInput}
+          galleryUrlInput={galleryUrlInput}
+          setGalleryUrlInput={setGalleryUrlInput}
+          onSubmit={handleSubmit}
+          onCancel={() => void resetForm({ cleanupTemp: true })}
+          onCoverUpload={handleImageUpload}
+          onGalleryUpload={handleGalleryUpload}
+          onAddCoverUrl={addImageUrl}
+          onAddGalleryUrl={addGalleryUrl}
+          onRemoveCover={async () => {
+            if (formData.coverImage?.publicId && tempUploads.includes(formData.coverImage.publicId)) {
+              await deleteProjectImage(formData.coverImage.publicId)
+              setTempUploads((current) => current.filter((id) => id !== formData.coverImage?.publicId))
+            }
+            setFormData((current) => ({ ...current, coverImage: null }))
+          }}
+          onRemoveGallery={(index) => void removeGalleryImage(index)}
+        />
+
+        <div className="min-h-0 overflow-y-auto admin-scroll">
+          <ProjectsList
+            projects={filteredProjects}
+            onToggleFeatured={(project) => void toggleFeatured(project)}
+            onEdit={startEdit}
+            onDelete={(projectId) => void handleDelete(projectId)}
+            deleteId={deleteId}
           />
-
-          <select
-            value={selectedCategory}
-            onChange={(event) => setSelectedCategory(event.target.value)}
-            className="h-10 rounded-md border border-input bg-background px-3 text-sm"
-          >
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
-              </option>
-            ))}
-          </select>  
-        </div>
-      </div>
-
-      <div className="grid gap-6 xl:grid-cols-[420px_minmax(0,1fr)]">
-        <form onSubmit={handleSubmit} className="glass-card rounded-2xl p-6 space-y-5">
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-foreground">
-                {editingProject ? 'Edit Project' : 'Add Project'}
-              </h2>
-              <p className="text-sm text-muted-foreground">
-                {editingProject ? 'Update the selected project.' : 'Create a new portfolio project.'}
-              </p>
-            </div>
-
-            {editingProject ? (
-              <Button type="button" variant="ghost" onClick={resetForm}>
-                Cancel
-              </Button>
-            ) : null}
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="project-title">Title</Label>
-            <Input
-              id="project-title"
-              value={formData.title}
-              onChange={(event) => setFormData((current) => ({ ...current, title: event.target.value }))}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="project-description">Short Description</Label>
-            <Textarea
-              id="project-description"
-              value={formData.description}
-              onChange={(event) => setFormData((current) => ({ ...current, description: event.target.value }))}
-              required
-            />
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="project-long-description">Long Description</Label>
-            <Textarea
-              id="project-long-description"
-              value={formData.longDescription}
-              onChange={(event) => setFormData((current) => ({ ...current, longDescription: event.target.value }))}
-              rows={5}
-            />
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="project-category">Category</Label>
-              <Input
-                id="project-category"
-                value={formData.category}
-                onChange={(event) => setFormData((current) => ({ ...current, category: event.target.value }))}
-                required
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="project-tech-stack">Tech Stack</Label>
-              <Input
-                id="project-tech-stack"
-                value={formData.techStack}
-                onChange={(event) => setFormData((current) => ({ ...current, techStack: event.target.value }))}
-                placeholder="Next.js, MongoDB, Three.js"
-              />
-            </div>
-          </div>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div className="space-y-2">
-              <Label htmlFor="project-image-url">Image URL</Label>
-              <Input
-                id="project-image-url"
-                value={formData.imageUrl}
-                onChange={(event) => setFormData((current) => ({ ...current, imageUrl: event.target.value }))}
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="project-live-url">Live URL</Label>
-              <Input
-                id="project-live-url"
-                value={formData.liveUrl}
-                onChange={(event) => setFormData((current) => ({ ...current, liveUrl: event.target.value }))}
-              />
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="project-github-url">GitHub URL</Label>
-            <Input
-              id="project-github-url"
-              value={formData.githubUrl}
-              onChange={(event) => setFormData((current) => ({ ...current, githubUrl: event.target.value }))}
-            />
-          </div>
-
-          <div className="flex items-center justify-between rounded-lg border border-border/60 px-4 py-3">
-            <div>
-              <p className="text-sm font-medium text-foreground">Featured project</p>
-              <p className="text-xs text-muted-foreground">Show this project in featured sections.</p>
-            </div>
-
-            <Switch
-              checked={formData.featured}
-              onCheckedChange={(checked) => setFormData((current) => ({ ...current, featured: Boolean(checked) }))}
-            />
-          </div>
-
-          {submitError ? <p className="text-sm text-destructive">{submitError}</p> : null}
-
-          <Button type="submit" disabled={isSubmitting} className="w-full">
-            {isSubmitting ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Plus className="mr-2 h-4 w-4" />}
-            {editingProject ? 'Update Project' : 'Create Project'}
-          </Button>
-        </form>
-
-        <div className="space-y-4">
-          {filteredProjects.length === 0 ? (
-            <div className="glass-card rounded-2xl p-8 text-sm text-muted-foreground">
-              No projects match the current filter.
-            </div>
-          ) : null}
-
-          {filteredProjects.map((project: Project) => (
-            <div key={project.id} className="glass-card rounded-2xl p-5">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-                <div className="space-y-3">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h3 className="text-lg font-semibold text-foreground">{project.title}</h3>
-                    <span className="rounded-full bg-secondary px-2 py-1 text-xs text-muted-foreground">
-                      {project.category}
-                    </span>
-                    {project.featured ? (
-                      <span className="rounded-full bg-primary/15 px-2 py-1 text-xs text-primary">Featured</span>
-                    ) : null}
-                  </div>
-
-                  <p className="text-sm text-muted-foreground">{project.description}</p>
-
-                  <div className="flex flex-wrap gap-2">
-                    {project.techStack.map((tech) => (
-                      <span key={tech} className="rounded-full bg-secondary px-2 py-1 text-xs text-foreground">
-                        {tech}
-                      </span>
-                    ))}
-                  </div>
-
-                  <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
-                    {project.liveUrl ? (
-                      <a href={project.liveUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-primary">
-                        <ExternalLink className="h-4 w-4" />
-                        Live
-                      </a>
-                    ) : null}
-
-                    {project.githubUrl ? (
-                      <a href={project.githubUrl} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1 hover:text-primary">
-                        <Github className="h-4 w-4" />
-                        GitHub
-                      </a>
-                    ) : null}
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <Button type="button" variant="outline" size="icon" onClick={() => void toggleFeatured(project)}>
-                    {project.featured ? <Star className="h-4 w-4 text-yellow-500" /> : <StarOff className="h-4 w-4" />}
-                  </Button>
-                  <Button type="button" variant="outline" size="icon" onClick={() => startEdit(project)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="icon"
-                    disabled={deleteId === project.id}
-                    onClick={() => void handleDelete(project.id)}
-                  >
-                    {deleteId === project.id ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    )}
-                  </Button>
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </div>

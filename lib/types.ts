@@ -1,5 +1,14 @@
 // Portfolio Data Types
 
+export interface CloudinaryImage {
+  url: string;
+  publicId?: string;
+  format?: string;
+  width?: number;
+  height?: number;
+  bytes?: number;
+}
+
 export interface Project {
   id: string;
   title: string;
@@ -7,8 +16,8 @@ export interface Project {
   slug?: string;
   longDescription?: string;
   techStack: string[];
-  imageUrl: string;
-  galleryImages?: string[];
+  coverImage?: CloudinaryImage | null;
+  galleryImages?: CloudinaryImage[];
   liveUrl?: string;
   githubUrl?: string;
   featured: boolean;
@@ -71,6 +80,13 @@ export interface AssetItem {
   fileType: string;
   size: number;
   uploadedAt: string | Date;
+}
+
+export interface TempProjectUpload {
+  id: string;
+  publicId: string;
+  url: string;
+  createdAt: string | Date;
 }
 
 export interface AnalyticsUser {

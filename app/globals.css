@@ -216,6 +216,20 @@
   background-size: 50px 50px;
 }
 
+.admin-scroll {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.admin-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.admin-body-lock {
+  overflow: hidden;
+}
+
 /* Scanline effect */
 .scanlines::after {
   content: '';

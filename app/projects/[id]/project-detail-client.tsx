@@ -141,7 +141,15 @@ export default function ProjectDetailClient({ projectId, initialProject }: Proje
               className="mb-12"
             >
               <div className="glass-card rounded-2xl overflow-hidden aspect-video flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
-                <Folder className="w-24 h-24 text-primary/30" />
+                {project.coverImage?.url ? (
+                  <img
+                    src={project.coverImage.url}
+                    alt={project.title}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <Folder className="w-24 h-24 text-primary/30" />
+                )}
               </div>
             </motion.div>
 
@@ -203,12 +211,20 @@ export default function ProjectDetailClient({ projectId, initialProject }: Proje
                   <div className="glass-card rounded-2xl p-8">
                     <h2 className="text-2xl font-bold text-foreground mb-4">Gallery</h2>
                     <div className="grid sm:grid-cols-2 gap-4">
-                      {project.galleryImages.map((_, index) => (
+                      {project.galleryImages.map((image, index) => (
                         <div
                           key={index}
                           className="aspect-video rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center"
                         >
-                          <Folder className="w-12 h-12 text-primary/30" />
+                          {image?.url ? (
+                            <img
+                              src={image.url}
+                              alt={`${project.title} gallery ${index + 1}`}
+                              className="h-full w-full rounded-lg object-cover"
+                            />
+                          ) : (
+                            <Folder className="w-12 h-12 text-primary/30" />
+                          )}
                         </div>
                       ))}
                     </div>

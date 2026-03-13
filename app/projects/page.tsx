@@ -27,9 +27,17 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
       <div className="glass-card rounded-2xl overflow-hidden h-full flex flex-col hover:border-primary/30 transition-all duration-300 hover:transform hover:translate-y-[-4px]">
         {/* Project Image */}
         <div className="relative h-56 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <Folder className="w-20 h-20 text-primary/30" />
-          </div>
+          {project.coverImage?.url ? (
+            <img
+              src={project.coverImage.url}
+              alt={project.title}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <Folder className="w-20 h-20 text-primary/30" />
+            </div>
+          )}
           
           {/* Hover Overlay */}
           <div className="absolute inset-0 bg-gradient-to-t from-background via-background/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end justify-center pb-4">

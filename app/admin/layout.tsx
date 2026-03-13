@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -12,8 +12,6 @@ import {
   Mail,
   Settings,
   FolderOpen,
-  Menu,
-  X,
   LogOut,
   User,
 } from 'lucide-react';
@@ -34,9 +32,18 @@ const navItems = [
 
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [sidebarOpen, setSidebarOpen] = useState(false);
   const { logout, status, user } = useAuth();
   const { settings } = useAdminSettings();
+
+  useEffect(() => {
+    if (pathname === '/admin/login' || pathname === '/admin/register') {
+      return;
+    }
+    document.body.classList.add('admin-body-lock');
+    return () => {
+      document.body.classList.remove('admin-body-lock');
+    };
+  }, [pathname]);
 
   // Login page doesn't need the admin layout
   if (pathname === '/admin/login' || pathname === '/admin/register') {
@@ -44,9 +51,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen flex">
+    <div className="h-dvh flex overflow-hidden">
       {/* Sidebar */}
-      <aside className={`fixed lg:static inset-y-0 left-0 z-50 w-64 glass-card border-r border-border/50 transform transition-transform lg:transform-none ${sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}`}>
+      <aside className="w-64 h-full shrink-0 glass-card border-r border-border/50">
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-6 border-b border-border/50">
@@ -69,7 +76,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
+          <nav className="flex-1 p-4 space-y-1 overflow-y-auto admin-scroll">
             {navItems.map((item) => {
               const isActive = pathname === item.href || (item.href !== '/admin' && pathname!.startsWith(item.href));
               return (
@@ -77,10 +84,9 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
                   key={item.href}
                   href={item.href}
                   prefetch={true}
-                  onClick={() => setSidebarOpen(false)}
                   className={`relative flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-150 ${isActive
-                      ? 'bg-primary/20 text-primary'
-                      : 'text-muted-foreground hover:bg-primary/10 hover:text-foreground'
+                    ? 'bg-primary/20 text-primary'
+                    : 'text-muted-foreground hover:bg-primary/10 hover:text-foreground'
                     }`}
                 >
                   {isActive && (
@@ -132,26 +138,11 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {/* Mobile Overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-background/80 backdrop-blur-sm z-40 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen lg:ml-0">
+      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
         {/* Top Bar */}
         <header className="sticky top-0 z-30 glass-card border-b border-border/50 px-6 py-4">
           <div className="flex items-center justify-between">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="lg:hidden p-2 text-foreground hover:bg-primary/10 rounded-lg"
-            >
-              {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-            </button>
-
             <div className="flex items-center gap-4">
               <div className="text-sm text-muted-foreground">
                 <span className="hidden sm:inline">Welcome back, </span>
@@ -162,8 +153,8 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-6 overflow-y-auto overflow-x-hidden">
-          <div className="max-w-7xl mx-auto min-h-full">
+        <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 admin-scroll">
+          <div className="max-w-7xl mx-auto">
             {children}
           </div>
         </main>

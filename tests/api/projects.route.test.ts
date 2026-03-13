@@ -118,6 +118,7 @@ describe("/api/projects route", () => {
         title: "Portfolio",
         description: "A personal site",
         category: "Web",
+        coverImage: { url: "https://res.cloudinary.com/demo/image/upload/sample.jpg" },
         techStack: ["Next.js", "MongoDB"]
       })
     })

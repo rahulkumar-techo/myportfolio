@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { requireAdminApiSession } from "@/lib/auth";
 import { createPortfolioItem, listPortfolioItems } from "@/repositories/portfolio-repository";
+import { removeTempProjectUploadsByPublicIds } from "@/repositories/temp-upload-repository";
 import { sendEmailsToUsers } from "@/utils/sendEmailsToUsers";
 import { findNonAdminUsers } from "@/repositories/user-repository";
 import { slugify } from "@/utils/slugify";
@@ -39,6 +40,48 @@ export async function POST(request: Request) {
       }
     }
 
+    const rawGalleryImages =
+      typeof body.galleryImages === "string"
+        ? (() => {
+            try {
+              return JSON.parse(body.galleryImages)
+            } catch {
+              return []
+            }
+          })()
+        : body.galleryImages
+
+    const galleryImages = Array.isArray(rawGalleryImages)
+      ? rawGalleryImages
+          .map((image: any) => (typeof image === "string" ? { url: image } : image))
+          .filter((image: any) => image && typeof image.url === "string" && image.url.trim().length > 0)
+      : []
+
+    if (galleryImages.length > 5) {
+      return NextResponse.json(
+        { success: false, error: "Gallery images must be 5 or fewer." },
+        { status: 400 }
+      )
+    }
+
+    const rawCoverImage =
+      typeof body.coverImage === "string"
+        ? (() => {
+            try {
+              return JSON.parse(body.coverImage)
+            } catch {
+              return undefined
+            }
+          })()
+        : body.coverImage
+
+    if (!rawCoverImage && !(body.image && typeof body.image.url === "string") && !body.imageUrl) {
+      return NextResponse.json(
+        { success: false, error: "Cover image is required." },
+        { status: 400 }
+      )
+    }
+
     const newProject = {
       id: crypto.randomUUID(),
       title: body.title,
@@ -46,8 +89,14 @@ export async function POST(request: Request) {
       slug: body.slug || slugify(body.title || ""),
       longDescription: body.longDescription || "",
       techStack: body.techStack || [],
-      imageUrl: body.imageUrl || "",
-      galleryImages: body.galleryImages || [],
+      coverImage: rawCoverImage && typeof rawCoverImage.url === "string"
+        ? rawCoverImage
+        : body.image && typeof body.image.url === "string"
+          ? body.image
+          : body.imageUrl
+            ? { url: body.imageUrl }
+            : null,
+      galleryImages,
       liveUrl: body.liveUrl || "",
       githubUrl: body.githubUrl || "",
       featured: body.featured || false,
@@ -63,6 +112,13 @@ export async function POST(request: Request) {
 
     // send email notification to non-admin users
     if (savedProject) {
+      const usedPublicIds = [
+        newProject.coverImage?.publicId,
+        ...(newProject.galleryImages ?? []).map((image: any) => image?.publicId)
+      ].filter((id): id is string => typeof id === "string" && id.length > 0)
+
+      await removeTempProjectUploadsByPublicIds(session.user.id, usedPublicIds)
+
       const users = await findNonAdminUsers();
       await sendEmailsToUsers(users, newProject, {
         fireAndForget: true,

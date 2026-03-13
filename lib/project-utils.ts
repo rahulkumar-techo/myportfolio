@@ -1,4 +1,4 @@
-import type { Project } from "@/lib/types"
+import type { CloudinaryImage, Project } from "@/lib/types"
 
 type ProjectSource = Partial<Project> & {
   id?: string
@@ -7,7 +7,9 @@ type ProjectSource = Partial<Project> & {
   slug?: string
   longDescription?: string
   techStack?: unknown
-  imageUrl?: string
+  coverImage?: unknown
+  image?: unknown
+  imageUrl?: unknown
   galleryImages?: unknown
   liveUrl?: string
   githubUrl?: string
@@ -17,7 +19,51 @@ type ProjectSource = Partial<Project> & {
   updatedAt?: string | Date
 }
 
+function normalizeImage(image: unknown, fallback?: unknown): CloudinaryImage | null {
+  const candidate = image ?? fallback
+  if (!candidate) {
+    return null
+  }
+
+  if (typeof candidate === "string") {
+    return candidate ? { url: candidate } : null
+  }
+
+  if (typeof candidate === "object") {
+    const record = candidate as Partial<CloudinaryImage>
+    if (typeof record.url === "string" && record.url.trim().length > 0) {
+      return {
+        url: record.url,
+        publicId: typeof record.publicId === "string" ? record.publicId : undefined,
+        format: typeof record.format === "string" ? record.format : undefined,
+        width: typeof record.width === "number" ? record.width : undefined,
+        height: typeof record.height === "number" ? record.height : undefined,
+        bytes: typeof record.bytes === "number" ? record.bytes : undefined
+      }
+    }
+  }
+
+  return null
+}
+
+function normalizeGallery(images: unknown): CloudinaryImage[] {
+  if (!Array.isArray(images)) {
+    return []
+  }
+
+  return images
+    .map((image) => normalizeImage(image))
+    .filter((image): image is CloudinaryImage => Boolean(image))
+    .slice(0, 5)
+}
+
 export function normalizeProject(project: ProjectSource): Project {
+  const normalizedCoverImage = normalizeImage(
+    project.coverImage,
+    project.image ?? project.imageUrl
+  )
+  const normalizedGallery = normalizeGallery(project.galleryImages)
+
   return {
     id: project.id ?? "",
     title: project.title ?? "",
@@ -27,10 +73,8 @@ export function normalizeProject(project: ProjectSource): Project {
     techStack: Array.isArray(project.techStack)
       ? project.techStack.filter((tech): tech is string => typeof tech === "string")
       : [],
-    imageUrl: project.imageUrl ?? "",
-    galleryImages: Array.isArray(project.galleryImages)
-      ? project.galleryImages.filter((image): image is string => typeof image === "string")
-      : [],
+    coverImage: normalizedCoverImage,
+    galleryImages: normalizedGallery,
     liveUrl: project.liveUrl ?? "",
     githubUrl: project.githubUrl ?? "",
     featured: Boolean(project.featured),

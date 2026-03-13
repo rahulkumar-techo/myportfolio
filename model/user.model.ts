@@ -7,6 +7,19 @@ import mongoose, { Schema, model, models } from "mongoose";
 
 /* ================= PROJECT ================= */
 
+const CloudinaryImageSchema = new Schema({
+  url: { type: String, required: true },
+  publicId: String,
+  format: String,
+  width: Number,
+  height: Number,
+  bytes: Number
+}, { _id: false });
+
+function galleryLimit(value: unknown[]) {
+  return Array.isArray(value) && value.length <= 5;
+}
+
 const ProjectSchema = new Schema({
   id: { type: String, required: true },
   title: String,
@@ -14,8 +27,12 @@ const ProjectSchema = new Schema({
   slug: { type: String, index: true },
   longDescription: String,
   techStack: [String],
-  imageUrl: String,
-  galleryImages: [String],
+  coverImage: { type: CloudinaryImageSchema, default: null },
+  galleryImages: {
+    type: [CloudinaryImageSchema],
+    default: [],
+    validate: [galleryLimit, "Gallery images must be 5 or fewer."]
+  },
   liveUrl: String,
   githubUrl: String,
   featured: Boolean,
@@ -94,6 +111,13 @@ const AssetSchema = new Schema({
   uploadedAt: { type: Date, default: Date.now }
 });
 
+const TempProjectUploadSchema = new Schema({
+  id: { type: String, required: true },
+  publicId: { type: String, required: true },
+  url: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+}, { _id: false });
+
 const SettingsSchema = new Schema({
   siteTitle: { type: String, default: "Developer Portfolio" },
   siteTagline: { type: String, default: "Futuristic Developer Portfolio" },
@@ -131,6 +155,7 @@ const UserSchema = new Schema({
   testimonials: [TestimonialSchema],
   contactMessages: [ContactMessageSchema],
   assets: [AssetSchema],
+  tempProjectUploads: { type: [TempProjectUploadSchema], default: [] },
   settings: { type: SettingsSchema, default: () => ({}) }
 });
 
