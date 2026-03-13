@@ -5,23 +5,31 @@ import nodemailer from "nodemailer";
 
 
 const gmailUser = process.env.GMAIL_EMAIL || "mrrhl02@gmail.com";
-const gmailPass =
-  process.env.GMAIL_APP_PASSWORD ;
 
-if (!gmailPass) {
-  throw new Error("GMAIL_APP_PASSWORD is not set");
+let cachedTransporter: nodemailer.Transporter | null = null;
+
+function getTransporter() {
+  if (cachedTransporter) return cachedTransporter;
+
+  const gmailPass = process.env.GMAIL_APP_PASSWORD;
+
+  if (!gmailPass) {
+    throw new Error("GMAIL_APP_PASSWORD is not set");
+  }
+
+  const gmailInstance = {
+    host: "smtp.gmail.com",
+    port: 465,
+    secure: true,
+    auth: {
+      user: gmailUser,
+      pass: gmailPass,
+    },
+  };
+
+  cachedTransporter = nodemailer.createTransport(gmailInstance);
+  return cachedTransporter;
 }
-
-const gmailInstance = {
-  host: "smtp.gmail.com",
-  port: 465,
-  secure: true,
-  auth: {
-    user: gmailUser,
-    pass: gmailPass,
-  },
-};
-export const transporter = nodemailer.createTransport(gmailInstance);
 
 
 interface SendMailProps {
@@ -55,6 +63,7 @@ export async function sendProjectMail({ user, project }: SendMailProps) {
     companyLogo: `${baseUrl}/logo.png`
   });
 
+  const transporter = getTransporter();
   await transporter.sendMail({
     from: `Rahul Portfolio <${gmailUser}>`,
     to: user.email,
