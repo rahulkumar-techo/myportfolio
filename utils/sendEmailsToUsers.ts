@@ -1,5 +1,5 @@
-// Enqueue email job for all users
-import { enqueueProjectEmails } from "@/lib/queue/email.queue";
+// Send email notifications directly (serverless-safe)
+import { processEmailJob } from "@/jobs/email.job";
 
 type EmailUser = {
   name: string;
@@ -16,7 +16,34 @@ type EmailProject = {
 
 export async function sendEmailsToUsers(
   users: EmailUser[],
-  project: EmailProject
+  project: EmailProject,
+  options?: {
+    delayMs?: number;
+    retryAttempts?: number;
+    retryDelayMs?: number;
+    maxDurationMs?: number;
+    fireAndForget?: boolean;
+  }
 ) {
-  await enqueueProjectEmails(users, project);
+  if (!users?.length) return;
+
+  const payload = {
+    users,
+    project,
+    delayMs: options?.delayMs ?? 250,
+    retryAttempts: options?.retryAttempts ?? 3,
+    retryDelayMs: options?.retryDelayMs ?? 500,
+    maxDurationMs: options?.maxDurationMs
+  };
+
+  if (options?.fireAndForget) {
+    setTimeout(() => {
+      processEmailJob(payload).catch((error) => {
+        console.error("Background email job failed", error);
+      });
+    }, 0);
+    return;
+  }
+
+  await processEmailJob(payload);
 }

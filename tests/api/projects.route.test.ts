@@ -139,7 +139,13 @@ describe("/api/projects route", () => {
     expect(mockedFindNonAdminUsers).toHaveBeenCalled()
     expect(mockedSendEmailsToUsers).toHaveBeenCalledWith(
       [{ name: "User", email: "u@example.com" }],
-      expect.objectContaining({ title: "Portfolio" })
+      expect.objectContaining({ title: "Portfolio" }),
+      expect.objectContaining({
+        fireAndForget: true,
+        delayMs: 200,
+        retryAttempts: 2,
+        retryDelayMs: 400
+      })
     )
   })
 

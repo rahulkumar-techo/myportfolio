@@ -42,10 +42,26 @@ describe("project page helpers", () => {
       params: Promise.resolve({ id: "alpha" })
     })
 
-    expect(metadata).toEqual({
-      title: "Alpha Project | Portfolio",
-      description: "Alpha description"
-    })
+    expect(metadata).toEqual(
+      expect.objectContaining({
+        title: "Alpha Project | Portfolio",
+        description: "Alpha description",
+        alternates: {
+          canonical: "https://rahulkumar.dev/projects/alpha"
+        },
+        openGraph: expect.objectContaining({
+          title: "Alpha Project | Portfolio",
+          description: "Alpha description",
+          url: "https://rahulkumar.dev/projects/alpha",
+          type: "article"
+        }),
+        twitter: expect.objectContaining({
+          card: "summary_large_image",
+          title: "Alpha Project | Portfolio",
+          description: "Alpha description"
+        })
+      })
+    )
   })
 
   it("returns a fallback title when the project does not exist", async () => {

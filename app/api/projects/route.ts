@@ -64,7 +64,12 @@ export async function POST(request: Request) {
     // send email notification to non-admin users
     if (savedProject) {
       const users = await findNonAdminUsers();
-      await sendEmailsToUsers(users, newProject);
+      await sendEmailsToUsers(users, newProject, {
+        fireAndForget: true,
+        delayMs: 200,
+        retryAttempts: 2,
+        retryDelayMs: 400
+      });
     }
 
     return NextResponse.json(
