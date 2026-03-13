@@ -6,15 +6,23 @@ import { getRedisConnection } from "../redis";
 
 export const EMAIL_QUEUE_NAME = "email-queue";
 
-export const emailQueue = new Queue(EMAIL_QUEUE_NAME, {
-  connection: getRedisConnection() as any,
-  defaultJobOptions: {
-    attempts: 3,
-    backoff: { type: "exponential", delay: 5000 },
-    removeOnComplete: true,
-    removeOnFail: false,
-  },
-});
+let cachedQueue: Queue | null = null;
+
+function getEmailQueue() {
+  if (cachedQueue) return cachedQueue;
+
+  cachedQueue = new Queue(EMAIL_QUEUE_NAME, {
+    connection: getRedisConnection() as any,
+    defaultJobOptions: {
+      attempts: 3,
+      backoff: { type: "exponential", delay: 5000 },
+      removeOnComplete: true,
+      removeOnFail: false,
+    },
+  });
+
+  return cachedQueue;
+}
 
 type EmailUser = {
   name: string;
@@ -35,5 +43,6 @@ export async function enqueueProjectEmails(
 ) {
   if (!users?.length) return;
 
+  const emailQueue = getEmailQueue();
   await emailQueue.add("send-project-emails", { users, project });
 }
