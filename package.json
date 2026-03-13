@@ -11,12 +11,8 @@
     "test": "jest --runInBand --passWithNoTests --forceExit",
     "test:watch": "jest --watch",
     "test:ci": "jest --ci --runInBand --passWithNoTests --forceExit",
-    "typecheck": "tsc --noEmit",
-    "worker": "tsx workers/startWorkers.ts",
-    "pm2:start": "pm2 start ecosystem.config.cjs",
-    "pm2:stop": "pm2 stop ecosystem.config.cjs",
-    "pm2:restart": "pm2 restart ecosystem.config.cjs",
-    "pm2:logs": "pm2 logs"
+    "typecheck": "tsc --noEmit"
+
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.1",
