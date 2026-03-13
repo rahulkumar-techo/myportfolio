@@ -11,6 +11,7 @@ const ProjectSchema = new Schema({
   id: { type: String, required: true },
   title: String,
   description: String,
+  slug: { type: String, index: true },
   longDescription: String,
   techStack: [String],
   imageUrl: String,

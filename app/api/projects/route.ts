@@ -3,6 +3,7 @@ import { requireAdminApiSession } from "@/lib/auth";
 import { createPortfolioItem, listPortfolioItems } from "@/repositories/portfolio-repository";
 import { sendEmailsToUsers } from "@/utils/sendEmailsToUsers";
 import { findNonAdminUsers } from "@/repositories/user-repository";
+import { slugify } from "@/utils/slugify";
 
 export async function GET() {
   const projects = await listPortfolioItems("projects")
@@ -42,6 +43,7 @@ export async function POST(request: Request) {
       id: crypto.randomUUID(),
       title: body.title,
       description: body.description,
+      slug: body.slug || slugify(body.title || ""),
       longDescription: body.longDescription || "",
       techStack: body.techStack || [],
       imageUrl: body.imageUrl || "",

@@ -3,8 +3,10 @@ import { requireAdminApiSession } from "@/lib/auth"
 import {
   deletePortfolioItemById,
   getPortfolioItemById,
+  listPortfolioItems,
   updatePortfolioItemById
 } from "@/repositories/portfolio-repository"
+import { slugify } from "@/utils/slugify"
 
 /* ================= GET PROJECT ================= */
 
@@ -13,7 +15,12 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const { id } = await params
-  const project = await getPortfolioItemById("projects", id)
+  let project = await getPortfolioItemById("projects", id)
+
+  if (!project) {
+    const projects = await listPortfolioItems("projects")
+    project = projects.find((item: any) => item?.slug === id) ?? null
+  }
 
   if (!project) {
     return NextResponse.json(
@@ -44,10 +51,19 @@ export async function PUT(
     }
 
     const body = await request.json()
+    const updates = {
+      ...body,
+      updatedAt: new Date()
+    }
+
+    if (body?.title && !body?.slug) {
+      updates.slug = slugify(body.title)
+    }
+
     const updatedProject = await updatePortfolioItemById(
       "projects",
       id,
-      { ...body, updatedAt: new Date() },
+      updates,
       session.user.id
     )
 

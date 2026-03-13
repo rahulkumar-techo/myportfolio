@@ -95,7 +95,7 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
         {/* Footer */}
         <div className="px-6 pb-6">
           <Link
-            href={`/projects/${project.id}`}
+            href={`/projects/${project.slug ?? project.id}`}
             className="inline-flex items-center gap-2 text-sm text-primary hover:gap-3 transition-all"
           >
             View Details

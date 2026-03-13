@@ -4,6 +4,7 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import AuthProvider from '@/components/provider/auth-provider';
 import { ThemeProvider } from '@/components/theme-provider';
+import { siteUrl } from "@/utils/meta-data";
 export { metadata } from "@/utils/meta-data"; 
 
 const roboto = Roboto({
@@ -33,6 +34,18 @@ export const viewport: Viewport = {
   initialScale: 1,
 }
 
+const personJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  name: "Rahul Kumar",
+  url: siteUrl,
+  jobTitle: "Full Stack Developer",
+  sameAs: [
+    "https://github.com/rahulkumar-techo",
+    "https://linkedin.com/in/rahul",
+  ],
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -52,6 +65,10 @@ export default function RootLayout({
           </AuthProvider>
         </ThemeProvider>
         <Analytics />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
+        />
       </body>
     </html>
   )

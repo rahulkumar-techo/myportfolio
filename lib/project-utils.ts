@@ -4,6 +4,7 @@ type ProjectSource = Partial<Project> & {
   id?: string
   title?: string
   description?: string
+  slug?: string
   longDescription?: string
   techStack?: unknown
   imageUrl?: string
@@ -13,6 +14,7 @@ type ProjectSource = Partial<Project> & {
   featured?: boolean
   category?: string
   createdAt?: string | Date
+  updatedAt?: string | Date
 }
 
 export function normalizeProject(project: ProjectSource): Project {
@@ -20,6 +22,7 @@ export function normalizeProject(project: ProjectSource): Project {
     id: project.id ?? "",
     title: project.title ?? "",
     description: project.description ?? "",
+    slug: typeof project.slug === "string" ? project.slug : undefined,
     longDescription: project.longDescription ?? "",
     techStack: Array.isArray(project.techStack)
       ? project.techStack.filter((tech): tech is string => typeof tech === "string")
@@ -34,7 +37,10 @@ export function normalizeProject(project: ProjectSource): Project {
     category: project.category ?? "General",
     createdAt: project.createdAt
       ? new Date(project.createdAt).toISOString()
-      : new Date().toISOString()
+      : new Date().toISOString(),
+    updatedAt: project.updatedAt
+      ? new Date(project.updatedAt).toISOString()
+      : undefined
   }
 }
 

@@ -4,6 +4,7 @@ export interface Project {
   id: string;
   title: string;
   description: string;
+  slug?: string;
   longDescription?: string;
   techStack: string[];
   imageUrl: string;
@@ -13,6 +14,7 @@ export interface Project {
   featured: boolean;
   category: string;
   createdAt: string | Date;
+  updatedAt?: string | Date;
 }
 
 export interface Skill {

@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation';
 import ProjectDetailClient from './project-detail-client';
 import { normalizeProject } from '@/lib/project-utils';
 import type { Project } from '@/lib/types';
+import { siteUrl } from '@/utils/meta-data';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,9 +52,25 @@ export async function generateMetadata(
     };
   }
 
+  const canonicalId = project.slug ?? project.id;
+
   return {
     title: `${project.title} | Portfolio`,
     description: project.description,
+    alternates: {
+      canonical: `${siteUrl}/projects/${canonicalId}`,
+    },
+    openGraph: {
+      title: `${project.title} | Portfolio`,
+      description: project.description,
+      url: `${siteUrl}/projects/${canonicalId}`,
+      type: 'article',
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: `${project.title} | Portfolio`,
+      description: project.description,
+    },
   };
 }
 
