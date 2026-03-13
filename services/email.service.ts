@@ -6,7 +6,7 @@ import nodemailer from "nodemailer";
 
 const gmailUser = process.env.GMAIL_EMAIL || "mrrhl02@gmail.com";
 const gmailPass =
-  process.env.GMAIL_APP_PASSWORD || process.env.GMAIL_LESSSECURE_PASSWORD;
+  process.env.GMAIL_APP_PASSWORD ;
 
 if (!gmailPass) {
   throw new Error("GMAIL_APP_PASSWORD is not set");
