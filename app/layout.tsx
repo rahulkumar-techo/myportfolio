@@ -4,7 +4,7 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import AuthProvider from '@/components/provider/auth-provider';
 import { ThemeProvider } from '@/components/theme-provider';
-import "@/utils/meta-data";
+export { metadata } from "@/utils/meta-data"; 
 
 const roboto = Roboto({
   subsets: ['latin'],
