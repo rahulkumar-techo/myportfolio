@@ -5,6 +5,9 @@ import {
   getPublicSiteSettings
 } from "@/repositories/user-repository"
 
+export const dynamic = "force-dynamic"
+export const revalidate = 0
+
 function calculateYearsExperience(experiences: any[]) {
   const startDates = experiences
     .map((experience) => new Date(experience.startDate))

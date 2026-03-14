@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea'
 import { fetchWithTimeout, readJsonResponse } from '@/lib/http'
 import { useAdminSettings } from '@/hooks/useSettings'
+import { useAdminProfile } from '@/hooks/useAdminProfile'
 import type { SiteSettings } from '@/lib/types'
 
 const defaultSettings: SiteSettings = {
@@ -18,7 +19,6 @@ const defaultSettings: SiteSettings = {
   bio: '',
   location: '',
   contactEmail: '',
-  aboutAvatarUrl: '',
   resumeUrl: '',
   githubUrl: '',
   linkedinUrl: '',
@@ -29,17 +29,17 @@ const defaultSettings: SiteSettings = {
 
 export default function AdminSettingsPage() {
   const { settings, isLoading, error, updateSettings } = useAdminSettings()
+  const { profile, mutateProfile } = useAdminProfile()
   const [formData, setFormData] = useState<SiteSettings>(defaultSettings)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState<string | null>(null)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
-  const [aboutAvatarFile, setAboutAvatarFile] = useState<File | null>(null)
-  const [aboutAvatarPreview, setAboutAvatarPreview] = useState<string | null>(null)
+  const [avatarFile, setAvatarFile] = useState<File | null>(null)
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null)
   const avatarPreviewUrl = useMemo(
-    () => aboutAvatarPreview || formData.aboutAvatarUrl || '/avatar.png',
-    [aboutAvatarPreview, formData.aboutAvatarUrl]
+    () => avatarPreview || profile?.image || '/avatar.png',
+    [avatarPreview, profile?.image]
   )
-
   useEffect(() => {
     if (settings) {
       const mergedSettings = { ...defaultSettings, ...settings }
@@ -51,11 +51,11 @@ export default function AdminSettingsPage() {
 
   useEffect(() => {
     return () => {
-      if (aboutAvatarPreview) {
-        URL.revokeObjectURL(aboutAvatarPreview)
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview)
       }
     }
-  }, [aboutAvatarPreview])
+  }, [avatarPreview])
 
   const requestAvatarSignature = async (file: File) => {
     const response = await fetchWithTimeout('/api/assets/signature', {
@@ -133,6 +133,23 @@ export default function AdminSettingsPage() {
     return result.json.secure_url
   }
 
+  const updateProfileImage = async (imageUrl: string) => {
+    const response = await fetchWithTimeout('/api/profile', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ imageUrl })
+    })
+
+    const result = await readJsonResponse<{ error?: string }>(response)
+
+    if (!response.ok) {
+      const rawMessage = result.isJson ? result.json?.error : result.raw
+      throw new Error(rawMessage ? String(rawMessage) : 'Unable to update profile image.')
+    }
+
+    await mutateProfile()
+  }
+
   const updateFormData = (updates: Partial<SiteSettings>) => {
     setFormData((current) => ({ ...current, ...updates }))
     setHasUnsavedChanges(true)
@@ -142,11 +159,11 @@ export default function AdminSettingsPage() {
   const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0] ?? null
     if (!file) {
-      setAboutAvatarFile(null)
-      if (aboutAvatarPreview) {
-        URL.revokeObjectURL(aboutAvatarPreview)
+      setAvatarFile(null)
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview)
       }
-      setAboutAvatarPreview(null)
+      setAvatarPreview(null)
       return
     }
 
@@ -162,12 +179,12 @@ export default function AdminSettingsPage() {
       return
     }
 
-    if (aboutAvatarPreview) {
-      URL.revokeObjectURL(aboutAvatarPreview)
+    if (avatarPreview) {
+      URL.revokeObjectURL(avatarPreview)
     }
 
-    setAboutAvatarFile(file)
-    setAboutAvatarPreview(URL.createObjectURL(file))
+    setAvatarFile(file)
+    setAvatarPreview(URL.createObjectURL(file))
     setHasUnsavedChanges(true)
     setSubmitMessage(null)
   }
@@ -178,24 +195,19 @@ export default function AdminSettingsPage() {
     setSubmitMessage(null)
 
     try {
-      let payload = { ...formData }
-
-      if (aboutAvatarFile) {
-        // Upload the avatar first, then store the URL in settings.
-        const uploadedUrl = await uploadAvatarToCloudinary(aboutAvatarFile)
-        const cacheBust = `v=${Date.now()}`
-        const nextUrl = uploadedUrl.includes('?') ? `${uploadedUrl}&${cacheBust}` : `${uploadedUrl}?${cacheBust}`
-        payload = { ...payload, aboutAvatarUrl: nextUrl }
+      if (avatarFile) {
+        const uploadedUrl = await uploadAvatarToCloudinary(avatarFile)
+        await updateProfileImage(uploadedUrl)
       }
 
-      const nextSettings = await updateSettings(payload)
+      const nextSettings = await updateSettings(formData)
       const mergedSettings = { ...defaultSettings, ...nextSettings }
       setFormData(mergedSettings)
-      setAboutAvatarFile(null)
-      if (aboutAvatarPreview) {
-        URL.revokeObjectURL(aboutAvatarPreview)
+      setAvatarFile(null)
+      if (avatarPreview) {
+        URL.revokeObjectURL(avatarPreview)
       }
-      setAboutAvatarPreview(null)
+      setAvatarPreview(null)
       setHasUnsavedChanges(false)
       setSubmitMessage('Settings saved successfully.')
     } catch {
@@ -274,6 +286,31 @@ export default function AdminSettingsPage() {
 
           <section className="glass-card rounded-2xl p-6 space-y-5">
             <div>
+              <h2 className="text-lg font-semibold text-foreground">Profile Avatar</h2>
+              <p className="text-sm text-muted-foreground">Update the avatar shown in the About section and admin header.</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="profile-avatar-file">Avatar Image</Label>
+              <div className="flex flex-wrap items-center gap-4">
+                <img
+                  src={avatarPreviewUrl}
+                  alt="Profile avatar preview"
+                  className="h-14 w-14 rounded-2xl object-cover border border-border/60"
+                />
+                <Input
+                  id="profile-avatar-file"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">Upload a 2MB or smaller image.</p>
+            </div>
+          </section>
+
+          <section className="glass-card rounded-2xl p-6 space-y-5">
+            <div>
               <h2 className="text-lg font-semibold text-foreground">Public Contact</h2>
               <p className="text-sm text-muted-foreground">Manage the contact and social links exposed through your profile.</p>
             </div>
@@ -296,24 +333,6 @@ export default function AdminSettingsPage() {
                   onChange={(event) => updateFormData({ location: event.target.value })}
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="about-avatar-file">About Avatar</Label>
-              <div className="flex flex-wrap items-center gap-4">
-                <img
-                  src={avatarPreviewUrl}
-                  alt="About avatar preview"
-                  className="h-14 w-14 rounded-2xl object-cover border border-border/60"
-                />
-                <Input
-                  id="about-avatar-file"
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarChange}
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">Upload an image for the About section avatar.</p>
             </div>
 
             <div className="grid gap-4 sm:grid-cols-2">

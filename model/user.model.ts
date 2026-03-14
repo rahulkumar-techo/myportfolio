@@ -19,3 +19,4 @@ const UserSchema = new Schema({
 })
 
 export const UserModel = models.User || model("User", UserSchema)
+

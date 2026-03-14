@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 import { requireAdminApiSession } from "@/lib/auth"
 import { listPortfolioItems } from "@/repositories/portfolio-repository"
-import { findUserById } from "@/repositories/user-repository"
+import { findFirstAdmin, findUserById, updateUserProfileImage } from "@/repositories/user-repository"
 
 export async function GET() {
   const { session, response } = await requireAdminApiSession()
@@ -10,7 +10,11 @@ export async function GET() {
     return response
   }
 
-  const user = await findUserById(session.user.id)
+  let user = await findUserById(session.user.id)
+
+  if (!user) {
+    user = await findFirstAdmin()
+  }
 
   if (!user) {
     return NextResponse.json(
@@ -19,11 +23,12 @@ export async function GET() {
     )
   }
 
+  const ownerId = user._id.toString()
   const [projects, skills, experiences, testimonials] = await Promise.all([
-    listPortfolioItems("projects", session.user.id),
-    listPortfolioItems("skills", session.user.id),
-    listPortfolioItems("experiences", session.user.id),
-    listPortfolioItems("testimonials", session.user.id)
+    listPortfolioItems("projects", ownerId),
+    listPortfolioItems("skills", ownerId),
+    listPortfolioItems("experiences", ownerId),
+    listPortfolioItems("testimonials", ownerId)
   ])
 
   const skillsByCategory = skills.reduce((acc: any, skill: any) => {
@@ -68,4 +73,38 @@ export async function GET() {
       lastUpdated: new Date().toISOString()
     }
   })
+}
+
+export async function PUT(request: Request) {
+  const { session, response } = await requireAdminApiSession()
+
+  if (response || !session) {
+    return response
+  }
+
+  const body = await request.json().catch(() => ({} as any))
+  const imageUrl = typeof body?.imageUrl === "string" ? body.imageUrl.trim() : ""
+
+  if (!imageUrl) {
+    return NextResponse.json({ success: false, error: "imageUrl is required." }, { status: 400 })
+  }
+
+  try {
+    const user = await updateUserProfileImage(session.user.id, imageUrl)
+    return NextResponse.json({
+      success: true,
+      data: {
+        profile: {
+          name: user.name,
+          email: user.email,
+          image: user.image
+        }
+      }
+    })
+  } catch (error: any) {
+    return NextResponse.json(
+      { success: false, error: error?.message ?? "Unable to update profile image." },
+      { status: 400 }
+    )
+  }
 }

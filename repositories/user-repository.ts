@@ -21,7 +21,6 @@ const defaultSettings: SiteSettings = {
   bio: "",
   location: "",
   contactEmail: "",
-  aboutAvatarUrl: "",
   resumeUrl: "",
   githubUrl: "",
   linkedinUrl: "",
@@ -334,4 +333,21 @@ export async function updateUserSettings(userId: string, updates: Partial<SiteSe
   )
 
   return getMergedSettings(user, settings)
+}
+
+export async function updateUserProfileImage(userId: string, imageUrl: string) {
+  let user = await findUserById(userId)
+
+  if (!user) {
+    user = await findFirstAdmin()
+  }
+
+  if (!user) {
+    throw new Error("User not found")
+  }
+
+  user.image = imageUrl
+  await user.save()
+
+  return user
 }

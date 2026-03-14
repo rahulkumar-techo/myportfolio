@@ -172,7 +172,6 @@ export const SettingsSchema = new Schema({
   bio: { type: String, default: "" },
   location: { type: String, default: "" },
   contactEmail: { type: String, default: "" },
-  aboutAvatarUrl: { type: String, default: "" },
   resumeUrl: { type: String, default: "" },
   githubUrl: { type: String, default: "" },
   linkedinUrl: { type: String, default: "" },

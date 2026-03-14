@@ -134,7 +134,6 @@ export interface SiteSettings {
   bio: string;
   location: string;
   contactEmail: string;
-  aboutAvatarUrl?: string;
   resumeUrl?: string;
   githubUrl?: string;
   linkedinUrl?: string;

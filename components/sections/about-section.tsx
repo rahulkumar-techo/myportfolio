@@ -13,7 +13,7 @@ export default function AboutSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
   const { profile } = usePublicProfile()
 
-  const avatarUrl = profile?.settings.aboutAvatarUrl || profile?.profile.image || '/avatar.png'
+  const avatarUrl = profile?.profile.image || '/avatar.png'
   const profileName = profile?.profile.name || profile?.settings.siteTitle || 'Portfolio Owner'
   const location = profile?.settings.location || 'Location not set'
   const email = profile?.settings.contactEmail || profile?.profile.email || 'Email not set'
