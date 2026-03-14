@@ -15,12 +15,68 @@ import { useContact } from '@/hooks/useContact';
 export default function ContactSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
+  const audioContextRef = useRef<AudioContext | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const { user, loginWithGoogle } = useAuth();
   const { settings } = usePublicSettings();
   const { sendMessage } = useContact();
+  const initAudioContext = async () => {
+    if (audioContextRef.current) {
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+      return;
+    }
+
+    try {
+      audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+      if (audioContextRef.current.state === 'suspended') {
+        await audioContextRef.current.resume();
+      }
+    } catch {
+      audioContextRef.current = null;
+    }
+  };
+
+  const playNotification = () => {
+    try {
+      // Simple, dependency-free notification sound for successful message sends.
+      const audioContext = audioContextRef.current;
+      if (!audioContext) {
+        return;
+      }
+
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+
+      oscillator.type = 'sine';
+      oscillator.frequency.value = 880;
+      gain.gain.value = 0.05;
+
+      oscillator.connect(gain);
+      gain.connect(audioContext.destination);
+
+      oscillator.start();
+      oscillator.stop(audioContext.currentTime + 0.15);
+    } catch {
+      // Ignore audio failures (e.g., autoplay restrictions).
+    }
+  };
+
+  const showWebNotification = () => {
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      return;
+    }
+
+    if (Notification.permission === 'granted') {
+      // Comment: Light system notification to confirm the message was sent.
+      new Notification('Message sent', {
+        body: 'Thanks for reaching out. I will get back to you soon.'
+      });
+    }
+  };
 
   const socialLinks = [
     { icon: Github, href: settings?.githubUrl || '#', label: 'GitHub' },
@@ -38,8 +94,23 @@ export default function ContactSection() {
 
     setIsSubmitting(true);
     setSubmitError(null);
+    // Comment: initialize audio context while we still have a user gesture.
+    await initAudioContext();
 
-    const formData = new FormData(e.currentTarget);
+    const formElement =
+      e.currentTarget instanceof HTMLFormElement
+        ? e.currentTarget
+        : e.target instanceof HTMLFormElement
+          ? e.target
+          : null;
+
+    if (!formElement) {
+      setSubmitError('Unable to submit the form. Please refresh and try again.');
+      setIsSubmitting(false);
+      return;
+    }
+
+    const formData = new FormData(formElement);
 
     try {
       await sendMessage({
@@ -50,6 +121,8 @@ export default function ContactSection() {
       });
 
       setIsSubmitted(true);
+      playNotification();
+      showWebNotification();
       e.currentTarget.reset();
       setTimeout(() => setIsSubmitted(false), 5000);
     } catch (error: any) {

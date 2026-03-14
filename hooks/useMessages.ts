@@ -7,8 +7,17 @@ import api from "@/lib/axios"
 
 const fetcher = (url: string) => api.get(url).then(res => res.data)
 
-export function useMessages() {
-  const { data, error, isLoading, mutate } = useSWR("/messages", fetcher)
+export type MessageFilter = "active" | "archived" | "all"
+
+export function useMessages(
+  filter: MessageFilter = "active",
+  options?: { enabled?: boolean }
+) {
+  const shouldFetch = options?.enabled !== false
+  const { data, error, isLoading, mutate } = useSWR(
+    shouldFetch ? `/messages?status=${filter}` : null,
+    fetcher
+  )
 
   const updateMessage = async (id: string, payload: any) => {
     await api.put(`/messages/${id}`, payload)
@@ -22,6 +31,7 @@ export function useMessages() {
 
   return {
     messages: data?.data || [],
+    meta: data?.meta as { total?: number; unread?: number; archived?: number } | undefined,
     isLoading,
     error,
     updateMessage,

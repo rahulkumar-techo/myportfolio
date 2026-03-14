@@ -6,6 +6,7 @@ const fetcher = (url: string) => api.get(url).then((response) => response.data)
 
 const PUBLIC_SETTINGS_KEY = "/settings"
 const ADMIN_SETTINGS_KEY = "/admin/settings"
+const PUBLIC_PROFILE_KEY = "/public/profile"
 
 export function usePublicSettings() {
   const { data, error, isLoading, mutate } = useSWR(PUBLIC_SETTINGS_KEY, fetcher)
@@ -47,6 +48,24 @@ export function useAdminSettings() {
       },
       { revalidate: false }
     )
+
+    const currentProfile = cache.get(PUBLIC_PROFILE_KEY) as any
+    if (currentProfile?.data) {
+      await globalMutate(
+        PUBLIC_PROFILE_KEY,
+        {
+          ...(currentProfile || { success: true }),
+          data: {
+            ...currentProfile.data,
+            settings: {
+              ...(currentProfile.data?.settings || {}),
+              ...payload
+            }
+          }
+        },
+        { revalidate: false }
+      )
+    }
   }
 
   const updateSettings = async (payload: Partial<SiteSettings>) => {
@@ -65,6 +84,21 @@ export function useAdminSettings() {
       },
       { revalidate: false }
     )
+
+    const currentProfile = cache.get(PUBLIC_PROFILE_KEY) as any
+    if (currentProfile?.data) {
+      await globalMutate(
+        PUBLIC_PROFILE_KEY,
+        {
+          ...(currentProfile || { success: true }),
+          data: {
+            ...currentProfile.data,
+            settings: response.data.data
+          }
+        },
+        { revalidate: false }
+      )
+    }
 
     return response.data.data as SiteSettings
   }

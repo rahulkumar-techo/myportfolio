@@ -172,11 +172,17 @@ export const SettingsSchema = new Schema({
   bio: { type: String, default: "" },
   location: { type: String, default: "" },
   contactEmail: { type: String, default: "" },
+  aboutAvatarUrl: { type: String, default: "" },
   resumeUrl: { type: String, default: "" },
   githubUrl: { type: String, default: "" },
   linkedinUrl: { type: String, default: "" },
   twitterUrl: { type: String, default: "" },
-  websiteUrl: { type: String, default: "" }
+  websiteUrl: { type: String, default: "" },
+  adminNotificationSound: {
+    type: String,
+    enum: ["none", "beep", "chime", "soft"],
+    default: "beep"
+  }
 })
 
 SettingsSchema.index({ ownerId: 1 }, { unique: true })

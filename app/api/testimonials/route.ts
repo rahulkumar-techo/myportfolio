@@ -58,7 +58,7 @@ export async function POST(request: NextRequest) {
       role: body.role,
       company: body.company,
       content: body.content,
-      avatarUrl: session.user.image || "/testimonials/default.jpg",
+      avatarUrl: session.user.image || "/placeholder-user.jpg",
       rating: body.rating || 5,
       featured: body.featured || false,
       createdAt: new Date(),

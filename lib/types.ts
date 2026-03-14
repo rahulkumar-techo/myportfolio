@@ -134,11 +134,13 @@ export interface SiteSettings {
   bio: string;
   location: string;
   contactEmail: string;
+  aboutAvatarUrl?: string;
   resumeUrl?: string;
   githubUrl?: string;
   linkedinUrl?: string;
   twitterUrl?: string;
   websiteUrl?: string;
+  adminNotificationSound?: 'none' | 'beep' | 'chime' | 'soft';
 }
 
 export interface PublicProfileSummary {

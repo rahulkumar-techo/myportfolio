@@ -1,11 +1,13 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Loader2, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { fetchWithTimeout, readJsonResponse } from '@/lib/http'
 import { useAdminSettings } from '@/hooks/useSettings'
 import type { SiteSettings } from '@/lib/types'
 
@@ -16,11 +18,13 @@ const defaultSettings: SiteSettings = {
   bio: '',
   location: '',
   contactEmail: '',
+  aboutAvatarUrl: '',
   resumeUrl: '',
   githubUrl: '',
   linkedinUrl: '',
   twitterUrl: '',
-  websiteUrl: ''
+  websiteUrl: '',
+  adminNotificationSound: 'beep'
 }
 
 export default function AdminSettingsPage() {
@@ -29,6 +33,12 @@ export default function AdminSettingsPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitMessage, setSubmitMessage] = useState<string | null>(null)
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false)
+  const [aboutAvatarFile, setAboutAvatarFile] = useState<File | null>(null)
+  const [aboutAvatarPreview, setAboutAvatarPreview] = useState<string | null>(null)
+  const avatarPreviewUrl = useMemo(
+    () => aboutAvatarPreview || formData.aboutAvatarUrl || '/avatar.png',
+    [aboutAvatarPreview, formData.aboutAvatarUrl]
+  )
 
   useEffect(() => {
     if (settings) {
@@ -39,8 +49,125 @@ export default function AdminSettingsPage() {
     }
   }, [hasUnsavedChanges, settings])
 
+  useEffect(() => {
+    return () => {
+      if (aboutAvatarPreview) {
+        URL.revokeObjectURL(aboutAvatarPreview)
+      }
+    }
+  }, [aboutAvatarPreview])
+
+  const requestAvatarSignature = async (file: File) => {
+    const response = await fetchWithTimeout('/api/assets/signature', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ fileName: file.name, fileType: file.type })
+    })
+
+    const result = await readJsonResponse<{
+      error?: string
+      data?: {
+        cloudName?: string
+        apiKey?: string
+        timestamp?: number
+        signature?: string
+        folder?: string
+        publicId?: string
+        resourceType?: string
+      }
+    }>(response)
+
+    if (!response.ok) {
+      const rawMessage = result.isJson ? result.json?.error : result.raw
+      throw new Error(rawMessage ? String(rawMessage) : 'Unable to start avatar upload.')
+    }
+
+    if (!result.isJson || !result.json?.data?.cloudName || !result.json?.data?.apiKey || !result.json?.data?.signature) {
+      throw new Error('Unable to start avatar upload: invalid signature response.')
+    }
+
+    return result.json.data
+  }
+
+  const uploadAvatarToCloudinary = async (file: File) => {
+    const signature = await requestAvatarSignature(file)
+    const cloudName = signature.cloudName
+    const apiKey = signature.apiKey
+    const timestamp = signature.timestamp
+    const signatureValue = signature.signature
+    const folder = signature.folder
+    const publicId = signature.publicId
+    const resourceType = signature.resourceType ?? 'image'
+
+    if (!cloudName || !apiKey || !timestamp || !signatureValue || !folder || !publicId) {
+      throw new Error('Unable to start avatar upload: missing signature fields.')
+    }
+
+    const form = new FormData()
+    form.append('file', file)
+    form.append('api_key', apiKey)
+    form.append('timestamp', String(timestamp))
+    form.append('signature', signatureValue)
+    form.append('folder', folder)
+    form.append('public_id', publicId)
+
+    const response = await fetch(`https://api.cloudinary.com/v1_1/${cloudName}/${resourceType}/upload`, {
+      method: 'POST',
+      body: form
+    })
+
+    const result = await readJsonResponse<{
+      error?: { message?: string }
+      secure_url?: string
+    }>(response)
+
+    if (!response.ok || !result.isJson) {
+      const message = result.isJson ? result.json?.error?.message : result.raw
+      throw new Error(message ? String(message) : 'Unable to upload avatar.')
+    }
+
+    if (!result.json?.secure_url) {
+      throw new Error('Unable to upload avatar: missing URL.')
+    }
+
+    return result.json.secure_url
+  }
+
   const updateFormData = (updates: Partial<SiteSettings>) => {
     setFormData((current) => ({ ...current, ...updates }))
+    setHasUnsavedChanges(true)
+    setSubmitMessage(null)
+  }
+
+  const handleAvatarChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0] ?? null
+    if (!file) {
+      setAboutAvatarFile(null)
+      if (aboutAvatarPreview) {
+        URL.revokeObjectURL(aboutAvatarPreview)
+      }
+      setAboutAvatarPreview(null)
+      return
+    }
+
+    if (!file.type.startsWith('image/')) {
+      setSubmitMessage('Please choose a valid image file.')
+      event.target.value = ''
+      return
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      setSubmitMessage('Avatar image must be 2MB or smaller.')
+      event.target.value = ''
+      return
+    }
+
+    if (aboutAvatarPreview) {
+      URL.revokeObjectURL(aboutAvatarPreview)
+    }
+
+    setAboutAvatarFile(file)
+    setAboutAvatarPreview(URL.createObjectURL(file))
     setHasUnsavedChanges(true)
     setSubmitMessage(null)
   }
@@ -51,9 +178,24 @@ export default function AdminSettingsPage() {
     setSubmitMessage(null)
 
     try {
-      const nextSettings = await updateSettings(formData)
+      let payload = { ...formData }
+
+      if (aboutAvatarFile) {
+        // Upload the avatar first, then store the URL in settings.
+        const uploadedUrl = await uploadAvatarToCloudinary(aboutAvatarFile)
+        const cacheBust = `v=${Date.now()}`
+        const nextUrl = uploadedUrl.includes('?') ? `${uploadedUrl}&${cacheBust}` : `${uploadedUrl}?${cacheBust}`
+        payload = { ...payload, aboutAvatarUrl: nextUrl }
+      }
+
+      const nextSettings = await updateSettings(payload)
       const mergedSettings = { ...defaultSettings, ...nextSettings }
       setFormData(mergedSettings)
+      setAboutAvatarFile(null)
+      if (aboutAvatarPreview) {
+        URL.revokeObjectURL(aboutAvatarPreview)
+      }
+      setAboutAvatarPreview(null)
       setHasUnsavedChanges(false)
       setSubmitMessage('Settings saved successfully.')
     } catch {
@@ -156,6 +298,24 @@ export default function AdminSettingsPage() {
               </div>
             </div>
 
+            <div className="space-y-2">
+              <Label htmlFor="about-avatar-file">About Avatar</Label>
+              <div className="flex flex-wrap items-center gap-4">
+                <img
+                  src={avatarPreviewUrl}
+                  alt="About avatar preview"
+                  className="h-14 w-14 rounded-2xl object-cover border border-border/60"
+                />
+                <Input
+                  id="about-avatar-file"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">Upload an image for the About section avatar.</p>
+            </div>
+
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="resume-url">Resume URL</Label>
@@ -203,6 +363,33 @@ export default function AdminSettingsPage() {
                   onChange={(event) => updateFormData({ twitterUrl: event.target.value })}
                 />
               </div>
+            </div>
+          </section>
+
+          <section className="glass-card rounded-2xl p-6 space-y-5">
+            <div>
+              <h2 className="text-lg font-semibold text-foreground">Admin Notifications</h2>
+              <p className="text-sm text-muted-foreground">Control the sound when new messages arrive.</p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="admin-notification-sound">Notification Sound</Label>
+              <Select
+                value={formData.adminNotificationSound || 'beep'}
+                onValueChange={(value) =>
+                  updateFormData({ adminNotificationSound: value as SiteSettings['adminNotificationSound'] })
+                }
+              >
+                <SelectTrigger id="admin-notification-sound">
+                  <SelectValue placeholder="Select sound" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="beep">Beep</SelectItem>
+                  <SelectItem value="chime">Chime</SelectItem>
+                  <SelectItem value="soft">Soft</SelectItem>
+                  <SelectItem value="none">Silent</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </section>
         </div>

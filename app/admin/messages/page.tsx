@@ -1,16 +1,120 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Loader2, Mail, MailOpen, RefreshCw, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
-import { useMessages } from '@/hooks/useMessages'
+import { useMessages, type MessageFilter } from '@/hooks/useMessages'
+import { useAdminSettings } from '@/hooks/useSettings'
 import type { ContactMessage } from '@/lib/types'
 
 export default function AdminMessagesPage() {
-  const { messages, isLoading, error, updateMessage, deleteMessage } = useMessages()
+  const [filter, setFilter] = useState<MessageFilter>('active')
+  const { messages, meta, isLoading, error, updateMessage, deleteMessage } = useMessages(filter)
+  const { settings } = useAdminSettings()
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [actionId, setActionId] = useState<string | null>(null)
+  const audioContextRef = useRef<AudioContext | null>(null)
+  const lastTotalRef = useRef<number | null>(null)
+
+  useEffect(() => {
+    const unlockAudio = async () => {
+      if (audioContextRef.current) {
+        if (audioContextRef.current.state === 'suspended') {
+          await audioContextRef.current.resume()
+        }
+        return
+      }
+
+      try {
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)()
+        if (audioContextRef.current.state === 'suspended') {
+          await audioContextRef.current.resume()
+        }
+      } catch {
+        audioContextRef.current = null
+      }
+    }
+
+    // Comment: unlock audio on first user interaction so notifications can play later.
+    const handleFirstInteraction = () => {
+      void unlockAudio()
+      window.removeEventListener('pointerdown', handleFirstInteraction)
+      window.removeEventListener('keydown', handleFirstInteraction)
+    }
+
+    window.addEventListener('pointerdown', handleFirstInteraction)
+    window.addEventListener('keydown', handleFirstInteraction)
+
+    return () => {
+      window.removeEventListener('pointerdown', handleFirstInteraction)
+      window.removeEventListener('keydown', handleFirstInteraction)
+    }
+  }, [])
+
+  const playNotification = () => {
+    try {
+      // Comment: simple admin sound when a new message arrives.
+      const sound = settings?.adminNotificationSound ?? 'beep'
+      if (sound === 'none') {
+        return
+      }
+
+      const audioContext = audioContextRef.current
+      if (!audioContext) {
+        return
+      }
+
+      const gain = audioContext.createGain()
+      gain.gain.value = sound === 'soft' ? 0.025 : 0.04
+      gain.connect(audioContext.destination)
+
+      const playTone = (frequency: number, start: number, duration: number) => {
+        const osc = audioContext.createOscillator()
+        osc.type = 'sine'
+        osc.frequency.value = frequency
+        osc.connect(gain)
+        osc.start(start)
+        osc.stop(start + duration)
+      }
+
+      const now = audioContext.currentTime
+
+      if (sound === 'chime') {
+        playTone(520, now, 0.12)
+        playTone(780, now + 0.14, 0.16)
+        return
+      }
+
+      if (sound === 'soft') {
+        playTone(620, now, 0.18)
+        return
+      }
+
+      playTone(740, now, 0.12)
+    } catch {
+      // Ignore audio failures (autoplay restrictions or missing device).
+    }
+  }
+
+  useEffect(() => {
+    const total = meta?.total ?? null
+    if (total === null) {
+      return
+    }
+
+    if (lastTotalRef.current === null) {
+      lastTotalRef.current = total
+      return
+    }
+
+    if (total > lastTotalRef.current) {
+      playNotification()
+    }
+
+    lastTotalRef.current = total
+  }, [meta?.total])
 
   const sortedMessages = useMemo(
     () =>
@@ -52,7 +156,7 @@ export default function AdminMessagesPage() {
     setActionId(message.id)
 
     try {
-      await updateMessage(message.id, { archived: true })
+      await updateMessage(message.id, { archived: !message.archived })
 
       if (selectedMessage?.id === message.id) {
         setSelectedId(null)
@@ -91,8 +195,24 @@ export default function AdminMessagesPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold text-foreground">Messages</h1>
-        <p className="text-muted-foreground">Read, mark, archive, and delete incoming contact messages.</p>
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Messages</h1>
+            <p className="text-muted-foreground">Read, mark, archive, and delete incoming contact messages.</p>
+          </div>
+          <div className="min-w-[180px]">
+            <Select value={filter} onValueChange={(value: MessageFilter) => setFilter(value)}>
+              <SelectTrigger>
+                <SelectValue placeholder="Filter" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="active">Active</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+                <SelectItem value="all">All</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
@@ -128,6 +248,9 @@ export default function AdminMessagesPage() {
               </div>
 
               <p className="truncate text-sm text-foreground">{message.subject}</p>
+              {message.archived ? (
+                <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">Archived</p>
+              ) : null}
               <p className="mt-1 text-xs text-muted-foreground">
                 {new Date(message.createdAt).toLocaleString()}
               </p>
@@ -170,7 +293,7 @@ export default function AdminMessagesPage() {
                     disabled={actionId === selectedMessage.id}
                     onClick={() => void archiveMessage(selectedMessage)}
                   >
-                    Archive
+                    {selectedMessage.archived ? 'Unarchive' : 'Archive'}
                   </Button>
 
                   <Button

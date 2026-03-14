@@ -36,6 +36,7 @@ __v0_jsx-dev-runtime.ts
 # Misc
 coverage/
 dist/
+artifacts/
 
 ./.claude
 .claude

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import {
@@ -26,6 +26,7 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { useAuth } from '@/hooks/useAuth';
+import { useMessages } from '@/hooks/useMessages';
 import { useAdminSettings } from '@/hooks/useSettings';
 
 const navItems = [
@@ -46,6 +47,7 @@ type AdminSidebarProps = {
   userName: string;
   userEmail: string;
   isLoading: boolean;
+  unreadMessages?: number;
   onLogout: () => void;
   closeOnNavigate?: boolean;
 };
@@ -57,6 +59,7 @@ function AdminSidebar({
   userName,
   userEmail,
   isLoading,
+  unreadMessages,
   onLogout,
   closeOnNavigate = false,
 }: AdminSidebarProps) {
@@ -97,6 +100,7 @@ function AdminSidebar({
       <nav className="admin-scroll flex-1 space-y-1 overflow-y-auto p-4">
         {navItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/admin' && pathname?.startsWith(item.href));
+          const showUnread = item.href === '/admin/messages' && typeof unreadMessages === 'number' && unreadMessages > 0;
           const navLink = (
             <Link
               key={item.href}
@@ -110,7 +114,14 @@ function AdminSidebar({
             >
               {isActive ? <span className="absolute left-0 h-8 w-1 rounded-r bg-primary" /> : null}
               <item.icon className="h-5 w-5" />
-              <span>{item.label}</span>
+              <span className="flex items-center gap-2">
+                {item.label}
+                {showUnread ? (
+                  <span className="rounded-full bg-primary/20 px-2 py-0.5 text-xs font-semibold text-primary">
+                    {unreadMessages}
+                  </span>
+                ) : null}
+              </span>
             </Link>
           );
 
@@ -178,10 +189,13 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { logout, status, user } = useAuth();
   const { settings } = useAdminSettings();
+  const shouldFetchMessages = pathname !== '/admin/login' && pathname !== '/admin/register';
+  const { meta } = useMessages('active', { enabled: shouldFetchMessages });
   const panelTitle = settings?.adminPanelTitle || 'Admin Panel';
   const siteTitle = settings?.siteTitle || 'Portfolio Manager';
   const userName = user?.name || 'Admin';
   const userEmail = user?.email || 'No session email';
+  const [isMounted, setIsMounted] = useState(false);
 
   useEffect(() => {
     if (pathname === '/admin/login' || pathname === '/admin/register') {
@@ -192,6 +206,10 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
       document.body.classList.remove('admin-body-lock');
     };
   }, [pathname]);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Login page doesn't need the admin layout
   if (pathname === '/admin/login' || pathname === '/admin/register') {
@@ -208,6 +226,7 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
           userName={userName}
           userEmail={userEmail}
           isLoading={status === 'loading'}
+          unreadMessages={meta?.unread}
           onLogout={logout}
         />
       </aside>
@@ -216,29 +235,36 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
         <header className="sticky top-0 z-30 border-b border-border/50 px-4 py-4 glass-card sm:px-6">
           <div className="flex items-center justify-between gap-4">
             <div className="flex items-center gap-3 md:hidden">
-              <Sheet>
-                <SheetTrigger asChild>
-                  <Button variant="outline" size="icon" aria-label="Open navigation menu">
-                    <Menu className="h-5 w-5" />
-                  </Button>
-                </SheetTrigger>
-                <SheetContent side="left" className="w-[86vw] max-w-xs p-0">
-                  <SheetTitle className="sr-only">{panelTitle}</SheetTitle>
-                  <SheetDescription className="sr-only">
-                    Admin navigation and account actions.
-                  </SheetDescription>
-                  <AdminSidebar
-                    pathname={pathname}
-                    panelTitle={panelTitle}
-                    siteTitle={siteTitle}
-                    userName={userName}
-                    userEmail={userEmail}
-                    isLoading={status === 'loading'}
-                    onLogout={logout}
-                    closeOnNavigate={true}
-                  />
-                </SheetContent>
-              </Sheet>
+              {isMounted ? (
+                <Sheet>
+                  <SheetTrigger asChild>
+                    <Button variant="outline" size="icon" aria-label="Open navigation menu">
+                      <Menu className="h-5 w-5" />
+                    </Button>
+                  </SheetTrigger>
+                  <SheetContent side="left" className="w-[86vw] max-w-xs p-0">
+                    <SheetTitle className="sr-only">{panelTitle}</SheetTitle>
+                    <SheetDescription className="sr-only">
+                      Admin navigation and account actions.
+                    </SheetDescription>
+                    <AdminSidebar
+                      pathname={pathname}
+                      panelTitle={panelTitle}
+                      siteTitle={siteTitle}
+                      userName={userName}
+                      userEmail={userEmail}
+                      isLoading={status === 'loading'}
+                      unreadMessages={meta?.unread}
+                      onLogout={logout}
+                      closeOnNavigate={true}
+                    />
+                  </SheetContent>
+                </Sheet>
+              ) : (
+                <Button variant="outline" size="icon" aria-label="Open navigation menu" disabled>
+                  <Menu className="h-5 w-5" />
+                </Button>
+              )}
               <Link href="/admin" className="min-w-0">
                 <span className="block truncate text-sm font-semibold text-foreground">{panelTitle}</span>
                 <span className="block truncate text-xs text-muted-foreground">{siteTitle}</span>
@@ -248,8 +274,14 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
               <span className="hidden sm:inline">Welcome back, </span>
               <span className="text-primary">{userName}</span>
             </div>
-            <div className="hidden md:block text-xs text-muted-foreground">
-              {userEmail}
+            <div className="hidden md:flex items-center gap-3 text-xs text-muted-foreground">
+              {typeof meta?.unread === 'number' ? (
+                <Link href="/admin/messages" className="flex items-center gap-2 hover:text-foreground">
+                  <Mail className="h-4 w-4" />
+                  {meta.unread} unread
+                </Link>
+              ) : null}
+              <span>{userEmail}</span>
             </div>
           </div>
         </header>

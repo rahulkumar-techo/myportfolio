@@ -80,9 +80,9 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
           <div className="flex items-center gap-4">
             {/* Avatar */}
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-              {testimonial.avatarUrl && !imageFailed ? (
+              {!imageFailed ? (
                 <Image
-                  src={buildCloudinaryImageUrl(testimonial.avatarUrl, 'avatar')}
+                  src={buildCloudinaryImageUrl(testimonial.avatarUrl || '/placeholder-user.jpg', 'avatar')}
                   alt={testimonial.name}
                   width={48}
                   height={48}

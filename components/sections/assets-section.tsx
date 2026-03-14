@@ -38,7 +38,7 @@ export default function AssetsSection() {
       <div className="absolute top-0 right-1/4 h-96 w-96 rounded-full bg-primary/5 blur-3xl" />
       <div className="absolute bottom-0 left-1/4 h-80 w-80 rounded-full bg-accent/5 blur-3xl" />
 
-      <div className="container relative z-10 mx-auto px-4">
+      <div className="container relative z-10 mx-auto px-4 overflow-x-hidden">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
@@ -62,13 +62,13 @@ export default function AssetsSection() {
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6, delay: 0.15 }}
-          className="mb-10 flex flex-wrap items-center justify-center gap-2"
+          className="mb-10 flex items-center gap-2 overflow-x-auto pb-2 sm:justify-center sm:flex-wrap sm:overflow-visible"
         >
           {categories.map((category) => (
             <button
               key={category}
               onClick={() => setActiveCategory(category)}
-              className={`rounded-lg border px-4 py-2 text-sm font-mono transition-all duration-300 ${
+              className={`shrink-0 rounded-lg border px-4 py-2 text-sm font-mono transition-all duration-300 ${
                 activeCategory === category
                   ? 'border-primary bg-primary text-primary-foreground shadow-[0_0_20px_rgba(34,211,238,0.18)]'
                   : 'glass-card border-transparent text-muted-foreground hover:-translate-y-0.5 hover:border-primary/30 hover:bg-primary/10 hover:text-foreground'
@@ -96,7 +96,7 @@ export default function AssetsSection() {
             <p className="mt-2 text-sm text-muted-foreground">Choose another category or feature more assets.</p>
           </div>
         ) : (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredAssets.map((asset, index) => {
               const Icon = assetIcon(asset);
 
@@ -107,9 +107,9 @@ export default function AssetsSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.08 }}
-                  className="group"
+                  className="group min-w-0"
                 >
-                  <div className="flex h-full flex-col rounded-2xl p-6 glass-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/30">
+                  <div className="flex h-full min-w-0 flex-col rounded-2xl p-5 sm:p-6 glass-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/30">
                     <div className="mb-5 flex items-center justify-between">
                       <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
                         <Icon className="h-6 w-6" />
@@ -119,8 +119,8 @@ export default function AssetsSection() {
                       </span>
                     </div>
 
-                    <h3 className="mb-2 text-lg font-semibold text-foreground">{asset.label}</h3>
-                    <p className="mb-2 truncate text-sm text-muted-foreground">{asset.originalName}</p>
+                    <h3 className="mb-2 text-lg font-semibold text-foreground break-words">{asset.label}</h3>
+                    <p className="mb-2 break-all text-sm text-muted-foreground">{asset.originalName}</p>
                     <p className="mb-6 text-xs text-muted-foreground">
                       {new Date(asset.uploadedAt).toLocaleDateString()}
                     </p>

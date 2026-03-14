@@ -21,11 +21,13 @@ const defaultSettings: SiteSettings = {
   bio: "",
   location: "",
   contactEmail: "",
+  aboutAvatarUrl: "",
   resumeUrl: "",
   githubUrl: "",
   linkedinUrl: "",
   twitterUrl: "",
-  websiteUrl: ""
+  websiteUrl: "",
+  adminNotificationSound: "beep"
 }
 
 type CreateUserInput = {
@@ -88,26 +90,29 @@ export async function hasAdminUser() {
 export async function createUser(input: CreateUserInput) {
   await connectDB()
 
+  const role = input.role ?? "user"
   const user = await UserModel.create({
     name: input.name,
     email: input.email.toLowerCase(),
     password: input.password,
     image: input.image ?? null,
-    role: input.role ?? "user",
+    role,
     blocked: false
   })
 
-  await SettingsModel.updateOne(
-    { ownerId: user._id },
-    {
-      $setOnInsert: {
-        ownerId: user._id,
-        ...defaultSettings,
-        contactEmail: input.email.toLowerCase()
-      }
-    },
-    { upsert: true }
-  )
+  if (role === "admin") {
+    await SettingsModel.updateOne(
+      { ownerId: user._id },
+      {
+        $setOnInsert: {
+          ownerId: user._id,
+          ...defaultSettings,
+          contactEmail: input.email.toLowerCase()
+        }
+      },
+      { upsert: true }
+    )
+  }
 
   return user
 }
@@ -299,7 +304,11 @@ export async function getUserSettings(userId: string) {
 }
 
 export async function updateUserSettings(userId: string, updates: Partial<SiteSettings>) {
-  const user = await findUserById(userId)
+  let user = await findUserById(userId)
+
+  if (!user) {
+    user = await findFirstAdmin()
+  }
 
   if (!user) {
     throw new Error("User not found")
@@ -310,7 +319,7 @@ export async function updateUserSettings(userId: string, updates: Partial<SiteSe
   }
   void _theme
 
-  const currentSettings = await getUserSettings(userId)
+  const currentSettings = await getUserSettings(user._id.toString())
 
   const settings = await SettingsModel.findOneAndUpdate(
     { ownerId: user._id },
