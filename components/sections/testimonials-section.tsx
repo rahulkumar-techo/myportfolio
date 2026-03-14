@@ -7,6 +7,13 @@ import { MessageSquare, Star, Quote, Loader2, Send, CheckCircle2, LogOut } from 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
 import { useTestimonials } from '@/hooks/useTestimonials';
@@ -320,6 +327,8 @@ export default function TestimonialsSection() {
                     <Label htmlFor="testimonial-role">Role</Label>
                     <Input
                       id="testimonial-role"
+                      placeholder="eg: Full Stack Developer, Teacher, Product Manager"
+                      className="border-border bg-secondary/50 placeholder:text-muted-foreground/50 focus:border-primary"
                       value={formData.role}
                       onChange={(event) => setFormData((current) => ({ ...current, role: event.target.value }))}
                       required
@@ -332,6 +341,8 @@ export default function TestimonialsSection() {
                     <Label htmlFor="testimonial-company">Company</Label>
                     <Input
                       id="testimonial-company"
+                      placeholder="eg: School, Startup, Agency, Freelance Team"
+                      className="border-border bg-secondary/50 placeholder:text-muted-foreground/50 focus:border-primary"
                       value={formData.company}
                       onChange={(event) => setFormData((current) => ({ ...current, company: event.target.value }))}
                       required
@@ -339,17 +350,29 @@ export default function TestimonialsSection() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="testimonial-rating">Rating</Label>
-                    <Input
-                      id="testimonial-rating"
-                      type="number"
-                      min={1}
-                      max={5}
-                      value={formData.rating}
-                      onChange={(event) =>
-                        setFormData((current) => ({ ...current, rating: Number(event.target.value || 5) }))
+                    <Select
+                      value={String(formData.rating)}
+                      onValueChange={(value) =>
+                        setFormData((current) => ({ ...current, rating: Number(value) }))
                       }
-                      required
-                    />
+                    >
+                      <SelectTrigger
+                        id="testimonial-rating"
+                        className="border-border bg-secondary/50 text-foreground focus:border-primary"
+                      >
+                        <SelectValue placeholder="Select rating" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 5 }, (_, index) => {
+                          const rating = String(index + 1);
+                          return (
+                            <SelectItem key={rating} value={rating}>
+                              {rating} Star{rating === '1' ? '' : 's'}
+                            </SelectItem>
+                          );
+                        })}
+                      </SelectContent>
+                    </Select>
                   </div>
                 </div>
 
@@ -357,6 +380,8 @@ export default function TestimonialsSection() {
                   <Label htmlFor="testimonial-content">Testimonial</Label>
                   <Textarea
                     id="testimonial-content"
+                    placeholder="eg: Clear communication, strong execution, and delivered on time."
+                    className="resize-none border-border bg-secondary/50 placeholder:text-muted-foreground/50 focus:border-primary"
                     value={formData.content}
                     onChange={(event) => setFormData((current) => ({ ...current, content: event.target.value }))}
                     rows={5}

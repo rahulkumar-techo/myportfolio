@@ -98,7 +98,7 @@ export default function AboutSection() {
             transition={{ duration: 0.6, delay: 0.2 }}
           >
 
-            <div className="glass-card rounded-2xl p-5 md:p-8 relative overflow-hidden">
+            <div className="glass-card rounded-2xl p-5 md:p-8 relative overflow-hidden ">
 
               {/* holographic border */}
 
