@@ -118,8 +118,8 @@ export default function AboutSection() {
                     <span className="text-xl md:text-3xl font-bold text-primary">
 
                       <Image
-                        alt={profileName.split(' ').map(n => n[0]).join('')}
-                        src={avatarUrl}
+                        alt={"avatar"}
+                        src={"/avatar.png"}
                         width={100}
                         height={100}
                         className=' rounded-2xl'

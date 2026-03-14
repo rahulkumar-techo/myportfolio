@@ -27,7 +27,7 @@ import {
 } from "react-icons/si"
 
 
-type Category = "frontend" | "backend" | "devops" | "languages"|"tools"
+type Category = "frontend" | "backend" | "devops" | "languages" | "tools"
 
 
 /* ------------------------------------------------ */
@@ -379,21 +379,21 @@ export default function SkillsSection() {
                 <div className="flex justify-center relative mb-20">
 
                     {hasOrbitalSkills ? (
-                    <div className="
+                        <div className="
 relative
 w-[320px] h-[320px]
 md:w-[520px] md:h-[520px]
 lg:w-[700px] lg:h-[700px]
 ">
 
-                        {/* CORE */}
+                            {/* CORE */}
 
-                        <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
+                            <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-10">
 
-                            <motion.div
-                                animate={{ scale: [1, 1.1, 1] }}
-                                transition={{ duration: 3, repeat: Infinity }}
-                                className="
+                                <motion.div
+                                    animate={{ scale: [1, 1.1, 1] }}
+                                    transition={{ duration: 3, repeat: Infinity }}
+                                    className="
 w-16 h-16
 md:w-20 md:h-20
 lg:w-24 lg:h-24
@@ -403,18 +403,18 @@ from-primary
 to-accent
 flex items-center justify-center
 "
-                            >
+                                >
 
-                                <Cpu className="text-white w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10" />
+                                    <Cpu className="text-white w-6 h-6 md:w-8 md:h-8 lg:w-10 lg:h-10" />
 
-                            </motion.div>
+                                </motion.div>
 
-                        </div>
+                            </div>
 
 
-                        {/* ORBIT RINGS */}
+                            {/* ORBIT RINGS */}
 
-                        <div className="
+                            <div className="
 absolute
 w-[280px] h-[280px]
 border border-dashed border-blue-400/30
@@ -423,7 +423,7 @@ left-1/2 top-1/2
 -translate-x-1/2 -translate-y-1/2
 "/>
 
-                        <div className="
+                            <div className="
 hidden md:block
 absolute
 w-[420px] h-[420px]
@@ -433,7 +433,7 @@ left-1/2 top-1/2
 -translate-x-1/2 -translate-y-1/2
 "/>
 
-                        <div className="
+                            <div className="
 hidden lg:block
 absolute
 w-[560px] h-[560px]
@@ -443,7 +443,7 @@ left-1/2 top-1/2
 -translate-x-1/2 -translate-y-1/2
 "/>
 
-                        <div className="
+                            <div className="
 hidden lg:block
 absolute
 w-[700px] h-[700px]
@@ -454,29 +454,29 @@ left-1/2 top-1/2
 "/>
 
 
-                        {/* ORBITS */}
+                            {/* ORBITS */}
 
-                        <OrbitLayer skills={frontend} {...ORBIT_CONFIG.frontend} />
+                            <OrbitLayer skills={frontend} {...ORBIT_CONFIG.frontend} />
 
-                        <div className="hidden md:block">
-                            <OrbitLayer skills={backend} {...ORBIT_CONFIG.backend} />
+                            <div className="hidden md:block">
+                                <OrbitLayer skills={backend} {...ORBIT_CONFIG.backend} />
+                            </div>
+
+                            <div className="hidden lg:block">
+                                <OrbitLayer skills={devops} {...ORBIT_CONFIG.devops} />
+                                <OrbitLayer skills={languages} {...ORBIT_CONFIG.languages} />
+                            </div>
+
                         </div>
-
-                        <div className="hidden lg:block">
-                            <OrbitLayer skills={devops} {...ORBIT_CONFIG.devops} />
-                            <OrbitLayer skills={languages} {...ORBIT_CONFIG.languages} />
-                        </div>
-
-                    </div>
                     ) : (
-                    <div className="glass-card rounded-2xl px-6 py-10 text-center max-w-xl">
-                        <p className="text-lg font-medium text-foreground">
-                            {isLoading ? "Loading skills..." : "No skills added yet."}
-                        </p>
-                        <p className="mt-2 text-sm text-muted-foreground">
-                            Add skills from the admin panel to display your tech stack here.
-                        </p>
-                    </div>
+                        <div className="glass-card rounded-2xl px-6 py-10 text-center max-w-xl">
+                            <p className="text-lg font-medium text-foreground">
+                                {isLoading ? "Loading skills..." : "No skills added yet."}
+                            </p>
+                            <p className="mt-2 text-sm text-muted-foreground">
+                                Add skills from the admin panel to display your tech stack here.
+                            </p>
+                        </div>
                     )}
 
                 </div>
