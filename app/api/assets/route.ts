@@ -6,6 +6,9 @@ import { IMAGE_UPLOAD_PRESETS, type ImageUploadKind } from "@/lib/image-presets"
 import { createAsset, listPublicAssets } from "@/repositories/asset-repository"
 import type { AssetItem } from "@/lib/types"
 
+export const runtime = "nodejs"
+export const maxDuration = 60
+
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 const ALLOWED_CATEGORIES = new Set(["cv", "achievement", "image", "certificate", "other"])
 const CLOUDINARY_FOLDER = "portfolio/assets"

@@ -36,3 +36,7 @@ __v0_jsx-dev-runtime.ts
 # Misc
 coverage/
 dist/
+
+./.claude
+.claude
+.codex
