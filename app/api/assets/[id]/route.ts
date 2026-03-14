@@ -4,6 +4,7 @@ import { requireAdminApiSession } from "@/lib/auth"
 import cloudinary from "@/lib/clodudinary"
 import { IMAGE_UPLOAD_PRESETS, type ImageUploadKind } from "@/lib/image-presets"
 import { createAsset, deleteAsset } from "@/repositories/asset-repository"
+import { removeTempAssetUploadsByPublicIds } from "@/repositories/temp-asset-upload-repository"
 import type { AssetItem } from "@/lib/types"
 
 export const runtime = "nodejs"
@@ -117,6 +118,92 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   }
 
   const { id } = await context.params
+  const contentType = request.headers.get("content-type") ?? ""
+
+  if (contentType.includes("application/json")) {
+    const body = await request.json().catch(() => ({} as any))
+    const label = String(body?.label ?? "").trim()
+    const category = String(body?.category ?? "other").trim()
+    const featured = Boolean(body?.featured)
+    const upload = body?.upload ?? null
+
+    if (!label) {
+      return NextResponse.json({ success: false, error: "Label is required." }, { status: 400 })
+    }
+
+    if (!ALLOWED_CATEGORIES.has(category)) {
+      return NextResponse.json({ success: false, error: "Invalid category." }, { status: 400 })
+    }
+
+    let previousAsset: StoredAsset | null = null
+
+    try {
+      previousAsset = (await deleteAsset(session.user.id, id)) as StoredAsset
+    } catch (error: any) {
+      return NextResponse.json(
+        { success: false, error: error?.message ?? "Unable to find the asset." },
+        { status: 400 }
+      )
+    }
+
+    const hasUpload = upload && typeof upload?.publicId === "string" && typeof upload?.url === "string"
+    if (hasUpload) {
+      const size = Number(upload?.size ?? upload?.bytes ?? 0)
+      if (!Number.isFinite(size) || size <= 0 || size > MAX_FILE_SIZE) {
+        await createAsset(session.user.id, previousAsset as AssetItem).catch(() => null)
+        return NextResponse.json({ success: false, error: "File must be 10MB or smaller." }, { status: 400 })
+      }
+    }
+
+    const nextAsset = {
+      ...previousAsset,
+      id,
+      label,
+      category: category as AssetItem["category"],
+      featured,
+      fileId: hasUpload ? upload.publicId : previousAsset.fileId,
+      fileName: hasUpload ? path.basename(upload.publicId) : previousAsset.fileName,
+      originalName: hasUpload
+        ? sanitizeFileName(String(upload?.originalName ?? previousAsset.originalName ?? "asset"))
+        : previousAsset.originalName,
+      fileUrl: hasUpload ? upload.url : previousAsset.fileUrl,
+      fileType: hasUpload ? String(upload?.fileType ?? previousAsset.fileType) : previousAsset.fileType,
+      size: hasUpload ? Number(upload?.size ?? upload?.bytes ?? previousAsset.size) : previousAsset.size,
+      uploadedAt: new Date().toISOString()
+    } as AssetItem
+
+    try {
+      const updatedAsset = await createAsset(session.user.id, nextAsset)
+
+      if (hasUpload && previousAsset.fileId && previousAsset.fileId !== upload.publicId) {
+        await destroyCloudinaryAsset(previousAsset.fileId)
+      }
+
+      if (hasUpload) {
+        await removeTempAssetUploadsByPublicIds(session.user.id, [upload.publicId])
+      }
+
+      return NextResponse.json({
+        success: true,
+        data: updatedAsset
+      })
+    } catch (error: any) {
+      if (hasUpload) {
+        await destroyCloudinaryAsset(upload.publicId)
+        await removeTempAssetUploadsByPublicIds(session.user.id, [upload.publicId])
+      }
+
+      if (previousAsset) {
+        await createAsset(session.user.id, previousAsset as AssetItem).catch(() => null)
+      }
+
+      return NextResponse.json(
+        { success: false, error: error?.message ?? "Unable to update the asset." },
+        { status: 400 }
+      )
+    }
+  }
+
   const formData = await request.formData()
   const label = String(formData.get("label") ?? "").trim()
   const category = String(formData.get("category") ?? "other").trim()

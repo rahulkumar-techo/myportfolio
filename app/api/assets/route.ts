@@ -4,6 +4,7 @@ import { requireAdminApiSession } from "@/lib/auth"
 import cloudinary from "@/lib/clodudinary"
 import { IMAGE_UPLOAD_PRESETS, type ImageUploadKind } from "@/lib/image-presets"
 import { createAsset, listPublicAssets } from "@/repositories/asset-repository"
+import { removeTempAssetUploadsByPublicIds } from "@/repositories/temp-asset-upload-repository"
 import type { AssetItem } from "@/lib/types"
 
 export const runtime = "nodejs"
@@ -100,6 +101,65 @@ export async function POST(request: Request) {
 
   if (response || !session) {
     return response
+  }
+
+  const contentType = request.headers.get("content-type") ?? ""
+
+  if (contentType.includes("application/json")) {
+    const body = await request.json().catch(() => ({} as any))
+    const label = String(body?.label ?? "").trim()
+    const category = String(body?.category ?? "other").trim()
+    const upload = body?.upload ?? null
+
+    if (!label) {
+      return NextResponse.json({ success: false, error: "Label is required." }, { status: 400 })
+    }
+
+    if (!ALLOWED_CATEGORIES.has(category)) {
+      return NextResponse.json({ success: false, error: "Invalid category." }, { status: 400 })
+    }
+
+    if (!upload || typeof upload?.publicId !== "string" || typeof upload?.url !== "string") {
+      return NextResponse.json({ success: false, error: "Upload data is required." }, { status: 400 })
+    }
+
+    const size = Number(upload?.size ?? upload?.bytes ?? 0)
+    if (!Number.isFinite(size) || size <= 0 || size > MAX_FILE_SIZE) {
+      return NextResponse.json({ success: false, error: "File must be 10MB or smaller." }, { status: 400 })
+    }
+
+    const originalName = sanitizeFileName(String(upload?.originalName ?? "asset"))
+    const asset = {
+      id: crypto.randomUUID(),
+      label,
+      category: category as AssetItem["category"],
+      featured: false,
+      fileId: upload.publicId,
+      fileName: path.basename(upload.publicId),
+      originalName,
+      fileUrl: upload.url,
+      fileType: String(upload?.fileType ?? "application/octet-stream"),
+      size,
+      uploadedAt: new Date().toISOString()
+    } as AssetItem
+
+    try {
+      const createdAsset = await createAsset(session.user.id, asset)
+      await removeTempAssetUploadsByPublicIds(session.user.id, [upload.publicId])
+
+      return NextResponse.json(
+        {
+          success: true,
+          data: createdAsset
+        },
+        { status: 201 }
+      )
+    } catch (error) {
+      return NextResponse.json(
+        { success: false, error: error instanceof Error ? error.message : "Unable to create the asset." },
+        { status: 400 }
+      )
+    }
   }
 
   const formData = await request.formData()

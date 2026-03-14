@@ -151,6 +151,18 @@ export const TempProjectUploadSchema = new Schema({
 TempProjectUploadSchema.index({ ownerId: 1, id: 1 }, { unique: true })
 TempProjectUploadSchema.index({ ownerId: 1, publicId: 1 })
 
+// Standalone collection for temporary asset uploads.
+export const TempAssetUploadSchema = new Schema({
+  ...ownerField,
+  id: { type: String, required: true },
+  publicId: { type: String, required: true },
+  url: { type: String, required: true },
+  createdAt: { type: Date, default: Date.now }
+})
+
+TempAssetUploadSchema.index({ ownerId: 1, id: 1 }, { unique: true })
+TempAssetUploadSchema.index({ ownerId: 1, publicId: 1 })
+
 // Standalone collection for site and branding settings.
 export const SettingsSchema = new Schema({
   ...ownerField,
@@ -178,4 +190,5 @@ export const ContactMessageModel = models.ContactMessage || model("ContactMessag
 export const AssetModel = models.Asset || model("Asset", AssetSchema)
 export const TempProjectUploadModel =
   models.TempProjectUpload || model("TempProjectUpload", TempProjectUploadSchema)
+export const TempAssetUploadModel = models.TempAssetUpload || model("TempAssetUpload", TempAssetUploadSchema)
 export const SettingsModel = models.Settings || model("Settings", SettingsSchema)

@@ -93,6 +93,13 @@ export interface TempProjectUpload {
   createdAt: string | Date;
 }
 
+export interface TempAssetUpload {
+  id: string;
+  publicId: string;
+  url: string;
+  createdAt: string | Date;
+}
+
 export interface AnalyticsUser {
   id: string;
   name: string;
