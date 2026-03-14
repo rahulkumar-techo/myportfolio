@@ -154,6 +154,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
       id,
       label,
       category: category as AssetItem["category"],
+      featured: String(formData.get("featured") ?? previousAsset.featured ?? "false") === "true",
       fileId: uploadedFile?.public_id ?? previousAsset.fileId,
       fileName: uploadedFile ? path.basename(uploadedFile.public_id) : previousAsset.fileName,
       originalName:

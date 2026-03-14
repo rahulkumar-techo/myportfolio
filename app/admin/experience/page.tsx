@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { Briefcase, Calendar, Loader2, MapPin, Pencil, Plus, Trash2 } from 'lucide-react'
+import { Briefcase, Calendar, Loader2, MapPin, Pencil, Plus, Star, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
 import { Input } from '@/components/ui/input'
@@ -18,6 +18,7 @@ type ExperienceFormState = {
   startDate: string
   endDate: string
   current: boolean
+  featured: boolean
   description: string
   achievements: string
   technologies: string
@@ -31,6 +32,7 @@ const initialForm: ExperienceFormState = {
   startDate: '',
   endDate: '',
   current: false,
+  featured: false,
   description: '',
   achievements: '',
   technologies: ''
@@ -61,6 +63,7 @@ export default function AdminExperiencePage() {
       startDate: experience.startDate,
       endDate: experience.endDate || '',
       current: experience.current,
+      featured: experience.featured ?? false,
       description: experience.description,
       achievements: experience.achievements.join('\n'),
       technologies: experience.technologies.join(', ')
@@ -106,6 +109,10 @@ export default function AdminExperiencePage() {
     } finally {
       setDeleteId(null)
     }
+  }
+
+  const toggleFeatured = async (experience: Experience) => {
+    await updateExperience(experience.id, { featured: !experience.featured })
   }
 
   const formatDate = (date: string) =>
@@ -225,6 +232,17 @@ export default function AdminExperiencePage() {
             <Label htmlFor="experience-current">This is my current role</Label>
           </div>
 
+          <div className="flex items-center gap-3 rounded-lg border border-border/60 px-4 py-3">
+            <Checkbox
+              id="experience-featured"
+              checked={formData.featured}
+              onCheckedChange={(checked) =>
+                setFormData((current) => ({ ...current, featured: Boolean(checked) }))
+              }
+            />
+            <Label htmlFor="experience-featured">Feature on home page</Label>
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="experience-description">Description</Label>
             <Textarea
@@ -275,6 +293,9 @@ export default function AdminExperiencePage() {
                     {experience.current ? (
                       <span className="rounded-full bg-primary/15 px-2 py-1 text-xs text-primary">Current</span>
                     ) : null}
+                    {experience.featured ? (
+                      <span className="rounded-full bg-yellow-500/15 px-2 py-1 text-xs text-yellow-500">Featured</span>
+                    ) : null}
                   </div>
 
                   <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -304,6 +325,9 @@ export default function AdminExperiencePage() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <Button type="button" variant="outline" size="icon" onClick={() => void toggleFeatured(experience)}>
+                    <Star className={`h-4 w-4 ${experience.featured ? 'fill-yellow-500 text-yellow-500' : ''}`} />
+                  </Button>
                   <Button type="button" variant="outline" size="icon" onClick={() => startEdit(experience)}>
                     <Pencil className="h-4 w-4" />
                   </Button>

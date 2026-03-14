@@ -3,34 +3,40 @@
 import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { MapPin, Mail, Calendar, Code2, Coffee, Rocket } from 'lucide-react'
-import { developerProfile } from '@/lib/data'
 import Image from 'next/image'
-
-const stats = [
-  {
-    icon: Calendar,
-    value: developerProfile.stats.yearsExperience,
-    label: 'Years Experience',
-    suffix: '+',
-  },
-  {
-    icon: Rocket,
-    value: developerProfile.stats.projectsCompleted,
-    label: 'Projects Completed',
-    suffix: '+',
-  },
-  {
-    icon: Coffee,
-    value: developerProfile.stats.coffeeConsumed,
-    label: 'Coffee Consumed',
-    suffix: '',
-  },
-]
+import { usePublicProfile } from '@/hooks/usePublicProfile'
 
 export default function AboutSection() {
 
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: '-100px' })
+  const { profile } = usePublicProfile()
+
+  const avatarUrl = profile?.profile.image || '/avatar.png'
+  const profileName = profile?.profile.name || profile?.settings.siteTitle || 'Portfolio Owner'
+  const location = profile?.settings.location || 'Location not set'
+  const email = profile?.settings.contactEmail || profile?.profile.email || 'Email not set'
+  const bio = profile?.settings.bio || 'Use admin settings to describe your background and strengths.'
+  const stats = [
+    {
+      icon: Calendar,
+      value: profile?.stats.yearsExperience ?? 0,
+      label: 'Years Experience',
+      suffix: '+',
+    },
+    {
+      icon: Rocket,
+      value: profile?.stats.totalProjects ?? 0,
+      label: 'Projects Completed',
+      suffix: '',
+    },
+    {
+      icon: Coffee,
+      value: profile?.stats.testimonials ?? 0,
+      label: 'Testimonials',
+      suffix: '',
+    },
+  ]
 
   return (
 
@@ -112,8 +118,8 @@ export default function AboutSection() {
                     <span className="text-xl md:text-3xl font-bold text-primary">
 
                       <Image
-                        alt={developerProfile.name.split(' ').map(n => n[0]).join('')}
-                        src={developerProfile?.avatarUrl}
+                        alt={profileName.split(' ').map(n => n[0]).join('')}
+                        src={avatarUrl}
                         width={100}
                         height={100}
                         className=' rounded-2xl'
@@ -132,23 +138,23 @@ export default function AboutSection() {
                 <div className="flex-1">
 
                   <h3 className="text-lg md:text-2xl font-bold text-foreground mb-1">
-                    {developerProfile.name}
+                    {profileName}
                   </h3>
 
                   <p className="text-primary font-mono text-xs md:text-sm mb-3">
-                    {developerProfile.title}
+                    {profile?.settings.siteTagline || 'Public profile summary'}
                   </p>
 
                   <div className="flex flex-wrap gap-3 text-xs md:text-sm text-muted-foreground">
 
                     <span className="flex items-center gap-1">
                       <MapPin className="w-4 h-4" />
-                      {developerProfile.location}
+                      {location}
                     </span>
 
                     <span className="flex items-center gap-1 break-all">
                       <Mail className="w-4 h-4" />
-                      {developerProfile.email}
+                      {email}
                     </span>
 
                   </div>
@@ -161,7 +167,7 @@ export default function AboutSection() {
               {/* BIO */}
 
               <p className="text-muted-foreground leading-relaxed text-sm md:text-base mb-6">
-                {developerProfile.bio}
+                {bio}
               </p>
 
 

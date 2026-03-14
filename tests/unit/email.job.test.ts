@@ -12,8 +12,18 @@ jest.mock("@/services/email.service", () => ({
 const mockedSendProjectMail = jest.mocked(sendProjectMail);
 
 describe("processEmailJob", () => {
+  let logSpy: jest.SpyInstance
+  let warnSpy: jest.SpyInstance
+
   beforeEach(() => {
     jest.clearAllMocks();
+    logSpy = jest.spyOn(console, "log").mockImplementation(() => {});
+    warnSpy = jest.spyOn(console, "warn").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    logSpy.mockRestore();
+    warnSpy.mockRestore();
   });
 
   it("throws on invalid payload", async () => {

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { Edit, ExternalLink, Github, Loader2, Star, StarOff, Trash2 } from 'lucide-react'
 import {
   AlertDialog,
@@ -64,9 +65,12 @@ export function ProjectsList({
 
               <div className="flex flex-wrap items-center gap-2">
                 {project.coverImage?.url ? (
-                  <img
+                  <Image
                     src={project.coverImage.url}
                     alt={`${project.title} cover`}
+                    width={64}
+                    height={48}
+                    unoptimized
                     className="h-12 w-16 rounded-md object-cover"
                   />
                 ) : (
@@ -77,10 +81,13 @@ export function ProjectsList({
                 {project.galleryImages?.length ? (
                   <div className="flex flex-wrap gap-2">
                     {project.galleryImages.slice(0, 4).map((image, index) => (
-                      <img
+                      <Image
                         key={`${project.id}-gallery-${index}`}
                         src={image.url}
                         alt={`${project.title} gallery ${index + 1}`}
+                        width={64}
+                        height={48}
+                        unoptimized
                         className="h-12 w-16 rounded-md object-cover"
                       />
                     ))}

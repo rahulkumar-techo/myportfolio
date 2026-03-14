@@ -15,6 +15,7 @@ const guideMessages: AIGuideMessage[] = [
   { id: 'about', section: 'about', message: "Here's where you'll learn about the developer's journey and expertise." },
   { id: 'skills', section: 'skills', message: "These are the technologies mastered over years of experience." },
   { id: 'projects', section: 'projects', message: "Explore the showcase of projects that push boundaries." },
+  { id: 'assets', section: 'assets', message: "You can browse public downloads, CV files, and other shared assets here." },
   { id: 'experience', section: 'experience', message: "A timeline of professional growth and achievements." },
   { id: 'testimonials', section: 'testimonials', message: "Hear what colleagues and clients have to say." },
   { id: 'contact', section: 'contact', message: "Ready to connect? Let's build something amazing together." },

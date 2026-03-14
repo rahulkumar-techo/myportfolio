@@ -8,7 +8,6 @@
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
 import { Cpu, Globe, Server, Settings, Code } from "lucide-react"
-import { skillsData } from "@/lib/skills-data"
 import { useSkills } from "@/hooks/useSkills"
 import type { Skill as ManagedSkill } from "@/lib/types"
 
@@ -28,11 +27,6 @@ import {
 } from "react-icons/si"
 
 
-/* ------------------------------------------------ */
-/* TYPES */
-/* ------------------------------------------------ */
-
-type Skill = typeof skillsData[number]
 type Category = "frontend" | "backend" | "devops" | "languages"|"tools"
 
 
@@ -43,7 +37,7 @@ type Category = "frontend" | "backend" | "devops" | "languages"|"tools"
 const TECH_STACK = {
 
     react: { icon: SiReact, color: "#61DAFB" },
-    nextjs: { icon: SiNextdotjs, color: "#ffffff" },
+    nextjs: { icon: SiNextdotjs, color: "#111827" },
     tailwind: { icon: SiTailwindcss, color: "#38BDF8" },
     typescript: { icon: SiTypescript, color: "#3178C6" },
     javascript: { icon: SiJavascript, color: "#F7DF1E" },
@@ -56,6 +50,31 @@ const TECH_STACK = {
     graphql: { icon: SiGraphql, color: "#E10098" }
 
 } as const
+
+const TECH_ALIASES: Record<string, keyof typeof TECH_STACK> = {
+    reactjs: "react",
+    next: "nextjs",
+    nextdotjs: "nextjs",
+    nextjs14: "nextjs",
+    tailwindcss: "tailwind",
+    tailwindcss3: "tailwind",
+    ts: "typescript",
+    js: "javascript",
+    node: "nodejs",
+    nodedotjs: "nodejs",
+    mongo: "mongodb",
+    mongodbatlas: "mongodb",
+    postgres: "postgresql",
+    postgressql: "postgresql",
+    postgre: "postgresql",
+    py: "python",
+    gql: "graphql"
+}
+
+function resolveTechKey(skill: ManagedSkill) {
+    const rawKey = (skill.icon || skill.name).toLowerCase().replace(/[^a-z0-9]/g, "")
+    return TECH_ALIASES[rawKey] || (rawKey as keyof typeof TECH_STACK)
+}
 
 
 /* ------------------------------------------------ */
@@ -97,10 +116,12 @@ function SkillOrb({
     index,
     total,
     radius
-}: { skill: Skill, index: number, total: number, radius: number }) {
+}: { skill: ManagedSkill, index: number, total: number, radius: number }) {
 
-    const tech = TECH_STACK[skill.slug as keyof typeof TECH_STACK]
+    const techKey = resolveTechKey(skill)
+    const tech = TECH_STACK[techKey]
     const Icon = tech?.icon
+    const fallbackLabel = skill.name.trim().slice(0, 2).toUpperCase()
 
     const angle = (index / total) * Math.PI * 2
     const x = Math.cos(angle) * radius
@@ -123,7 +144,7 @@ function SkillOrb({
 
                 <div
                     className="absolute inset-0 w-10 h-10 md:w-12 md:h-12 lg:w-16 lg:h-16 rounded-full blur-xl opacity-0 group-hover:opacity-60 transition"
-                    style={{ background: tech?.color }}
+                    style={{ background: tech?.color || "rgba(34,211,238,0.45)" }}
                 />
 
                 {/* orb */}
@@ -151,6 +172,12 @@ lg:w-7 lg:h-7
                         />
 
                     )}
+
+                    {!Icon ? (
+                        <span className="text-[10px] md:text-xs lg:text-sm font-semibold text-primary">
+                            {fallbackLabel}
+                        </span>
+                    ) : null}
 
                 </div>
 
@@ -191,7 +218,7 @@ function OrbitLayer({
     skills,
     radius,
     duration
-}: { skills: Skill[], radius: number, duration: number }) {
+}: { skills: ManagedSkill[], radius: number, duration: number }) {
 
     return (
 
@@ -302,20 +329,20 @@ function CategoryCard({
 export default function SkillsSection() {
 
     const ref = useRef(null)
-    const isInView = useInView(ref, { once: true })
-    const { skills: liveSkills } = useSkills()
+    useInView(ref, { once: true })
+    const { skills: liveSkills, isLoading } = useSkills()
 
-    const frontend = skillsData.filter(s => s.category === "frontend")
-    const backend = skillsData.filter(s => s.category === "backend")
-    const devops = skillsData.filter(s => s.category === "devops")
-    const languages = skillsData.filter(s => s.category === "languages")
-
-    const cardSkillSource = liveSkills.length > 0 ? liveSkills : skillsData
-    const frontendCards = cardSkillSource.filter((skill: ManagedSkill | Skill) => skill.category === "frontend")
-    const backendCards = cardSkillSource.filter((skill: ManagedSkill | Skill) => skill.category === "backend")
-    const devopsCards = cardSkillSource.filter((skill: ManagedSkill | Skill) => skill.category === "devops")
-    const languageCards = cardSkillSource.filter((skill: ManagedSkill | Skill) => skill.category === "languages")
-    const toolsCards = cardSkillSource.filter((skill: ManagedSkill | Skill) => skill.category === "tools")
+    const frontend = liveSkills.filter((skill: ManagedSkill) => skill.category === "frontend")
+    const backend = liveSkills.filter((skill: ManagedSkill) => skill.category === "backend")
+    const devops = liveSkills.filter((skill: ManagedSkill) => skill.category === "devops")
+    const languages = liveSkills.filter((skill: ManagedSkill) => skill.category === "languages")
+    const frontendCards = frontend
+    const backendCards = backend
+    const devopsCards = devops
+    const languageCards = languages
+    const toolsCards = liveSkills.filter((skill: ManagedSkill) => skill.category === "tools")
+    const hasOrbitalSkills = frontend.length > 0 || backend.length > 0 || devops.length > 0 || languages.length > 0
+    const hasAnySkills = liveSkills.length > 0
 
     return (
 
@@ -351,6 +378,7 @@ export default function SkillsSection() {
 
                 <div className="flex justify-center relative mb-20">
 
+                    {hasOrbitalSkills ? (
                     <div className="
 relative
 w-[320px] h-[320px]
@@ -440,21 +468,33 @@ left-1/2 top-1/2
                         </div>
 
                     </div>
+                    ) : (
+                    <div className="glass-card rounded-2xl px-6 py-10 text-center max-w-xl">
+                        <p className="text-lg font-medium text-foreground">
+                            {isLoading ? "Loading skills..." : "No skills added yet."}
+                        </p>
+                        <p className="mt-2 text-sm text-muted-foreground">
+                            Add skills from the admin panel to display your tech stack here.
+                        </p>
+                    </div>
+                    )}
 
                 </div>
 
 
                 {/* CATEGORY GRID */}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6" >
+                {hasAnySkills ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6" >
 
-                    <CategoryCard category="frontend" skills={frontendCards} />
-                    <CategoryCard category="backend" skills={backendCards} />
-                    <CategoryCard category="devops" skills={devopsCards} />
-                    <CategoryCard category="languages" skills={languageCards} />
-                    <CategoryCard category="tools" skills={toolsCards} />
+                        {frontendCards.length > 0 ? <CategoryCard category="frontend" skills={frontendCards} /> : null}
+                        {backendCards.length > 0 ? <CategoryCard category="backend" skills={backendCards} /> : null}
+                        {devopsCards.length > 0 ? <CategoryCard category="devops" skills={devopsCards} /> : null}
+                        {languageCards.length > 0 ? <CategoryCard category="languages" skills={languageCards} /> : null}
+                        {toolsCards.length > 0 ? <CategoryCard category="tools" skills={toolsCards} /> : null}
 
-                </div>
+                    </div>
+                ) : null}
 
             </div>
 

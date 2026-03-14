@@ -1,6 +1,5 @@
 import { FormEvent, useState } from "react"
-import { fireEvent, render, screen, waitFor } from "@testing-library/react"
-import userEvent from "@testing-library/user-event"
+import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react"
 
 function TestContactForm({ buttonLabel = "Send message" }: { buttonLabel?: string }) {
   const [name, setName] = useState("")
@@ -60,6 +59,10 @@ describe("TestContactForm", () => {
     jest.clearAllMocks()
   })
 
+  afterEach(() => {
+    cleanup()
+  })
+
   it("renders the form fields and custom button label", () => {
     render(<TestContactForm buttonLabel="Submit form" />)
 
@@ -76,12 +79,11 @@ describe("TestContactForm", () => {
     })
 
     render(<TestContactForm />)
-    const user = userEvent.setup()
 
-    await user.type(screen.getByLabelText("Name"), "Rahul")
-    await user.type(screen.getByLabelText("Email"), "rahul@example.com")
-    await user.type(screen.getByLabelText("Message"), "Hello from tests")
-    await user.click(screen.getByRole("button", { name: "Send message" }))
+    fireEvent.change(screen.getByLabelText("Name"), { target: { value: "Rahul" } })
+    fireEvent.change(screen.getByLabelText("Email"), { target: { value: "rahul@example.com" } })
+    fireEvent.change(screen.getByLabelText("Message"), { target: { value: "Hello from tests" } })
+    fireEvent.submit(screen.getByRole("button", { name: "Send message" }).closest("form")!)
 
     await waitFor(() => {
       expect(screen.getByRole("status")).toHaveTextContent("Message sent successfully.")

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { Folder, ExternalLink, Github, ArrowRight, Filter, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
@@ -28,10 +29,12 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
         {/* Project Image */}
         <div className="relative h-56 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20">
           {project.coverImage?.url ? (
-            <img
+            <Image
               src={project.coverImage.url}
               alt={project.title}
-              className="absolute inset-0 h-full w-full object-cover"
+              fill
+              unoptimized
+              className="object-cover"
             />
           ) : (
             <div className="absolute inset-0 flex items-center justify-center">

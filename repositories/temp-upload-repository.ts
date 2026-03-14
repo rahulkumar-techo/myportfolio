@@ -1,22 +1,43 @@
-import { getPortfolioOwner } from "@/repositories/portfolio-repository"
 import type { TempProjectUpload } from "@/lib/types"
+import { TempProjectUploadModel } from "@/model/portfolio.model"
+import { getPortfolioOwner } from "@/repositories/portfolio-repository"
+
+function toPlainUpload(item: any) {
+  const plain = typeof item?.toObject === "function" ? item.toObject() : item
+
+  if (!plain || typeof plain !== "object") {
+    return plain
+  }
+
+  const rest = { ...(plain as Record<string, unknown>) }
+  delete rest._id
+  delete rest.__v
+  delete rest.ownerId
+  return rest as unknown as TempProjectUpload
+}
+
+async function getOwnerId(userId?: string) {
+  const owner = await getPortfolioOwner(userId)
+  return owner._id
+}
 
 export async function listTempProjectUploads(userId?: string): Promise<TempProjectUpload[]> {
-  const owner = await getPortfolioOwner(userId)
-  return owner.tempProjectUploads ?? []
+  const ownerId = await getOwnerId(userId)
+  const uploads = await TempProjectUploadModel.find({ ownerId }).sort({ createdAt: -1 }).lean()
+  return uploads.map((upload: unknown) => toPlainUpload(upload))
 }
 
 export async function addTempProjectUpload(
   userId: string | undefined,
   upload: TempProjectUpload
 ) {
-  const owner = await getPortfolioOwner(userId)
-  if (!Array.isArray(owner.tempProjectUploads)) {
-    owner.tempProjectUploads = []
-  }
-  owner.tempProjectUploads.push(upload)
-  await owner.save()
-  return upload
+  const ownerId = await getOwnerId(userId)
+  const created = await TempProjectUploadModel.create({
+    ...upload,
+    ownerId
+  })
+
+  return toPlainUpload(created)
 }
 
 export async function removeTempProjectUploadsByPublicIds(
@@ -27,34 +48,32 @@ export async function removeTempProjectUploadsByPublicIds(
     return
   }
 
-  const owner = await getPortfolioOwner(userId)
-  owner.tempProjectUploads = (owner.tempProjectUploads ?? []).filter(
-    (upload: TempProjectUpload) => !publicIds.includes(upload.publicId)
-  )
-  await owner.save()
+  const ownerId = await getOwnerId(userId)
+  await TempProjectUploadModel.deleteMany({
+    ownerId,
+    publicId: { $in: publicIds }
+  })
 }
 
 export async function cleanupTempProjectUploads(
   userId: string | undefined,
   olderThanMs: number
 ) {
-  const owner = await getPortfolioOwner(userId)
-  const now = Date.now()
-  const uploads = owner.tempProjectUploads ?? []
-
-  const expired = uploads.filter((upload: TempProjectUpload) => {
-    const createdAt = new Date(upload.createdAt).getTime()
-    return now - createdAt > olderThanMs
-  })
+  const ownerId = await getOwnerId(userId)
+  const threshold = new Date(Date.now() - olderThanMs)
+  const expired = await TempProjectUploadModel.find({
+    ownerId,
+    createdAt: { $lt: threshold }
+  }).lean()
 
   if (expired.length === 0) {
     return []
   }
 
-  owner.tempProjectUploads = uploads.filter(
-    (upload: TempProjectUpload) => !expired.some((item: TempProjectUpload) => item.id === upload.id)
-  )
-  await owner.save()
+  await TempProjectUploadModel.deleteMany({
+    ownerId,
+    id: { $in: expired.map((upload: any) => upload.id) }
+  })
 
-  return expired
+  return expired.map((upload: unknown) => toPlainUpload(upload))
 }

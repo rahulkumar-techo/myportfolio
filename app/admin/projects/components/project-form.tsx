@@ -1,6 +1,7 @@
 'use client'
 
 import type { Dispatch, FormEvent, SetStateAction } from 'react'
+import Image from 'next/image'
 import { Loader2, Plus, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -149,11 +150,15 @@ export function ProjectForm({
         </div>
         <div className="rounded-lg border border-border/60 bg-muted/30 p-3">
           {formData.coverImage?.url ? (
-            <img
+            <div className="relative h-40 w-full overflow-hidden rounded-md">
+              <Image
               src={formData.coverImage.url}
               alt={formData.title || 'Cover image'}
-              className="h-40 w-full rounded-md object-cover"
+              fill
+              unoptimized
+              className="object-cover"
             />
+            </div>
           ) : (
             <div className="flex h-40 items-center justify-center text-xs text-muted-foreground">
               No cover image uploaded yet.
@@ -203,9 +208,12 @@ export function ProjectForm({
         <div className="grid gap-3 sm:grid-cols-2">
           {formData.galleryImages.map((image, index) => (
             <div key={`${image.url}-${index}`} className="relative overflow-hidden rounded-lg border border-border/60">
-              <img
+              <Image
                 src={image.url}
                 alt={`Gallery image ${index + 1}`}
+                width={320}
+                height={128}
+                unoptimized
                 className="h-32 w-full object-cover"
               />
               <Button

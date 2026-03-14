@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import { requireAdminApiSession } from "@/lib/auth"
-import { getPortfolioOwner } from "@/repositories/portfolio-repository"
+import { listPortfolioItems } from "@/repositories/portfolio-repository"
+import { findUserById } from "@/repositories/user-repository"
 
 export async function GET() {
   const { session, response } = await requireAdminApiSession()
@@ -9,11 +10,21 @@ export async function GET() {
     return response
   }
 
-  const user = await getPortfolioOwner(session.user.id)
-  const projects = user.projects || []
-  const skills = user.skills || []
-  const experiences = user.experiences || []
-  const testimonials = user.testimonials || []
+  const user = await findUserById(session.user.id)
+
+  if (!user) {
+    return NextResponse.json(
+      { success: false, error: "User not found" },
+      { status: 404 }
+    )
+  }
+
+  const [projects, skills, experiences, testimonials] = await Promise.all([
+    listPortfolioItems("projects", session.user.id),
+    listPortfolioItems("skills", session.user.id),
+    listPortfolioItems("experiences", session.user.id),
+    listPortfolioItems("testimonials", session.user.id)
+  ])
 
   const skillsByCategory = skills.reduce((acc: any, skill: any) => {
     acc[skill.category] = (acc[skill.category] || 0) + 1

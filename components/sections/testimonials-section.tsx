@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
+import Image from 'next/image';
 import { motion, useInView } from 'framer-motion';
 import { MessageSquare, Star, Quote, Loader2, Send, CheckCircle2, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -72,11 +73,13 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
             {/* Avatar */}
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
               {testimonial.avatarUrl && !imageFailed ? (
-                <img
+                <Image
                   src={testimonial.avatarUrl}
                   alt={testimonial.name}
+                  width={48}
+                  height={48}
+                  unoptimized
                   className="h-12 w-12 rounded-full object-cover"
-                  referrerPolicy="no-referrer"
                   onError={() => setImageFailed(true)}
                 />
               ) : (
@@ -107,6 +110,7 @@ export default function TestimonialsSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const { testimonials, isLoading, createTestimonial } = useTestimonials();
+  const featuredTestimonials = testimonials.filter((testimonial: Testimonial) => testimonial.featured);
   const { user, loginWithGoogle, logout } = useAuth();
   const [formData, setFormData] = useState({
     role: '',
@@ -119,8 +123,8 @@ export default function TestimonialsSection() {
   const [submitted, setSubmitted] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const testimonialsPerPage = 6;
-  const totalPages = Math.max(1, Math.ceil(testimonials.length / testimonialsPerPage));
-  const paginatedTestimonials = testimonials.slice(
+  const totalPages = Math.max(1, Math.ceil(featuredTestimonials.length / testimonialsPerPage));
+  const paginatedTestimonials = featuredTestimonials.slice(
     (currentPage - 1) * testimonialsPerPage,
     currentPage * testimonialsPerPage
   );
@@ -200,6 +204,12 @@ export default function TestimonialsSection() {
         {isLoading ? (
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : featuredTestimonials.length === 0 ? (
+          <div className="mx-auto max-w-2xl rounded-2xl p-10 text-center glass-card">
+            <MessageSquare className="mx-auto mb-4 h-10 w-10 text-primary" />
+            <p className="text-lg font-medium text-foreground">No featured testimonials yet.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Mark testimonials as featured from the admin panel.</p>
           </div>
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 max-w-6xl mx-auto" style={{ perspective: '1000px' }}>
@@ -386,6 +396,7 @@ export default function TestimonialsSection() {
             <div className="glass-card rounded-full px-6 py-3">
               <p className="text-sm text-muted-foreground font-mono">
                 <span className="text-primary">{testimonials.length}</span> Happy Clients
+                <span className="ml-2 text-muted-foreground">Featured: {featuredTestimonials.length}</span>
               </p>
             </div>
             <div className="h-px w-20 bg-gradient-to-l from-transparent to-primary/50" />

@@ -43,6 +43,7 @@ export interface Experience {
   startDate: string;
   endDate?: string;
   current: boolean;
+  featured?: boolean;
   description: string;
   achievements: string[];
   technologies: string[];
@@ -56,6 +57,7 @@ export interface Testimonial {
   content: string;
   avatarUrl?: string;
   rating: number;
+  featured?: boolean;
   submittedByEmail?: string;
 }
 
@@ -74,6 +76,8 @@ export interface AssetItem {
   id: string;
   label: string;
   category: 'cv' | 'achievement' | 'image' | 'certificate' | 'other';
+  featured?: boolean;
+  fileId?: string;
   fileName: string;
   originalName: string;
   fileUrl: string;
@@ -128,6 +132,26 @@ export interface SiteSettings {
   linkedinUrl?: string;
   twitterUrl?: string;
   websiteUrl?: string;
+}
+
+export interface PublicProfileSummary {
+  profile: {
+    name: string;
+    email: string;
+    image?: string | null;
+  };
+  settings: SiteSettings;
+  stats: {
+    totalProjects: number;
+    featuredProjects: number;
+    totalSkills: number;
+    totalExperience: number;
+    yearsExperience: number;
+    testimonials: number;
+  };
+  highlights: {
+    topSkills: string[];
+  };
 }
 
 export interface GitHubStats {

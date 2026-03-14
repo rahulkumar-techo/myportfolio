@@ -25,8 +25,10 @@ function ensureConfigured() {
   configured = true
 }
 
-export default {
+const cloudinaryClient = {
   uploader: cloudinary.uploader,
   config: ensureConfigured
 }
+
+export default cloudinaryClient
 

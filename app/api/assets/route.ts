@@ -116,6 +116,7 @@ export async function POST(request: Request) {
     id: crypto.randomUUID(),
     label,
     category: category as AssetItem["category"],
+    featured: false,
     fileId: uploadedFile.public_id,
     fileName: path.basename(uploadedFile.public_id),
     originalName,

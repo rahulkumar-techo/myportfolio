@@ -34,11 +34,38 @@ export function useAssets() {
     await mutate()
   }
 
+  const updateAsset = async (assetId: string, payload: { label: string; category: AssetItem["category"]; featured?: boolean; file?: File | null }) => {
+    const formData = new FormData()
+    formData.append("label", payload.label)
+    formData.append("category", payload.category)
+    formData.append("featured", String(Boolean(payload.featured)))
+
+    if (payload.file) {
+      formData.append("file", payload.file)
+    }
+
+    const response = await fetch(`/api/assets/${assetId}`, {
+      method: "PUT",
+      body: formData
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(result?.error ?? "Unable to update asset.")
+    }
+
+    await mutate()
+
+    return result.data as AssetItem
+  }
+
   return {
     assets: (data?.data as AssetItem[] | undefined) ?? [],
     isLoading,
     error,
     uploadAsset,
-    deleteAsset
+    deleteAsset,
+    updateAsset
   }
 }

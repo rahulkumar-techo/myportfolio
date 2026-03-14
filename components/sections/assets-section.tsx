@@ -21,15 +21,16 @@ export default function AssetsSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const { assets, isLoading } = usePublicAssets();
+  const featuredAssets = assets.filter((asset) => asset.featured);
   const [activeCategory, setActiveCategory] = useState<'all' | AssetItem['category']>('all');
 
   const categories = useMemo(
-    () => ['all', ...categoryOrder.filter((category) => assets.some((asset) => asset.category === category))] as const,
-    [assets]
+    () => ['all', ...categoryOrder.filter((category) => featuredAssets.some((asset) => asset.category === category))] as const,
+    [featuredAssets]
   );
 
   const filteredAssets =
-    activeCategory === 'all' ? assets : assets.filter((asset) => asset.category === activeCategory);
+    activeCategory === 'all' ? featuredAssets : featuredAssets.filter((asset) => asset.category === activeCategory);
 
   return (
     <section id="assets" className="relative overflow-hidden py-24 md:py-32" ref={ref}>
@@ -82,11 +83,17 @@ export default function AssetsSection() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
           </div>
+        ) : featuredAssets.length === 0 ? (
+          <div className="mx-auto max-w-2xl rounded-2xl p-10 text-center glass-card">
+            <FolderOpen className="mx-auto mb-4 h-10 w-10 text-primary" />
+            <p className="text-lg font-medium text-foreground">No featured assets yet.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Mark files as featured from the admin panel to highlight them here.</p>
+          </div>
         ) : filteredAssets.length === 0 ? (
           <div className="mx-auto max-w-2xl rounded-2xl p-10 text-center glass-card">
             <FolderOpen className="mx-auto mb-4 h-10 w-10 text-primary" />
-            <p className="text-lg font-medium text-foreground">No public files available yet.</p>
-            <p className="mt-2 text-sm text-muted-foreground">Check back later for downloads and media resources.</p>
+            <p className="text-lg font-medium text-foreground">No featured files in this category.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Choose another category or feature more assets.</p>
           </div>
         ) : (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

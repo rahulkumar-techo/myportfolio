@@ -60,6 +60,7 @@ export async function POST(request: NextRequest) {
       content: body.content,
       avatarUrl: session.user.image || "/testimonials/default.jpg",
       rating: body.rating || 5,
+      featured: body.featured || false,
       createdAt: new Date(),
       submittedByEmail: session.user.email
     }

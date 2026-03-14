@@ -1,58 +1,60 @@
-import { findFirstAdmin, findUserById } from "@/repositories/user-repository"
 import type { AssetItem } from "@/lib/types"
+import { AssetModel } from "@/model/portfolio.model"
+import { findFirstAdmin, findUserById } from "@/repositories/user-repository"
 
-export async function listAssets(userId: string) {
-  const user = await findUserById(userId)
+function toPlainAsset(item: any) {
+  const plain = typeof item?.toObject === "function" ? item.toObject() : item
+
+  if (!plain || typeof plain !== "object") {
+    return plain
+  }
+
+  const rest = { ...(plain as Record<string, unknown>) }
+  delete rest._id
+  delete rest.__v
+  delete rest.ownerId
+  return rest as unknown as AssetItem
+}
+
+async function getAssetOwnerId(userId?: string) {
+  const user = userId ? await findUserById(userId) : await findFirstAdmin()
 
   if (!user) {
     throw new Error("User not found")
   }
 
-  return [...(user.assets ?? [])].sort(
-    (left: any, right: any) => new Date(right.uploadedAt).getTime() - new Date(left.uploadedAt).getTime()
-  )
+  return user._id
+}
+
+export async function listAssets(userId: string) {
+  const ownerId = await getAssetOwnerId(userId)
+  const items = await AssetModel.find({ ownerId }).sort({ uploadedAt: -1 }).lean()
+  return items.map((item: unknown) => toPlainAsset(item))
 }
 
 export async function listPublicAssets() {
-  const admin = await findFirstAdmin()
-
-  if (!admin) {
-    return []
-  }
-
-  return [...(admin.assets ?? [])].sort(
-    (left: any, right: any) => new Date(right.uploadedAt).getTime() - new Date(left.uploadedAt).getTime()
-  )
+  const ownerId = await getAssetOwnerId()
+  const items = await AssetModel.find({ ownerId }).sort({ uploadedAt: -1 }).lean()
+  return items.map((item: unknown) => toPlainAsset(item))
 }
 
 export async function createAsset(userId: string, asset: AssetItem) {
-  const user = await findUserById(userId)
+  const ownerId = await getAssetOwnerId(userId)
+  const created = await AssetModel.create({
+    ...asset,
+    ownerId
+  })
 
-  if (!user) {
-    throw new Error("User not found")
-  }
-
-  user.assets = [asset, ...(user.assets ?? [])]
-  await user.save()
-
-  return asset
+  return toPlainAsset(created)
 }
 
 export async function deleteAsset(userId: string, assetId: string) {
-  const user = await findUserById(userId)
-
-  if (!user) {
-    throw new Error("User not found")
-  }
-
-  const asset = (user.assets ?? []).find((item: any) => item.id === assetId)
+  const ownerId = await getAssetOwnerId(userId)
+  const asset = await AssetModel.findOneAndDelete({ ownerId, id: assetId }).lean()
 
   if (!asset) {
     throw new Error("Asset not found")
   }
 
-  user.assets = (user.assets ?? []).filter((item: any) => item.id !== assetId)
-  await user.save()
-
-  return asset
+  return toPlainAsset(asset)
 }

@@ -10,6 +10,7 @@ const HeroSection = dynamic(() => import('@/components/sections/hero-section'), 
 const AboutSection = dynamic(() => import('@/components/sections/about-section'), { ssr: false });
 const SkillsSection = dynamic(() => import('@/components/sections/skills-section'), { ssr: false });
 const ProjectsSection = dynamic(() => import('@/components/sections/projects-section'), { ssr: false });
+const AssetsSection = dynamic(() => import('@/components/sections/assets-section'), { ssr: false });
 const ExperienceSection = dynamic(() => import('@/components/sections/experience-section'), { ssr: false });
 const TestimonialsSection = dynamic(() => import('@/components/sections/testimonials-section'), { ssr: false });
 const ContactSection = dynamic(() => import('@/components/sections/contact-section'), { ssr: false });
@@ -18,7 +19,7 @@ export default function Home() {
   const [currentSection, setCurrentSection] = useState('hero');
 
   useEffect(() => {
-    const sectionIds = ['hero', 'about', 'skills', 'projects', 'experience', 'testimonials', 'contact'];
+    const sectionIds = ['hero', 'about', 'skills', 'projects', 'assets', 'experience', 'testimonials', 'contact'];
     
     const observers: IntersectionObserver[] = [];
 
@@ -64,6 +65,9 @@ export default function Home() {
 
       {/* Projects Showcase */}
       <ProjectsSection />
+
+      {/* Public Assets */}
+      <AssetsSection />
       
       {/* Experience Section */}
       <ExperienceSection />

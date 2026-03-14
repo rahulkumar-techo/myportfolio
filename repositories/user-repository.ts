@@ -1,4 +1,14 @@
 import { connectDB } from "@/lib/db"
+import {
+  AssetModel,
+  ContactMessageModel,
+  ExperienceModel,
+  ProjectModel,
+  SettingsModel,
+  SkillModel,
+  TempProjectUploadModel,
+  TestimonialModel
+} from "@/model/portfolio.model"
 import { UserModel } from "@/model/user.model"
 import type { SiteSettings } from "@/lib/types"
 
@@ -78,18 +88,28 @@ export async function hasAdminUser() {
 export async function createUser(input: CreateUserInput) {
   await connectDB()
 
-  return UserModel.create({
+  const user = await UserModel.create({
     name: input.name,
     email: input.email.toLowerCase(),
     password: input.password,
     image: input.image ?? null,
     role: input.role ?? "user",
-    blocked: false,
-    settings: {
-      ...defaultSettings,
-      contactEmail: input.email.toLowerCase()
-    }
+    blocked: false
   })
+
+  await SettingsModel.updateOne(
+    { ownerId: user._id },
+    {
+      $setOnInsert: {
+        ownerId: user._id,
+        ...defaultSettings,
+        contactEmail: input.email.toLowerCase()
+      }
+    },
+    { upsert: true }
+  )
+
+  return user
 }
 
 export async function recordUserLogin(userId: string, provider?: string | null) {
@@ -223,12 +243,23 @@ export async function deleteUserAccount(userId: string, actingAdminId: string) {
     throw new Error("User not found")
   }
 
-  await UserModel.findByIdAndDelete(userId)
+  await Promise.all([
+    ProjectModel.deleteMany({ ownerId: user._id }),
+    SkillModel.deleteMany({ ownerId: user._id }),
+    ExperienceModel.deleteMany({ ownerId: user._id }),
+    TestimonialModel.deleteMany({ ownerId: user._id }),
+    ContactMessageModel.deleteMany({ ownerId: user._id }),
+    AssetModel.deleteMany({ ownerId: user._id }),
+    TempProjectUploadModel.deleteMany({ ownerId: user._id }),
+    SettingsModel.deleteMany({ ownerId: user._id }),
+    UserModel.findByIdAndDelete(userId)
+  ])
 }
 
-export function getMergedSettings(user: any): SiteSettings {
-  const rawSettings = user?.settings?.toObject?.() ?? user?.settings ?? {}
-  const { theme: _theme, ...safeSettings } = rawSettings
+function getMergedSettings(user: any, settings: any): SiteSettings {
+  const rawSettings = settings?.toObject?.() ?? settings ?? {}
+  const safeSettings = { ...rawSettings }
+  delete safeSettings.theme
 
   return {
     ...defaultSettings,
@@ -244,17 +275,27 @@ export async function getPublicSiteSettings() {
     return defaultSettings
   }
 
-  return getMergedSettings(admin)
+  return getUserSettings(admin._id.toString())
 }
 
 export async function getUserSettings(userId: string) {
   const user = await findUserById(userId)
 
   if (!user) {
-    throw new Error("User not found")
+    return defaultSettings
   }
 
-  return getMergedSettings(user)
+  let settings = await SettingsModel.findOne({ ownerId: user._id })
+
+  if (!settings) {
+    settings = await SettingsModel.create({
+      ownerId: user._id,
+      ...defaultSettings,
+      contactEmail: user.email ?? defaultSettings.contactEmail
+    })
+  }
+
+  return getMergedSettings(user, settings)
 }
 
 export async function updateUserSettings(userId: string, updates: Partial<SiteSettings>) {
@@ -267,13 +308,21 @@ export async function updateUserSettings(userId: string, updates: Partial<SiteSe
   const { theme: _theme, ...safeUpdates } = updates as Partial<SiteSettings> & {
     theme?: "light" | "dark" | "system"
   }
+  void _theme
 
-  user.settings = {
-    ...getMergedSettings(user),
-    ...safeUpdates
-  }
+  const currentSettings = await getUserSettings(userId)
 
-  await user.save()
+  const settings = await SettingsModel.findOneAndUpdate(
+    { ownerId: user._id },
+    {
+      $set: {
+        ...currentSettings,
+        ...safeUpdates,
+        ownerId: user._id
+      }
+    },
+    { new: true, upsert: true, runValidators: true }
+  )
 
-  return getMergedSettings(user)
+  return getMergedSettings(user, settings)
 }

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
-import { FileText, FolderOpen, ImageIcon, Loader2, Trash2, Upload } from 'lucide-react'
+import { FileText, FolderOpen, ImageIcon, Loader2, Star, Trash2, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -33,7 +33,7 @@ function formatBytes(size: number) {
 }
 
 export default function AdminAssetsPage() {
-  const { assets, isLoading, error, uploadAsset, deleteAsset } = useAssets()
+  const { assets, isLoading, error, uploadAsset, deleteAsset, updateAsset } = useAssets()
   const [label, setLabel] = useState('')
   const [category, setCategory] = useState<AssetItem['category']>('cv')
   const [selectedFile, setSelectedFile] = useState<File | null>(null)
@@ -94,6 +94,14 @@ export default function AdminAssetsPage() {
     } finally {
       setDeleteId(null)
     }
+  }
+
+  const toggleFeatured = async (asset: AssetItem) => {
+    await updateAsset(asset.id, {
+      label: asset.label,
+      category: asset.category,
+      featured: !asset.featured
+    })
   }
 
   if (isLoading) {
@@ -205,6 +213,9 @@ export default function AdminAssetsPage() {
                         <div className="flex flex-wrap items-center gap-2">
                           <p className="font-medium text-foreground">{asset.label}</p>
                           <span className="rounded-full bg-primary/10 px-2 py-1 text-xs text-primary">{asset.category}</span>
+                          {asset.featured ? (
+                            <span className="rounded-full bg-yellow-500/15 px-2 py-1 text-xs text-yellow-500">Featured</span>
+                          ) : null}
                         </div>
                         <p className="truncate text-sm text-muted-foreground">{asset.originalName}</p>
                         <p className="mt-1 text-xs text-muted-foreground">
@@ -221,19 +232,25 @@ export default function AdminAssetsPage() {
                       </div>
                     </div>
 
-                    <Button
-                      type="button"
-                      variant="outline"
-                      disabled={deleteId === asset.id}
-                      onClick={() => void handleDelete(asset.id)}
-                    >
-                      {deleteId === asset.id ? (
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      ) : (
-                        <Trash2 className="mr-2 h-4 w-4 text-destructive" />
-                      )}
-                      Delete
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Button type="button" variant="outline" onClick={() => void toggleFeatured(asset)}>
+                        <Star className={`mr-2 h-4 w-4 ${asset.featured ? 'fill-yellow-500 text-yellow-500' : ''}`} />
+                        {asset.featured ? 'Unfeature' : 'Feature'}
+                      </Button>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        disabled={deleteId === asset.id}
+                        onClick={() => void handleDelete(asset.id)}
+                      >
+                        {deleteId === asset.id ? (
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="mr-2 h-4 w-4 text-destructive" />
+                        )}
+                        Delete
+                      </Button>
+                    </div>
                   </div>
                 </div>
               )

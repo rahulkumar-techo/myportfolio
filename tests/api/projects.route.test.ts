@@ -33,8 +33,15 @@ const mockedFindNonAdminUsers = jest.mocked(findNonAdminUsers)
 const mockedSendEmailsToUsers = jest.mocked(sendEmailsToUsers)
 
 describe("/api/projects route", () => {
+  let logSpy: jest.SpyInstance
+
   beforeEach(() => {
     jest.clearAllMocks()
+    logSpy = jest.spyOn(console, "log").mockImplementation(() => {})
+  })
+
+  afterEach(() => {
+    logSpy.mockRestore()
   })
 
   it("returns all projects for GET requests", async () => {

@@ -4,7 +4,6 @@ import "@testing-library/jest-dom"
 import { webcrypto } from "node:crypto"
 import { ReadableStream, TransformStream, WritableStream } from "node:stream/web"
 import { TextDecoder, TextEncoder } from "node:util"
-import { MessageChannel, MessagePort } from "node:worker_threads"
 
 if (!global.TextEncoder) {
   Object.defineProperty(global, "TextEncoder", {
@@ -36,24 +35,19 @@ if (!global.WritableStream) {
   })
 }
 
-if (!global.MessageChannel) {
-  Object.defineProperty(global, "MessageChannel", {
-    value: MessageChannel
-  })
-}
-
-if (!global.MessagePort) {
-  Object.defineProperty(global, "MessagePort", {
-    value: MessagePort
-  })
-}
-
-const { fetch: undiciFetch, Headers: UndiciHeaders, Request: UndiciRequest, Response: UndiciResponse } = require("undici")
+const originalFetch = global.fetch?.bind(globalThis)
+const originalRequest = global.Request
+const originalResponse = global.Response
+const originalHeaders = global.Headers
 
 // Provide a lightweight fetch mock that tests can override per suite.
-if (!global.fetch) {
-  global.fetch = jest.fn(undiciFetch)
-}
+global.fetch = jest.fn(async (...args: Parameters<typeof fetch>) => {
+  if (!originalFetch) {
+    throw new Error(`Unhandled fetch in test environment: ${String(args[0])}`)
+  }
+
+  return originalFetch(...args)
+}) as typeof fetch
 
 // Next.js route handlers and tests commonly rely on Web Crypto in Node.
 if (!global.crypto) {
@@ -63,20 +57,22 @@ if (!global.crypto) {
 }
 
 // Ensure Web API request primitives exist in the Jest environment.
-if (!global.Request) {
-  Object.defineProperty(global, "Request", {
-    value: UndiciRequest
-  })
-}
+afterEach(() => {
+  jest.clearAllMocks()
+})
 
-if (!global.Response) {
-  Object.defineProperty(global, "Response", {
-    value: UndiciResponse
-  })
-}
+afterAll(() => {
+  global.fetch = originalFetch as typeof fetch
 
-if (!global.Headers) {
-  Object.defineProperty(global, "Headers", {
-    value: UndiciHeaders
-  })
-}
+  if (originalRequest) {
+    Object.defineProperty(global, "Request", { value: originalRequest })
+  }
+
+  if (originalResponse) {
+    Object.defineProperty(global, "Response", { value: originalResponse })
+  }
+
+  if (originalHeaders) {
+    Object.defineProperty(global, "Headers", { value: originalHeaders })
+  }
+})

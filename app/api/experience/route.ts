@@ -39,6 +39,7 @@ export async function POST(request: NextRequest) {
     startDate: body.startDate,
     endDate: body.endDate || "",
     current: body.current || false,
+    featured: body.featured || false,
     description: body.description,
     achievements: body.achievements || [],
     technologies: body.technologies || []

@@ -1,143 +1,11 @@
-/**
- * User Model
- * Contains portfolio data embedded inside the user document
- */
+import { Schema, model, models } from "mongoose"
 
-import mongoose, { Schema, model, models } from "mongoose";
-
-/* ================= PROJECT ================= */
-
-const CloudinaryImageSchema = new Schema({
-  url: { type: String, required: true },
-  publicId: String,
-  format: String,
-  width: Number,
-  height: Number,
-  bytes: Number
-}, { _id: false });
-
-function galleryLimit(value: unknown[]) {
-  return Array.isArray(value) && value.length <= 5;
-}
-
-const ProjectSchema = new Schema({
-  id: { type: String, required: true },
-  title: String,
-  description: String,
-  slug: { type: String, index: true },
-  longDescription: String,
-  techStack: [String],
-  coverImage: { type: CloudinaryImageSchema, default: null },
-  galleryImages: {
-    type: [CloudinaryImageSchema],
-    default: [],
-    validate: [galleryLimit, "Gallery images must be 5 or fewer."]
-  },
-  liveUrl: String,
-  githubUrl: String,
-  featured: Boolean,
-  category: String,
-  createdAt: { type: Date, default: Date.now }
-});
-
-/* ================= SKILL ================= */
-
-const SkillSchema = new Schema({
-  id: { type: String, required: true },
-  name: String,
-  category: {
-    type: String,
-    enum: ["frontend", "backend", "devops", "tools", "languages"]
-  },
-  proficiency: Number,
-  icon: String
-});
-
-/* ================= EXPERIENCE ================= */
-
-const ExperienceSchema = new Schema({
-  id: { type: String, required: true },
-  title: String,
-  company: String,
-  companyUrl: String,
-  location: String,
-  startDate: String,
-  endDate: String,
-  current: Boolean,
-  description: String,
-  achievements: [String],
-  technologies: [String]
-});
-
-/* ================= TESTIMONIAL ================= */
-
-const TestimonialSchema = new Schema({
-  id: { type: String, required: true },
-  name: String,
-  role: String,
-  company: String,
-  content: String,
-  avatarUrl: String,
-  rating: Number,
-  submittedByEmail: String
-});
-
-/* ================= CONTACT MESSAGE ================= */
-
-const ContactMessageSchema = new Schema({
-  id: { type: String, required: true },
-  name: String,
-  email: String,
-  subject: String,
-  message: String,
-  createdAt: { type: Date, default: Date.now },
-  read: { type: Boolean, default: false },
-  archived: { type: Boolean, default: false }
-});
-
-const AssetSchema = new Schema({
-  id: { type: String, required: true },
-  label: { type: String, required: true },
-  category: {
-    type: String,
-    enum: ["cv", "achievement", "image", "certificate", "other"],
-    default: "other"
-  },
-  fileName: { type: String, required: true },
-  originalName: { type: String, required: true },
-  fileUrl: { type: String, required: true },
-  fileType: { type: String, required: true },
-  size: { type: Number, required: true },
-  uploadedAt: { type: Date, default: Date.now }
-});
-
-const TempProjectUploadSchema = new Schema({
-  id: { type: String, required: true },
-  publicId: { type: String, required: true },
-  url: { type: String, required: true },
-  createdAt: { type: Date, default: Date.now }
-}, { _id: false });
-
-const SettingsSchema = new Schema({
-  siteTitle: { type: String, default: "Developer Portfolio" },
-  siteTagline: { type: String, default: "Futuristic Developer Portfolio" },
-  adminPanelTitle: { type: String, default: "Admin Panel" },
-  bio: { type: String, default: "" },
-  location: { type: String, default: "" },
-  contactEmail: { type: String, default: "" },
-  resumeUrl: { type: String, default: "" },
-  githubUrl: { type: String, default: "" },
-  linkedinUrl: { type: String, default: "" },
-  twitterUrl: { type: String, default: "" },
-  websiteUrl: { type: String, default: "" }
-}, { _id: false });
-
-/* ================= USER ================= */
-
+// User now stores only authentication and account-level fields.
+// Portfolio content lives in dedicated collections in `portfolio.model.ts`.
 const UserSchema = new Schema({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String},
+  password: { type: String },
   image: String,
   role: {
     type: String,
@@ -148,15 +16,6 @@ const UserSchema = new Schema({
   createdAt: { type: Date, default: Date.now },
   lastLoginAt: { type: Date, default: null },
   lastLoginProvider: { type: String, default: null },
+})
 
-  projects: [ProjectSchema],
-  skills: [SkillSchema],
-  experiences: [ExperienceSchema],
-  testimonials: [TestimonialSchema],
-  contactMessages: [ContactMessageSchema],
-  assets: [AssetSchema],
-  tempProjectUploads: { type: [TempProjectUploadSchema], default: [] },
-  settings: { type: SettingsSchema, default: () => ({}) }
-});
-
-export const UserModel = models.User || model("User", UserSchema);
+export const UserModel = models.User || model("User", UserSchema)

@@ -6,6 +6,7 @@ import { ChevronDown, Sparkles, Zap } from 'lucide-react';
 import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { usePublicProfile } from '@/hooks/usePublicProfile';
 
 const HeroScene = dynamic(() => import('@/components/three/hero-scene'), {
   ssr: false,
@@ -15,6 +16,15 @@ const HeroScene = dynamic(() => import('@/components/three/hero-scene'), {
 export default function HeroSection() {
   const ref = useRef<HTMLElement | null>(null);
   const isHeroActive = useInView(ref, { margin: '20% 0px -20% 0px' });
+  const { profile } = usePublicProfile();
+
+  const headingName = profile?.settings.siteTitle || profile?.profile.name || 'Developer Portfolio';
+  const tagline =
+    profile?.settings.siteTagline ||
+    'Full-stack developer building immersive web experiences and modern products.';
+  const techPreview = profile?.highlights.topSkills?.length
+    ? profile.highlights.topSkills
+    : ['React', 'Next.js', 'TypeScript', 'Node.js'];
 
   return (
     <section id="hero" ref={ref} className="relative min-h-screen overflow-hidden">
@@ -45,7 +55,11 @@ export default function HeroSection() {
             className="inline-flex items-center gap-2 px-4 py-2 mb-6 glass-card rounded-full text-sm"
           >
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-muted-foreground">Available for new projects</span>
+            <span className="text-muted-foreground">
+              {profile?.stats.featuredProjects
+                ? `${profile.stats.featuredProjects} featured projects live`
+                : 'Available for new projects'}
+            </span>
           </motion.div>
 
           {/* Main Title */}
@@ -55,11 +69,10 @@ export default function HeroSection() {
             transition={{ delay: 1 }}
             className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight"
           >
-            <span className="text-foreground">Building </span>
-            <span className="text-glow-cyan text-primary">Digital</span>
+            <span className="text-foreground">{headingName} </span>
             <br />
-            <span className="text-glow-purple text-accent">Experiences</span>
-            <span className="text-foreground"> of Tomorrow</span>
+            <span className="text-glow-purple text-accent">Digital Experiences</span>
+            <span className="text-foreground"> That Ship</span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -69,8 +82,7 @@ export default function HeroSection() {
             transition={{ delay: 1.2 }}
             className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed"
           >
-            Full-Stack Developer & Creative Technologist specializing in 
-            immersive web experiences, 3D visualizations, and cutting-edge applications.
+            {tagline}
           </motion.p>
 
           {/* CTA Buttons */}
@@ -114,7 +126,7 @@ export default function HeroSection() {
             transition={{ delay: 1.6 }}
             className="mt-12 flex flex-wrap items-center justify-center gap-4"
           >
-            {['React', 'Next.js', 'Three.js', 'TypeScript', 'Node.js'].map((tech, index) => (
+            {techPreview.map((tech, index) => (
               <motion.span
                 key={tech}
                 initial={{ opacity: 0, y: 10 }}

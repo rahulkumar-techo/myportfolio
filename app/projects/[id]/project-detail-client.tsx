@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowLeft, ExternalLink, Github, Calendar, Folder, Code2, Layers, Loader2 } from 'lucide-react';
 import Link from 'next/link';
@@ -142,9 +143,12 @@ export default function ProjectDetailClient({ projectId, initialProject }: Proje
             >
               <div className="glass-card rounded-2xl overflow-hidden aspect-video flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
                 {project.coverImage?.url ? (
-                  <img
+                  <Image
                     src={project.coverImage.url}
                     alt={project.title}
+                    width={1280}
+                    height={720}
+                    unoptimized
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -217,9 +221,12 @@ export default function ProjectDetailClient({ projectId, initialProject }: Proje
                           className="aspect-video rounded-lg bg-gradient-to-br from-primary/10 to-accent/10 flex items-center justify-center"
                         >
                           {image?.url ? (
-                            <img
+                            <Image
                               src={image.url}
                               alt={`${project.title} gallery ${index + 1}`}
+                              width={640}
+                              height={360}
+                              unoptimized
                               className="h-full w-full rounded-lg object-cover"
                             />
                           ) : (

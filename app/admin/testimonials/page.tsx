@@ -24,6 +24,7 @@ type TestimonialFormState = {
   content: string
   avatarUrl: string
   rating: string
+  featured: boolean
 }
 
 const initialForm: TestimonialFormState = {
@@ -32,7 +33,8 @@ const initialForm: TestimonialFormState = {
   company: '',
   content: '',
   avatarUrl: '',
-  rating: '5'
+  rating: '5',
+  featured: false
 }
 
 export default function AdminTestimonialsPage() {
@@ -71,7 +73,8 @@ export default function AdminTestimonialsPage() {
       company: testimonial.company,
       content: testimonial.content,
       avatarUrl: testimonial.avatarUrl || '',
-      rating: String(testimonial.rating)
+      rating: String(testimonial.rating),
+      featured: testimonial.featured ?? false
     })
   }
 
@@ -112,6 +115,10 @@ export default function AdminTestimonialsPage() {
     } finally {
       setDeleteId(null)
     }
+  }
+
+  const toggleFeatured = async (testimonial: Testimonial) => {
+    await updateTestimonial(testimonial.id, { featured: !testimonial.featured })
   }
 
   if (isLoading) {
@@ -216,6 +223,17 @@ export default function AdminTestimonialsPage() {
             />
           </div>
 
+          <div className="flex items-center gap-3 rounded-lg border border-border/60 px-4 py-3">
+            <input
+              id="testimonial-featured"
+              type="checkbox"
+              checked={formData.featured}
+              onChange={(event) => setFormData((current) => ({ ...current, featured: event.target.checked }))}
+              className="h-4 w-4"
+            />
+            <Label htmlFor="testimonial-featured">Feature on home page</Label>
+          </div>
+
           {submitError ? <p className="text-sm text-destructive">{submitError}</p> : null}
 
           <Button type="submit" className="w-full" disabled={isSubmitting}>
@@ -232,6 +250,9 @@ export default function AdminTestimonialsPage() {
                   <div className="flex flex-wrap items-center gap-2">
                     <Quote className="h-4 w-4 text-primary" />
                     <h3 className="text-lg font-semibold text-foreground">{testimonial.name}</h3>
+                    {testimonial.featured ? (
+                      <span className="rounded-full bg-yellow-500/15 px-2 py-1 text-xs text-yellow-500">Featured</span>
+                    ) : null}
                     <span className="text-sm text-muted-foreground">
                       {testimonial.role} at {testimonial.company}
                     </span>
@@ -247,6 +268,9 @@ export default function AdminTestimonialsPage() {
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <Button type="button" variant="outline" size="icon" onClick={() => void toggleFeatured(testimonial)}>
+                    <Star className={`h-4 w-4 ${testimonial.featured ? 'fill-yellow-500 text-yellow-500' : ''}`} />
+                  </Button>
                   <Button type="button" variant="outline" size="icon" onClick={() => startEdit(testimonial)}>
                     <Pencil className="h-4 w-4" />
                   </Button>

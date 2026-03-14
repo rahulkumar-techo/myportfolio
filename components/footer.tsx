@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { motion } from 'framer-motion';
 import { Github, Linkedin, Twitter, Heart, ArrowUp } from 'lucide-react';
-import { developerProfile } from '@/lib/data';
+import { usePublicProfile } from '@/hooks/usePublicProfile';
 
 const footerLinks = [
   { href: '#about', label: 'About' },
@@ -14,16 +14,26 @@ const footerLinks = [
   { href: '/admin', label: 'Admin', isExternal: true },
 ];
 
-const socialLinks = [
-  { icon: Github, href: developerProfile.socialLinks.github || '#', label: 'GitHub' },
-  { icon: Linkedin, href: developerProfile.socialLinks.linkedin || '#', label: 'LinkedIn' },
-  { icon: Twitter, href: developerProfile.socialLinks.twitter || '#', label: 'Twitter' },
-];
-
 export default function Footer() {
+  const { profile } = usePublicProfile();
   const scrollToTop = () => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
+
+  const socialLinks = [
+    { icon: Github, href: profile?.settings.githubUrl || '#', label: 'GitHub' },
+    { icon: Linkedin, href: profile?.settings.linkedinUrl || '#', label: 'LinkedIn' },
+    { icon: Twitter, href: profile?.settings.twitterUrl || '#', label: 'Twitter' },
+  ].filter((item) => item.href && item.href !== '#');
+
+  const brandName = profile?.profile.name || profile?.settings.siteTitle || 'Portfolio';
+  const brandTagline = profile?.settings.siteTagline || 'Building digital experiences of tomorrow';
+  const initials = brandName
+    .split(' ')
+    .map((part) => part[0])
+    .join('')
+    .slice(0, 2)
+    .toUpperCase();
 
   return (
     <footer className="relative py-12 border-t border-border/50">
@@ -38,13 +48,13 @@ export default function Footer() {
               <div className="relative w-10 h-10">
                 <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-primary to-accent opacity-80 group-hover:opacity-100 transition-opacity" />
                 <div className="absolute inset-0.5 rounded-lg bg-background flex items-center justify-center">
-                  <span className="text-primary font-bold text-lg font-mono">RK</span>
+                  <span className="text-primary font-bold text-lg font-mono">{initials || 'PF'}</span>
                 </div>
               </div>
-              <span className="text-foreground font-semibold">Rahul kumar</span>
+              <span className="text-foreground font-semibold">{brandName}</span>
             </Link>
             <p className="text-sm text-muted-foreground text-center md:text-left">
-              Building digital experiences of tomorrow
+              {brandTagline}
             </p>
           </div>
 
@@ -85,7 +95,7 @@ export default function Footer() {
           </p>
           
           <p className="text-sm text-muted-foreground">
-            &copy; {new Date().getFullYear()} {developerProfile.name}. All rights reserved.
+            &copy; {new Date().getFullYear()} {brandName}. All rights reserved.
           </p>
           
           {/* Scroll to Top */}
