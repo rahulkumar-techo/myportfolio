@@ -7,6 +7,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import Navigation from '@/components/navigation';
 import Footer from '@/components/footer';
+import { buildCloudinaryImageUrl } from '@/lib/cloudinary-images';
 import { Project } from '@/lib/types';
 import { useProject } from '@/hooks/useProject';
 
@@ -144,11 +145,12 @@ export default function ProjectDetailClient({ projectId, initialProject }: Proje
               <div className="glass-card rounded-2xl overflow-hidden aspect-video flex items-center justify-center bg-gradient-to-br from-primary/10 to-accent/10">
                 {project.coverImage?.url ? (
                   <Image
-                    src={project.coverImage.url}
+                    src={buildCloudinaryImageUrl(project.coverImage.url, 'hero')}
                     alt={project.title}
                     width={1280}
                     height={720}
                     unoptimized
+                    sizes="(max-width: 1280px) 100vw, 1280px"
                     className="h-full w-full object-cover"
                   />
                 ) : (
@@ -222,11 +224,12 @@ export default function ProjectDetailClient({ projectId, initialProject }: Proje
                         >
                           {image?.url ? (
                             <Image
-                              src={image.url}
+                              src={buildCloudinaryImageUrl(image.url, 'gallery')}
                               alt={`${project.title} gallery ${index + 1}`}
                               width={640}
                               height={360}
                               unoptimized
+                              sizes="(max-width: 768px) 100vw, 50vw"
                               className="h-full w-full rounded-lg object-cover"
                             />
                           ) : (

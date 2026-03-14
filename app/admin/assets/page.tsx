@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react'
 import Image from 'next/image'
 import { FileText, FolderOpen, ImageIcon, Loader2, Star, Trash2, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { buildCloudinaryImageUrl } from '@/lib/cloudinary-images'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -167,7 +168,7 @@ export default function AdminAssetsPage() {
               onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
               required
             />
-            <p className="text-xs text-muted-foreground">Max file size: 10MB</p>
+            <p className="text-xs text-muted-foreground">Images are converted to WebP and kept under 2MB when possible.</p>
           </div>
 
           {submitError ? <p className="text-sm text-destructive">{submitError}</p> : null}
@@ -196,10 +197,11 @@ export default function AdminAssetsPage() {
                       <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-2xl bg-secondary/30">
                         {isImage ? (
                           <Image
-                            src={asset.fileUrl}
+                            src={buildCloudinaryImageUrl(asset.fileUrl, 'asset-preview')}
                             alt={asset.label}
                             width={80}
                             height={80}
+                            unoptimized
                             className="h-20 w-20 object-cover"
                           />
                         ) : asset.category === 'cv' || asset.category === 'certificate' ? (

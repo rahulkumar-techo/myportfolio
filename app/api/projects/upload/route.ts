@@ -2,10 +2,12 @@ import { NextResponse } from "next/server"
 import path from "path"
 import { requireAdminApiSession } from "@/lib/auth"
 import cloudinary from "@/lib/clodudinary"
+import { IMAGE_UPLOAD_PRESETS, type ImageUploadKind } from "@/lib/image-presets"
 import { addTempProjectUpload, removeTempProjectUploadsByPublicIds } from "@/repositories/temp-upload-repository"
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
 const CLOUDINARY_FOLDER = "portfolio/projects"
+const PROJECT_UPLOAD_KINDS = new Set<ImageUploadKind>(["cover", "gallery"])
 
 function sanitizeFileName(fileName: string) {
   return fileName.replace(/[^a-zA-Z0-9._-]/g, "-")
@@ -18,7 +20,7 @@ function buildPublicId(originalName: string) {
   return `${Date.now()}-${baseName}`
 }
 
-function uploadToCloudinary(file: File, originalName: string) {
+function uploadToCloudinary(file: File, originalName: string, kind: ImageUploadKind) {
   return new Promise<{
     secure_url: string
     public_id: string
@@ -36,8 +38,15 @@ function uploadToCloudinary(file: File, originalName: string) {
         folder: CLOUDINARY_FOLDER,
         public_id: publicId,
         resource_type: "image",
+        format: "webp",
         use_filename: false,
-        unique_filename: false
+        unique_filename: false,
+        overwrite: false,
+        context: {
+          upload_kind: kind,
+          target_width: String(IMAGE_UPLOAD_PRESETS[kind].width),
+          target_height: String(IMAGE_UPLOAD_PRESETS[kind].height)
+        }
       },
       (error, result) => {
         if (error || !result) {
@@ -70,17 +79,34 @@ export async function POST(request: Request) {
 
   const formData = await request.formData()
   const file = formData.get("file")
+  const kindValue = String(formData.get("kind") ?? "").trim() as ImageUploadKind
 
   if (!(file instanceof File)) {
     return NextResponse.json({ success: false, error: "File is required." }, { status: 400 })
+  }
+
+  if (!PROJECT_UPLOAD_KINDS.has(kindValue)) {
+    return NextResponse.json({ success: false, error: "Upload kind must be cover or gallery." }, { status: 400 })
+  }
+
+  if (!file.type.startsWith("image/")) {
+    return NextResponse.json({ success: false, error: "Project uploads must be images." }, { status: 400 })
   }
 
   if (file.size > MAX_FILE_SIZE) {
     return NextResponse.json({ success: false, error: "File must be 10MB or smaller." }, { status: 400 })
   }
 
+  const preset = IMAGE_UPLOAD_PRESETS[kindValue]
+  if (file.size > preset.maxBytes * 1.5) {
+    return NextResponse.json(
+      { success: false, error: `Optimized ${kindValue} image is still too large. Please upload a smaller image.` },
+      { status: 400 }
+    )
+  }
+
   const originalName = sanitizeFileName(file.name || "project-image")
-  const uploadedFile = await uploadToCloudinary(file, originalName)
+  const uploadedFile = await uploadToCloudinary(file, originalName, kindValue)
 
   await addTempProjectUpload(session.user.id, {
     id: crypto.randomUUID(),

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import path from "path"
 import { requireAdminApiSession } from "@/lib/auth"
 import cloudinary from "@/lib/clodudinary"
+import { IMAGE_UPLOAD_PRESETS, type ImageUploadKind } from "@/lib/image-presets"
 import { createAsset, deleteAsset } from "@/repositories/asset-repository"
 import type { AssetItem } from "@/lib/types"
 
@@ -24,7 +25,7 @@ function buildPublicId(originalName: string) {
   return `${Date.now()}-${baseName}`
 }
 
-function uploadToCloudinary(file: File, originalName: string) {
+function uploadToCloudinary(file: File, originalName: string, kind?: ImageUploadKind) {
   return new Promise<{
     secure_url: string
     public_id: string
@@ -33,13 +34,23 @@ function uploadToCloudinary(file: File, originalName: string) {
     cloudinary.config()
     const buffer = Buffer.from(await file.arrayBuffer())
     const publicId = buildPublicId(originalName)
+    const isImage = file.type.startsWith("image/")
     const stream = cloudinary.uploader.upload_stream(
       {
         folder: CLOUDINARY_FOLDER,
         public_id: publicId,
-        resource_type: "auto",
+        resource_type: isImage ? "image" : "auto",
+        format: isImage ? "webp" : undefined,
         use_filename: false,
-        unique_filename: false
+        unique_filename: false,
+        overwrite: false,
+        context: kind
+          ? {
+              upload_kind: kind,
+              target_width: String(IMAGE_UPLOAD_PRESETS[kind].width),
+              target_height: String(IMAGE_UPLOAD_PRESETS[kind].height)
+            }
+          : undefined
       },
       (error, result) => {
         if (error || !result) {
@@ -107,6 +118,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   const label = String(formData.get("label") ?? "").trim()
   const category = String(formData.get("category") ?? "other").trim()
   const file = formData.get("file")
+  const kindValue = String(formData.get("kind") ?? "").trim()
 
   if (!label) {
     return NextResponse.json({ success: false, error: "Label is required." }, { status: 400 })
@@ -122,6 +134,15 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
 
   if (file instanceof File && file.size > MAX_FILE_SIZE) {
     return NextResponse.json({ success: false, error: "File must be 10MB or smaller." }, { status: 400 })
+  }
+
+  const uploadKind =
+    file instanceof File && file.type.startsWith("image/") && kindValue === "asset-image"
+      ? ("asset-image" as const)
+      : undefined
+
+  if (file instanceof File && uploadKind && file.size > IMAGE_UPLOAD_PRESETS[uploadKind].maxBytes) {
+    return NextResponse.json({ success: false, error: "Optimized image assets must be under 2MB." }, { status: 400 })
   }
 
   let previousAsset: StoredAsset | null = null
@@ -146,7 +167,7 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
   try {
     if (file instanceof File && file.size > 0) {
       const originalName = sanitizeFileName(file.name || previousAsset.originalName || "asset")
-      uploadedFile = await uploadToCloudinary(file, originalName)
+      uploadedFile = await uploadToCloudinary(file, originalName, uploadKind)
     }
 
     const nextAsset = {
@@ -162,7 +183,12 @@ export async function PUT(request: Request, context: { params: Promise<{ id: str
           ? sanitizeFileName(file.name || previousAsset.originalName || "asset")
           : previousAsset.originalName,
       fileUrl: uploadedFile?.secure_url ?? previousAsset.fileUrl,
-      fileType: file instanceof File && file.size > 0 ? file.type || previousAsset.fileType : previousAsset.fileType,
+      fileType:
+        file instanceof File && file.size > 0
+          ? uploadKind
+            ? "image/webp"
+            : file.type || previousAsset.fileType
+          : previousAsset.fileType,
       size: uploadedFile?.bytes ?? previousAsset.size,
       uploadedAt: new Date().toISOString()
     } as AssetItem

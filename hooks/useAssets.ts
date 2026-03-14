@@ -1,5 +1,6 @@
 import useSWR from "swr"
 import api from "@/lib/axios"
+import { prepareImageForUpload } from "@/lib/image-upload"
 import type { AssetItem } from "@/lib/types"
 
 const fetcher = (url: string) => api.get(url).then((res) => res.data)
@@ -8,10 +9,15 @@ export function useAssets() {
   const { data, error, isLoading, mutate } = useSWR("/assets", fetcher)
 
   const uploadAsset = async (payload: { label: string; category: AssetItem["category"]; file: File }) => {
+    const isImage = payload.file.type.startsWith("image/")
+    const preparedFile = isImage ? await prepareImageForUpload(payload.file, "asset-image") : payload.file
     const formData = new FormData()
     formData.append("label", payload.label)
     formData.append("category", payload.category)
-    formData.append("file", payload.file)
+    formData.append("file", preparedFile)
+    if (isImage) {
+      formData.append("kind", "asset-image")
+    }
 
     const response = await fetch("/api/assets", {
       method: "POST",
@@ -41,7 +47,12 @@ export function useAssets() {
     formData.append("featured", String(Boolean(payload.featured)))
 
     if (payload.file) {
-      formData.append("file", payload.file)
+      const isImage = payload.file.type.startsWith("image/")
+      const preparedFile = isImage ? await prepareImageForUpload(payload.file, "asset-image") : payload.file
+      formData.append("file", preparedFile)
+      if (isImage) {
+        formData.append("kind", "asset-image")
+      }
     }
 
     const response = await fetch(`/api/assets/${assetId}`, {

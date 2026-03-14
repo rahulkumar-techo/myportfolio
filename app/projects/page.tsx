@@ -6,6 +6,7 @@ import { motion } from 'framer-motion';
 import { Folder, ExternalLink, Github, ArrowRight, Filter, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import Footer from '@/components/footer';
+import { buildCloudinaryImageUrl } from '@/lib/cloudinary-images';
 import { useProjects } from '@/hooks/useProjects';
 import type { Project } from '@/lib/types';
 import {
@@ -30,10 +31,11 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
         <div className="relative h-56 overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20">
           {project.coverImage?.url ? (
             <Image
-              src={project.coverImage.url}
+              src={buildCloudinaryImageUrl(project.coverImage.url, 'thumbnail')}
               alt={project.title}
               fill
               unoptimized
+              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
               className="object-cover"
             />
           ) : (

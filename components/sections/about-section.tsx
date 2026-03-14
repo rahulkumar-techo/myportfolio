@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { MapPin, Mail, Calendar, Code2, Coffee, Rocket } from 'lucide-react'
 import Image from 'next/image'
+import { buildCloudinaryImageUrl } from '@/lib/cloudinary-images'
 import { usePublicProfile } from '@/hooks/usePublicProfile'
 
 export default function AboutSection() {
@@ -118,11 +119,12 @@ export default function AboutSection() {
                     <span className="text-xl md:text-3xl font-bold text-primary">
 
                       <Image
-                        alt={"avatar"}
-                        src={"/avatar.png"}
+                        alt="avatar"
+                        src={buildCloudinaryImageUrl(avatarUrl, 'avatar')}
                         width={100}
                         height={100}
-                        className=' rounded-2xl'
+                        unoptimized
+                        className="rounded-2xl"
                       />
 
                     </span>

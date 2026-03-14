@@ -14,6 +14,7 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { Button } from '@/components/ui/button'
+import { buildCloudinaryImageUrl } from '@/lib/cloudinary-images'
 import type { Project } from '@/lib/types'
 
 type ProjectsListProps = {
@@ -66,7 +67,7 @@ export function ProjectsList({
               <div className="flex flex-wrap items-center gap-2">
                 {project.coverImage?.url ? (
                   <Image
-                    src={project.coverImage.url}
+                    src={buildCloudinaryImageUrl(project.coverImage.url, 'thumbnail')}
                     alt={`${project.title} cover`}
                     width={64}
                     height={48}
@@ -83,7 +84,7 @@ export function ProjectsList({
                     {project.galleryImages.slice(0, 4).map((image, index) => (
                       <Image
                         key={`${project.id}-gallery-${index}`}
-                        src={image.url}
+                        src={buildCloudinaryImageUrl(image.url, 'gallery')}
                         alt={`${project.title} gallery ${index + 1}`}
                         width={64}
                         height={48}

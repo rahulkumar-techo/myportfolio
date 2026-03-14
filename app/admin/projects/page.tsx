@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useProjects } from '@/hooks/useProjects'
+import { prepareImageForUpload } from '@/lib/image-upload'
+import type { ImageUploadKind } from '@/lib/image-presets'
 import type { CloudinaryImage, Project } from '@/lib/types'
 import { ProjectForm, ProjectFormState } from '@/app/admin/projects/components/project-form'
 import { ProjectsHeader } from '@/app/admin/projects/components/projects-header'
@@ -123,9 +125,11 @@ export default function AdminProjectsPage() {
     })
   }
 
-  const uploadProjectImage = async (file: File) => {
+  const uploadProjectImage = async (file: File, kind: ImageUploadKind) => {
+    const preparedFile = await prepareImageForUpload(file, kind)
     const formData = new FormData()
-    formData.append('file', file)
+    formData.append('file', preparedFile)
+    formData.append('kind', kind)
     const response = await fetch('/api/projects/upload', {
       method: 'POST',
       body: formData
@@ -162,7 +166,7 @@ export default function AdminProjectsPage() {
     setUploadError(null)
 
     try {
-      const uploaded = await uploadProjectImage(file)
+      const uploaded = await uploadProjectImage(file, 'cover')
       if (formData.coverImage?.publicId && tempUploads.includes(formData.coverImage.publicId)) {
         await deleteProjectImage(formData.coverImage.publicId)
         setTempUploads((current) => current.filter((id) => id !== formData.coverImage?.publicId))
@@ -197,7 +201,7 @@ export default function AdminProjectsPage() {
       const uploadedImages: CloudinaryImage[] = []
 
       for (const file of uploads) {
-        const uploaded = await uploadProjectImage(file)
+        const uploaded = await uploadProjectImage(file, 'gallery')
         if (uploaded.publicId) {
           setTempUploads((current) => [...current, uploaded.publicId as string])
         }

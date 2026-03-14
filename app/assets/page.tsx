@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import Footer from '@/components/footer';
 import { Button } from '@/components/ui/button';
+import { buildCloudinaryDownloadUrl } from '@/lib/cloudinary-images';
 import { usePublicAssets } from '@/hooks/usePublicAssets';
 import type { AssetItem } from '@/lib/types';
 
@@ -17,19 +18,6 @@ function assetIcon(asset: AssetItem) {
   }
 
   return FileText;
-}
-
-function buildDownloadUrl(fileUrl: string) {
-  const marker = '/upload/';
-  const index = fileUrl.indexOf(marker);
-
-  if (index === -1) {
-    return fileUrl;
-  }
-
-  const transform = 'fl_attachment';
-
-  return `${fileUrl.slice(0, index + marker.length)}${transform}/${fileUrl.slice(index + marker.length)}`;
 }
 
 export default function AssetsPage() {
@@ -130,7 +118,7 @@ export default function AssetsPage() {
             <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
               {filteredAssets.map((asset, index) => {
                 const Icon = assetIcon(asset);
-                const downloadUrl = buildDownloadUrl(asset.fileUrl);
+                const downloadUrl = buildCloudinaryDownloadUrl(asset.fileUrl);
 
                 return (
                   <motion.div

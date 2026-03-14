@@ -2,6 +2,7 @@ import { NextResponse } from "next/server"
 import path from "path"
 import { requireAdminApiSession } from "@/lib/auth"
 import cloudinary from "@/lib/clodudinary"
+import { IMAGE_UPLOAD_PRESETS, type ImageUploadKind } from "@/lib/image-presets"
 import { createAsset, listPublicAssets } from "@/repositories/asset-repository"
 import type { AssetItem } from "@/lib/types"
 
@@ -20,7 +21,7 @@ function buildPublicId(originalName: string) {
   return `${Date.now()}-${baseName}`
 }
 
-function uploadToCloudinary(file: File, originalName: string) {
+function uploadToCloudinary(file: File, originalName: string, kind?: ImageUploadKind) {
   return new Promise<{
     secure_url: string
     public_id: string
@@ -31,13 +32,23 @@ function uploadToCloudinary(file: File, originalName: string) {
     cloudinary.config()
     const buffer = Buffer.from(await file.arrayBuffer())
     const publicId = buildPublicId(originalName)
+    const isImage = file.type.startsWith("image/")
     const stream = cloudinary.uploader.upload_stream(
       {
         folder: CLOUDINARY_FOLDER,
         public_id: publicId,
-        resource_type: "auto",
+        resource_type: isImage ? "image" : "auto",
+        format: isImage ? "webp" : undefined,
         use_filename: false,
-        unique_filename: false
+        unique_filename: false,
+        overwrite: false,
+        context: kind
+          ? {
+              upload_kind: kind,
+              target_width: String(IMAGE_UPLOAD_PRESETS[kind].width),
+              target_height: String(IMAGE_UPLOAD_PRESETS[kind].height)
+            }
+          : undefined
       },
       (error, result) => {
         if (error || !result) {
@@ -92,6 +103,7 @@ export async function POST(request: Request) {
   const label = String(formData.get("label") ?? "").trim()
   const category = String(formData.get("category") ?? "other").trim()
   const file = formData.get("file")
+  const kindValue = String(formData.get("kind") ?? "").trim()
 
   if (!label) {
     return NextResponse.json({ success: false, error: "Label is required." }, { status: 400 })
@@ -109,8 +121,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: "File must be 10MB or smaller." }, { status: 400 })
   }
 
+  const isImage = file.type.startsWith("image/")
+  const uploadKind = isImage && kindValue === "asset-image" ? ("asset-image" as const) : undefined
+
+  if (isImage && uploadKind && file.size > IMAGE_UPLOAD_PRESETS[uploadKind].maxBytes) {
+    return NextResponse.json({ success: false, error: "Optimized image assets must be under 2MB." }, { status: 400 })
+  }
+
   const originalName = sanitizeFileName(file.name || "asset")
-  const uploadedFile = await uploadToCloudinary(file, originalName)
+  const uploadedFile = await uploadToCloudinary(file, originalName, uploadKind)
 
   const asset = {
     id: crypto.randomUUID(),
@@ -121,7 +140,7 @@ export async function POST(request: Request) {
     fileName: path.basename(uploadedFile.public_id),
     originalName,
     fileUrl: uploadedFile.secure_url,
-    fileType: file.type || "application/octet-stream",
+    fileType: isImage ? "image/webp" : file.type || "application/octet-stream",
     size: uploadedFile.bytes || file.size,
     uploadedAt: new Date().toISOString()
   } as AssetItem

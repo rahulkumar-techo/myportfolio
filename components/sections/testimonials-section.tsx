@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
+import { buildCloudinaryImageUrl } from '@/lib/cloudinary-images';
 import { useTestimonials } from '@/hooks/useTestimonials';
 import type { Testimonial } from '@/lib/types';
 import {
@@ -81,7 +82,7 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
               {testimonial.avatarUrl && !imageFailed ? (
                 <Image
-                  src={testimonial.avatarUrl}
+                  src={buildCloudinaryImageUrl(testimonial.avatarUrl, 'avatar')}
                   alt={testimonial.name}
                   width={48}
                   height={48}

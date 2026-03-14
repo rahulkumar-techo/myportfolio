@@ -4,6 +4,7 @@ import type { Dispatch, FormEvent, SetStateAction } from 'react'
 import Image from 'next/image'
 import { Loader2, Plus, Upload } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { buildCloudinaryImageUrl } from '@/lib/cloudinary-images'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Switch } from '@/components/ui/switch'
@@ -152,10 +153,11 @@ export function ProjectForm({
           {formData.coverImage?.url ? (
             <div className="relative h-40 w-full overflow-hidden rounded-md">
               <Image
-              src={formData.coverImage.url}
+              src={buildCloudinaryImageUrl(formData.coverImage.url, 'hero')}
               alt={formData.title || 'Cover image'}
               fill
               unoptimized
+              sizes="420px"
               className="object-cover"
             />
             </div>
@@ -209,11 +211,12 @@ export function ProjectForm({
           {formData.galleryImages.map((image, index) => (
             <div key={`${image.url}-${index}`} className="relative overflow-hidden rounded-lg border border-border/60">
               <Image
-                src={image.url}
+                src={buildCloudinaryImageUrl(image.url, 'gallery')}
                 alt={`Gallery image ${index + 1}`}
                 width={320}
                 height={128}
                 unoptimized
+                sizes="(max-width: 640px) 100vw, 160px"
                 className="h-32 w-full object-cover"
               />
               <Button
