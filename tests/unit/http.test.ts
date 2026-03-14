@@ -44,8 +44,7 @@ describe("fetchWithTimeout", () => {
       })
     })
 
-    // @ts-expect-error - override fetch for test
-    global.fetch = fetchMock
+    ;(globalThis as unknown as { fetch: typeof fetchMock }).fetch = fetchMock
 
     const promise = fetchWithTimeout("/api/assets", {}, 10)
     jest.advanceTimersByTime(20)
