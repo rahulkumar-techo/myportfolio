@@ -13,9 +13,18 @@ import {
   Settings,
   FolderOpen,
   LogOut,
+  Menu,
   User,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import {
+  Sheet,
+  SheetClose,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { useAuth } from '@/hooks/useAuth';
 import { useAdminSettings } from '@/hooks/useSettings';
 
@@ -30,10 +39,149 @@ const navItems = [
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 
+type AdminSidebarProps = {
+  pathname: string | null;
+  panelTitle: string;
+  siteTitle: string;
+  userName: string;
+  userEmail: string;
+  isLoading: boolean;
+  onLogout: () => void;
+  closeOnNavigate?: boolean;
+};
+
+function AdminSidebar({
+  pathname,
+  panelTitle,
+  siteTitle,
+  userName,
+  userEmail,
+  isLoading,
+  onLogout,
+  closeOnNavigate = false,
+}: AdminSidebarProps) {
+  return (
+    <div className="flex h-full flex-col">
+      <div className="border-b border-border/50 p-6">
+        {closeOnNavigate ? (
+          <SheetClose asChild>
+            <Link href="/admin" className="flex items-center gap-3">
+              <div className="relative h-10 w-10">
+                <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-primary to-accent" />
+                <div className="absolute inset-0.5 flex items-center justify-center rounded-lg bg-background">
+                  <span className="font-mono text-lg font-bold text-primary">A</span>
+                </div>
+              </div>
+              <div>
+                <span className="block font-semibold text-foreground">{panelTitle}</span>
+                <span className="text-xs text-muted-foreground">{siteTitle}</span>
+              </div>
+            </Link>
+          </SheetClose>
+        ) : (
+          <Link href="/admin" className="flex items-center gap-3">
+            <div className="relative h-10 w-10">
+              <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-primary to-accent" />
+              <div className="absolute inset-0.5 flex items-center justify-center rounded-lg bg-background">
+                <span className="font-mono text-lg font-bold text-primary">A</span>
+              </div>
+            </div>
+            <div>
+              <span className="block font-semibold text-foreground">{panelTitle}</span>
+              <span className="text-xs text-muted-foreground">{siteTitle}</span>
+            </div>
+          </Link>
+        )}
+      </div>
+
+      <nav className="admin-scroll flex-1 space-y-1 overflow-y-auto p-4">
+        {navItems.map((item) => {
+          const isActive = pathname === item.href || (item.href !== '/admin' && pathname?.startsWith(item.href));
+          const navLink = (
+            <Link
+              key={item.href}
+              href={item.href}
+              prefetch={true}
+              className={`relative flex items-center gap-3 rounded-lg px-4 py-3 transition-colors duration-150 ${
+                isActive
+                  ? 'bg-primary/20 text-primary'
+                  : 'text-muted-foreground hover:bg-primary/10 hover:text-foreground'
+              }`}
+            >
+              {isActive ? <span className="absolute left-0 h-8 w-1 rounded-r bg-primary" /> : null}
+              <item.icon className="h-5 w-5" />
+              <span>{item.label}</span>
+            </Link>
+          );
+
+          return closeOnNavigate ? (
+            <SheetClose key={item.href} asChild>
+              {navLink}
+            </SheetClose>
+          ) : navLink;
+        })}
+      </nav>
+
+      <div className="border-t border-border/50 p-4">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gradient-to-br from-primary/20 to-accent/20">
+            <User className="h-5 w-5 text-primary" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-foreground">
+              {isLoading ? 'Loading...' : userName}
+            </p>
+            <p className="truncate text-xs text-muted-foreground">{userEmail}</p>
+          </div>
+        </div>
+        <div className="space-y-2">
+          {closeOnNavigate ? (
+            <SheetClose asChild>
+              <Button
+                variant="outline"
+                className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+                asChild
+              >
+                <Link href="/">
+                  <LogOut className="h-4 w-4" />
+                  Back to Site
+                </Link>
+              </Button>
+            </SheetClose>
+          ) : (
+            <Button
+              variant="outline"
+              className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
+              asChild
+            >
+              <Link href="/">
+                <LogOut className="h-4 w-4" />
+                Back to Site
+              </Link>
+            </Button>
+          )}
+          <Button
+            variant="ghost"
+            onClick={() => void onLogout()}
+            className="w-full justify-start gap-2 text-destructive hover:bg-destructive/10 hover:text-destructive"
+          >
+            <LogOut className="h-4 w-4" />
+            Sign Out
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { logout, status, user } = useAuth();
   const { settings } = useAdminSettings();
+  const panelTitle = settings?.adminPanelTitle || 'Admin Panel';
+  const siteTitle = settings?.siteTitle || 'Portfolio Manager';
+  const userName = user?.name || 'Admin';
+  const userEmail = user?.email || 'No session email';
 
   useEffect(() => {
     if (pathname === '/admin/login' || pathname === '/admin/register') {
@@ -51,110 +199,63 @@ function AdminLayoutContent({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="h-dvh flex overflow-hidden">
-      {/* Sidebar */}
-      <aside className="w-64 h-full shrink-0 glass-card border-r border-border/50">
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="p-6 border-b border-border/50">
-            <Link href="/admin" className="flex items-center gap-3">
-              <div className="relative w-10 h-10">
-                <div className="absolute inset-0 rounded-lg bg-gradient-to-br from-primary to-accent" />
-                <div className="absolute inset-0.5 rounded-lg bg-background flex items-center justify-center">
-                  <span className="text-primary font-bold text-lg font-mono">A</span>
-                </div>
-              </div>
-              <div>
-                <span className="text-foreground font-semibold block">
-                  {settings?.adminPanelTitle || 'Admin Panel'}
-                </span>
-                <span className="text-xs text-muted-foreground">
-                  {settings?.siteTitle || 'Portfolio Manager'}
-                </span>
-              </div>
-            </Link>
-          </div>
-
-          {/* Navigation */}
-          <nav className="flex-1 p-4 space-y-1 overflow-y-auto admin-scroll">
-            {navItems.map((item) => {
-              const isActive = pathname === item.href || (item.href !== '/admin' && pathname!.startsWith(item.href));
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  prefetch={true}
-                  className={`relative flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-150 ${isActive
-                    ? 'bg-primary/20 text-primary'
-                    : 'text-muted-foreground hover:bg-primary/10 hover:text-foreground'
-                    }`}
-                >
-                  {isActive && (
-                    <span className="absolute left-0 w-1 h-8 bg-primary rounded-r" />
-                  )}
-                  <item.icon className="w-5 h-5" />
-                  <span>{item.label}</span>
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* User Section */}
-          <div className="p-4 border-t border-border/50">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-                <User className="w-5 h-5 text-primary" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-foreground truncate">
-                  {status === 'loading' ? 'Loading...' : user?.name || 'Admin'}
-                </p>
-                <p className="text-xs text-muted-foreground truncate">
-                  {user?.email || 'No session email'}
-                </p>
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Button
-                variant="outline"
-                className="w-full justify-start gap-2 text-muted-foreground hover:text-foreground"
-                asChild
-              >
-                <Link href="/">
-                  <LogOut className="w-4 h-4" />
-                  Back to Site
-                </Link>
-              </Button>
-              <Button
-                variant="ghost"
-                onClick={() => void logout()}
-                className="w-full justify-start gap-2 text-destructive hover:text-destructive hover:bg-destructive/10"
-              >
-                <LogOut className="w-4 h-4" />
-                Sign Out
-              </Button>
-            </div>
-          </div>
-        </div>
+    <div className="flex h-dvh overflow-hidden">
+      <aside className="hidden h-full w-64 shrink-0 border-r border-border/50 glass-card md:block">
+        <AdminSidebar
+          pathname={pathname}
+          panelTitle={panelTitle}
+          siteTitle={siteTitle}
+          userName={userName}
+          userEmail={userEmail}
+          isLoading={status === 'loading'}
+          onLogout={logout}
+        />
       </aside>
 
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col overflow-hidden min-h-0">
-        {/* Top Bar */}
-        <header className="sticky top-0 z-30 glass-card border-b border-border/50 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div className="text-sm text-muted-foreground">
-                <span className="hidden sm:inline">Welcome back, </span>
-                <span className="text-primary">{user?.name || 'Admin'}</span>
-              </div>
+      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <header className="sticky top-0 z-30 border-b border-border/50 px-4 py-4 glass-card sm:px-6">
+          <div className="flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3 md:hidden">
+              <Sheet>
+                <SheetTrigger asChild>
+                  <Button variant="outline" size="icon" aria-label="Open navigation menu">
+                    <Menu className="h-5 w-5" />
+                  </Button>
+                </SheetTrigger>
+                <SheetContent side="left" className="w-[86vw] max-w-xs p-0">
+                  <SheetTitle className="sr-only">{panelTitle}</SheetTitle>
+                  <SheetDescription className="sr-only">
+                    Admin navigation and account actions.
+                  </SheetDescription>
+                  <AdminSidebar
+                    pathname={pathname}
+                    panelTitle={panelTitle}
+                    siteTitle={siteTitle}
+                    userName={userName}
+                    userEmail={userEmail}
+                    isLoading={status === 'loading'}
+                    onLogout={logout}
+                    closeOnNavigate={true}
+                  />
+                </SheetContent>
+              </Sheet>
+              <Link href="/admin" className="min-w-0">
+                <span className="block truncate text-sm font-semibold text-foreground">{panelTitle}</span>
+                <span className="block truncate text-xs text-muted-foreground">{siteTitle}</span>
+              </Link>
+            </div>
+            <div className="text-sm text-muted-foreground">
+              <span className="hidden sm:inline">Welcome back, </span>
+              <span className="text-primary">{userName}</span>
+            </div>
+            <div className="hidden md:block text-xs text-muted-foreground">
+              {userEmail}
             </div>
           </div>
         </header>
 
-        {/* Page Content */}
-        <main className="flex-1 overflow-y-auto overflow-x-hidden p-6 admin-scroll">
-          <div className="max-w-7xl mx-auto">
+        <main className="admin-scroll flex-1 overflow-x-hidden overflow-y-auto p-4 sm:p-6">
+          <div className="mx-auto max-w-7xl">
             {children}
           </div>
         </main>
