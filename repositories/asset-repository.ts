@@ -17,13 +17,20 @@ function toPlainAsset(item: any) {
 }
 
 async function getAssetOwnerId(userId?: string) {
-  const user = userId ? await findUserById(userId) : await findFirstAdmin()
+  if (userId) {
+    const user = await findUserById(userId)
+    if (user) {
+      return user._id
+    }
+  }
 
-  if (!user) {
+  const admin = await findFirstAdmin()
+
+  if (!admin) {
     throw new Error("User not found")
   }
 
-  return user._id
+  return admin._id
 }
 
 export async function listAssets(userId: string) {
