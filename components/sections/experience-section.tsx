@@ -162,7 +162,7 @@ export default function ExperienceSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const { experiences, isLoading } = useExperience();
-  const featuredExperiences = experiences.filter((experience: Experience) => experience.featured);
+  const currentExperiences = experiences.filter((experience: Experience) => experience.current);
 
   return (
     <section id="experience" className="relative py-24 md:py-32 overflow-hidden" ref={ref}>
@@ -197,20 +197,20 @@ export default function ExperienceSection() {
           <div className="flex items-center justify-center py-12">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
-        ) : featuredExperiences.length === 0 ? (
+        ) : currentExperiences.length === 0 ? (
           <div className="mx-auto max-w-2xl rounded-2xl p-10 text-center glass-card">
             <Briefcase className="mx-auto mb-4 h-10 w-10 text-primary" />
-            <p className="text-lg font-medium text-foreground">No featured experience yet.</p>
-            <p className="mt-2 text-sm text-muted-foreground">Mark experience items as featured from the admin panel.</p>
+            <p className="text-lg font-medium text-foreground">No current experience yet.</p>
+            <p className="mt-2 text-sm text-muted-foreground">Mark an experience as current in the admin panel to display it here.</p>
           </div>
         ) : (
           <div className="max-w-4xl mx-auto pl-6 md:pl-0 space-y-8">
-            {featuredExperiences.map((experience: Experience, index: number) => (
+            {currentExperiences.map((experience: Experience, index: number) => (
               <TimelineNode
                 key={experience.id}
                 experience={experience}
                 index={index}
-                isLast={index === featuredExperiences.length - 1}
+                isLast={index === currentExperiences.length - 1}
               />
             ))}
           </div>

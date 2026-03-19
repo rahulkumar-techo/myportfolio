@@ -290,7 +290,7 @@ export default function ContactSection() {
                   <p className="text-sm text-muted-foreground">
                     Sign in with Google to send one verified message. Each user can submit one message only.
                   </p>
-                  <Button type="button" onClick={() => void loginWithGoogle('/#contact')} className="w-full">
+                  <Button type="button" onClick={() => void loginWithGoogle('/contact')} className="w-full">
                     Sign in with Google
                   </Button>
                   {submitError ? <p className="text-sm text-destructive">{submitError}</p> : null}

@@ -1,6 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useState } from 'react'
+import Image from 'next/image'
 import { Loader2, Save } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -293,9 +294,11 @@ export default function AdminSettingsPage() {
             <div className="space-y-2">
               <Label htmlFor="profile-avatar-file">Avatar Image</Label>
               <div className="flex flex-wrap items-center gap-4">
-                <img
+                <Image
                   src={avatarPreviewUrl}
                   alt="Profile avatar preview"
+                  width={56}
+                  height={56}
                   className="h-14 w-14 rounded-2xl object-cover border border-border/60"
                 />
                 <Input

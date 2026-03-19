@@ -127,14 +127,21 @@ function SkillOrb({
     const x = Math.cos(angle) * radius
     const y = Math.sin(angle) * radius
 
+    const formatOrbitValue = (value: number) => {
+        const abs = Math.abs(value)
+        const rounded = Math.round(abs * 1000) / 1000
+        const sign = value >= 0 ? "+" : "-"
+        return `calc(50% ${sign} ${rounded.toFixed(3)}px)`
+    }
+
     return (
 
         <div
             className="absolute group cursor-pointer"
             style={{
-                left: `calc(50% + ${x}px)`,
-                top: `calc(50% + ${y}px)`,
-                transform: "translate(-50%,-50%)"
+                left: formatOrbitValue(x),
+                top: formatOrbitValue(y),
+                transform: "translate(-50%, -50%)"
             }}
         >
 

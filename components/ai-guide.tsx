@@ -18,7 +18,6 @@ const guideMessages: AIGuideMessage[] = [
   { id: 'assets', section: 'assets', message: "You can browse public downloads, CV files, and other shared assets here." },
   { id: 'experience', section: 'experience', message: "A timeline of professional growth and achievements." },
   { id: 'testimonials', section: 'testimonials', message: "Hear what colleagues and clients have to say." },
-  { id: 'contact', section: 'contact', message: "Ready to connect? Let's build something amazing together." },
 ]
 
 interface AIGuideProps {

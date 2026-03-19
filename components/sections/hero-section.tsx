@@ -1,21 +1,15 @@
 'use client';
 
-import { motion, useInView } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { useRef } from 'react';
 import { ChevronDown, Sparkles, Zap } from 'lucide-react';
-import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { usePublicProfile } from '@/hooks/usePublicProfile';
-
-const HeroScene = dynamic(() => import('@/components/three/hero-scene'), {
-  ssr: false,
-  loading: () => <div className="h-full w-full bg-background" />,
-});
+import HeroScene from '@/components/three/hero-scene';
 
 export default function HeroSection() {
   const ref = useRef<HTMLElement | null>(null);
-  const isHeroActive = useInView(ref, { margin: '20% 0px -20% 0px' });
   const { profile } = usePublicProfile();
 
   const headingName = profile?.settings.siteTitle || profile?.profile.name || 'Developer Portfolio';
@@ -26,11 +20,17 @@ export default function HeroSection() {
     ? profile.highlights.topSkills
     : ['React', 'Next.js', 'TypeScript', 'Node.js'];
 
+  const showScene = true;
+
   return (
     <section id="hero" ref={ref} className="relative min-h-screen overflow-hidden">
       {/* 3D Scene */}
       <div className="absolute inset-0 z-0">
-        {isHeroActive ? <HeroScene /> : <div className="h-full w-full bg-background" />}
+        {showScene ? (
+          <HeroScene />
+        ) : (
+          <div className="h-full w-full bg-gradient-to-b from-background via-background/80 to-background" />
+        )}
       </div>
 
       {/* Grid Background */}
@@ -112,7 +112,7 @@ export default function HeroSection() {
               variant="outline"
               className="border-border hover:border-primary hover:bg-primary/10 transition-all"
             >
-              <Link href="#contact">
+              <Link href="/contact">
                 <Zap className="w-5 h-5 mr-2" />
                 Get in Touch
               </Link>

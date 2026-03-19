@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Loader2, Mail, MailOpen, RefreshCw, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
@@ -53,7 +53,7 @@ export default function AdminMessagesPage() {
     }
   }, [])
 
-  const playNotification = () => {
+  const playNotification = useCallback(() => {
     try {
       // Comment: simple admin sound when a new message arrives.
       const sound = settings?.adminNotificationSound ?? 'beep'
@@ -96,7 +96,7 @@ export default function AdminMessagesPage() {
     } catch {
       // Ignore audio failures (autoplay restrictions or missing device).
     }
-  }
+  }, [settings])
 
   useEffect(() => {
     const total = meta?.total ?? null
@@ -114,7 +114,7 @@ export default function AdminMessagesPage() {
     }
 
     lastTotalRef.current = total
-  }, [meta?.total])
+  }, [meta?.total, playNotification])
 
   const sortedMessages = useMemo(
     () =>

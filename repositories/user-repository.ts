@@ -29,6 +29,10 @@ const defaultSettings: SiteSettings = {
   adminNotificationSound: "beep"
 }
 
+export function getDefaultSettings() {
+  return { ...defaultSettings }
+}
+
 type CreateUserInput = {
   name: string
   email: string

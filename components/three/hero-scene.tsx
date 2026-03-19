@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense, useMemo, useRef } from 'react';
+import { Suspense, useEffect, useMemo, useRef, useState, Component, type ReactNode } from 'react';
 import { Canvas, useFrame } from '@react-three/fiber';
 import { 
   Float, 
@@ -13,11 +13,12 @@ import {
 } from '@react-three/drei';
 import * as THREE from 'three';
 
-function GlowingOrb({ position, color, size = 1, intensity = 1 }: { 
+function GlowingOrb({ position, color, size = 1, intensity = 1, segments = 24 }: { 
   position: [number, number, number]; 
   color: string; 
   size?: number;
   intensity?: number;
+  segments?: number;
 }) {
   const meshRef = useRef<THREE.Mesh>(null);
   
@@ -31,7 +32,7 @@ function GlowingOrb({ position, color, size = 1, intensity = 1 }: {
   return (
     <Float speed={2} rotationIntensity={0.5} floatIntensity={1}>
       <mesh ref={meshRef} position={position}>
-        <sphereGeometry args={[size, 32, 32]} />
+        <sphereGeometry args={[size, segments, segments]} />
         <MeshDistortMaterial
           color={color}
           emissive={color}
@@ -47,7 +48,7 @@ function GlowingOrb({ position, color, size = 1, intensity = 1 }: {
   );
 }
 
-function DeskSetup() {
+function DeskSetup({ showHtml }: { showHtml: boolean }) {
   const deskRef = useRef<THREE.Group>(null);
   
   return (
@@ -80,38 +81,40 @@ function DeskSetup() {
           <meshBasicMaterial color="#00d4ff" opacity={0.3} transparent />
         </mesh>
         {/* Code Display */}
-        <Html
-          transform
-          position={[0, 0, 0.04]}
-          scale={0.12}
-          style={{
-            width: '320px',
-            background: 'rgba(10, 10, 26, 0.9)',
-            padding: '20px',
-            borderRadius: '8px',
-            fontFamily: 'monospace',
-            fontSize: '11px',
-            color: '#00d4ff',
-            overflow: 'hidden',
-          }}
-        >
-          <div>
-            <span style={{ color: '#a855f7' }}>const</span>{' '}
-            <span style={{ color: '#00d4ff' }}>developer</span> = {'{'}
-            <br />
-            {'  '}<span style={{ color: '#22c55e' }}>name</span>:{' '}
-            <span style={{ color: '#fbbf24' }}>&apos;Rahul kumar&apos;</span>,
-            <br />
-            {'  '}<span style={{ color: '#22c55e' }}>skills</span>: [
-            <span style={{ color: '#fbbf24' }}>&apos;React&apos;</span>,{' '}
-            <span style={{ color: '#fbbf24' }}>&apos;Three.js&apos;</span>],
-            <br />
-            {'  '}<span style={{ color: '#22c55e' }}>passion</span>:{' '}
-            <span style={{ color: '#fbbf24' }}>&apos;Creating&apos;</span>
-            <br />
-            {'}'};
-          </div>
-        </Html>
+        {showHtml ? (
+          <Html
+            transform
+            position={[0, 0, 0.04]}
+            scale={0.12}
+            style={{
+              width: '320px',
+              background: 'rgba(10, 10, 26, 0.9)',
+              padding: '20px',
+              borderRadius: '8px',
+              fontFamily: 'monospace',
+              fontSize: '11px',
+              color: '#00d4ff',
+              overflow: 'hidden',
+            }}
+          >
+            <div>
+              <span style={{ color: '#a855f7' }}>const</span>{' '}
+              <span style={{ color: '#00d4ff' }}>developer</span> = {'{'}
+              <br />
+              {'  '}<span style={{ color: '#22c55e' }}>name</span>:{' '}
+              <span style={{ color: '#fbbf24' }}>&apos;Rahul kumar&apos;</span>,
+              <br />
+              {'  '}<span style={{ color: '#22c55e' }}>skills</span>: [
+              <span style={{ color: '#fbbf24' }}>&apos;React&apos;</span>,{' '}
+              <span style={{ color: '#fbbf24' }}>&apos;Three.js&apos;</span>],
+              <br />
+              {'  '}<span style={{ color: '#22c55e' }}>passion</span>:{' '}
+              <span style={{ color: '#fbbf24' }}>&apos;Creating&apos;</span>
+              <br />
+              {'}'};
+            </div>
+          </Html>
+        ) : null}
       </group>
       
       {/* Keyboard */}
@@ -126,7 +129,7 @@ function DeskSetup() {
   );
 }
 
-function ReactorCore() {
+function ReactorCore({ lowPower }: { lowPower: boolean }) {
   const coreRef = useRef<THREE.Mesh>(null);
   const ringRef = useRef<THREE.Mesh>(null);
   
@@ -146,7 +149,7 @@ function ReactorCore() {
     <group position={[0, -0.5, -3]}>
       {/* Core Sphere */}
       <mesh ref={coreRef}>
-        <icosahedronGeometry args={[0.5, 2]} />
+        <icosahedronGeometry args={[0.5, lowPower ? 1 : 2]} />
         <MeshDistortMaterial
           color="#00d4ff"
           emissive="#00d4ff"
@@ -160,7 +163,7 @@ function ReactorCore() {
       
       {/* Rotating Ring */}
       <mesh ref={ringRef}>
-        <torusGeometry args={[1, 0.05, 16, 100]} />
+        <torusGeometry args={[1, 0.05, 12, lowPower ? 48 : 80]} />
         <meshStandardMaterial 
           color="#a855f7" 
           emissive="#a855f7" 
@@ -170,7 +173,7 @@ function ReactorCore() {
       
       {/* Energy Field */}
       <Sparkles
-        count={60}
+        count={lowPower ? 30 : 60}
         scale={3}
         size={2}
         speed={0.5}
@@ -182,18 +185,18 @@ function ReactorCore() {
   );
 }
 
-function FloatingParticles() {
+function FloatingParticles({ count }: { count: number }) {
   const particlesRef = useRef<THREE.Points>(null);
   
   const particles = useMemo(() => {
-    const positions = new Float32Array(120 * 3);
-    for (let i = 0; i < 120; i++) {
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
       positions[i * 3] = (Math.random() - 0.5) * 20;
       positions[i * 3 + 1] = (Math.random() - 0.5) * 20;
       positions[i * 3 + 2] = (Math.random() - 0.5) * 20;
     }
     return positions;
-  }, []);
+  }, [count]);
 
   useFrame((state) => {
     if (particlesRef.current) {
@@ -220,30 +223,47 @@ function FloatingParticles() {
   );
 }
 
-function Scene() {
+function Scene({ lowPower }: { lowPower: boolean }) {
+  const orbSegments = lowPower ? 16 : 24;
+
   return (
     <>
       <PerspectiveCamera makeDefault position={[0, 1, 6]} fov={50} />
+      <color attach="background" args={['#0a0a1a']} />
       <ambientLight intensity={0.2} />
       <directionalLight position={[5, 5, 5]} intensity={0.5} />
       
       {/* Background */}
-      <Stars radius={80} depth={40} count={2000} factor={3} saturation={0} fade speed={0.6} />
+      <Stars
+        radius={80}
+        depth={40}
+        count={lowPower ? 900 : 1400}
+        factor={3}
+        saturation={0}
+        fade
+        speed={0.4}
+      />
       
       {/* Main Elements */}
-      <DeskSetup />
-      <ReactorCore />
+      <DeskSetup showHtml={!lowPower} />
+      <ReactorCore lowPower={lowPower} />
       
       {/* Decorative Orbs */}
-      <GlowingOrb position={[-3, 1, -1]} color="#a855f7" size={0.3} intensity={0.8} />
-      <GlowingOrb position={[3, 0.5, -2]} color="#00d4ff" size={0.25} intensity={0.6} />
-      <GlowingOrb position={[-2, 2, 0]} color="#22c55e" size={0.2} intensity={0.5} />
+      <GlowingOrb position={[-3, 1, -1]} color="#a855f7" size={0.3} intensity={0.8} segments={orbSegments} />
+      <GlowingOrb position={[3, 0.5, -2]} color="#00d4ff" size={0.25} intensity={0.6} segments={orbSegments} />
+      {!lowPower ? (
+        <GlowingOrb position={[-2, 2, 0]} color="#22c55e" size={0.2} intensity={0.5} segments={orbSegments} />
+      ) : null}
       
       {/* Particles */}
-      <FloatingParticles />
+      <FloatingParticles count={lowPower ? 70 : 120} />
       
       {/* Environment */}
-      <Environment preset="night" />
+      {!lowPower ? (
+        <Suspense fallback={null}>
+          <Environment preset="night" />
+        </Suspense>
+      ) : null}
       
       {/* Fog for depth */}
       <fog attach="fog" args={['#0a0a1a', 5, 25]} />
@@ -251,19 +271,95 @@ function Scene() {
   );
 }
 
+type SceneErrorBoundaryProps = {
+  children: ReactNode;
+  fallback: ReactNode;
+  onError?: () => void;
+};
+
+type SceneErrorBoundaryState = {
+  hasError: boolean;
+};
+
+class SceneErrorBoundary extends Component<SceneErrorBoundaryProps, SceneErrorBoundaryState> {
+  state: SceneErrorBoundaryState = { hasError: false };
+
+  static getDerivedStateFromError() {
+    return { hasError: true };
+  }
+
+  componentDidCatch() {
+    this.props.onError?.();
+  }
+
+  render() {
+    if (this.state.hasError) {
+      return this.props.fallback;
+    }
+    return this.props.children;
+  }
+}
+
 export default function HeroScene() {
+  const [lowPower, setLowPower] = useState(false);
+  const [webglFailed, setWebglFailed] = useState(false);
+  const [webglSupported, setWebglSupported] = useState<boolean | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    const prefersReducedMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches ?? false;
+    const cores = navigator.hardwareConcurrency ?? 4;
+    const memory = (navigator as any).deviceMemory ?? 4;
+    setLowPower(prefersReducedMotion || cores <= 4 || memory <= 4);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') {
+      return;
+    }
+
+    try {
+      const canvas = document.createElement('canvas');
+      const gl =
+        canvas.getContext('webgl2', { failIfMajorPerformanceCaveat: true }) ||
+        canvas.getContext('webgl', { failIfMajorPerformanceCaveat: true }) ||
+        canvas.getContext('experimental-webgl', { failIfMajorPerformanceCaveat: true });
+      setWebglSupported(Boolean(gl));
+    } catch {
+      setWebglSupported(false);
+    }
+  }, []);
+
+  const shouldRenderCanvas = webglSupported === true && !webglFailed;
+
   return (
     <div className="w-full h-screen relative">
-      <Suspense fallback={null}>
-        <Canvas
-          gl={{ antialias: false, alpha: true, powerPreference: 'high-performance' }}
-          dpr={[1, 1.25]}
-          performance={{ min: 0.5 }}
-          style={{ background: 'transparent' }}
+      {shouldRenderCanvas ? (
+        <SceneErrorBoundary
+          fallback={null}
+          onError={() => setWebglFailed(true)}
         >
-          <Scene />
-        </Canvas>
-      </Suspense>
+          <Suspense fallback={null}>
+            <Canvas
+              gl={{
+                antialias: false,
+                alpha: true,
+                powerPreference: lowPower ? 'low-power' : 'high-performance'
+              }}
+              dpr={lowPower ? [1, 1] : [1, 1.25]}
+              performance={{ min: lowPower ? 0.3 : 0.5 }}
+              style={{ background: 'transparent' }}
+            >
+              <Scene lowPower={lowPower} />
+            </Canvas>
+          </Suspense>
+        </SceneErrorBoundary>
+      ) : (
+        <div className="absolute inset-0 bg-gradient-to-b from-background via-background/80 to-background" />
+      )}
       
       {/* Gradient Overlay */}
       <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-transparent via-transparent to-background" />

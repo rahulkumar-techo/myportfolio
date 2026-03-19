@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react"
+import { useCallback, useEffect, useRef } from "react"
 import useSWR from "swr"
 import api from "@/lib/axios"
 import { fetchWithTimeout, readJsonResponse } from "@/lib/http"
@@ -12,30 +12,34 @@ export function useAssets() {
   const pendingUploadRef = useRef<string | null>(null)
   const pendingCleanupTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const sendCleanupBeacon = (publicId: string) => {
-    const payload = JSON.stringify({ action: "cleanup", publicId })
-    const ok = typeof navigator !== "undefined" && navigator.sendBeacon
-      ? navigator.sendBeacon("/api/assets/temp", new Blob([payload], { type: "application/json" }))
+const sendCleanupBeacon = useCallback((publicId: string) => {
+  const payload = JSON.stringify({ action: "cleanup", publicId })
+
+  const ok =
+    typeof navigator !== "undefined" && navigator.sendBeacon
+      ? navigator.sendBeacon(
+          "/api/assets/temp",
+          new Blob([payload], { type: "application/json" })
+        )
       : false
 
-    if (!ok) {
-      void fetch("/api/assets/temp", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: payload,
-        keepalive: true
-      })
-    }
+  if (!ok) {
+    void fetch("/api/assets/temp", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: payload,
+      keepalive: true
+    })
   }
+}, []);
 
-  const cleanupPendingUpload = () => {
-    const publicId = pendingUploadRef.current
-    if (!publicId) {
-      return
-    }
-    pendingUploadRef.current = null
-    sendCleanupBeacon(publicId)
-  }
+const cleanupPendingUpload = useCallback(() => {
+  const publicId = pendingUploadRef.current
+  if (!publicId) return
+
+  pendingUploadRef.current = null
+  sendCleanupBeacon(publicId)
+}, [sendCleanupBeacon])
 
   useEffect(() => {
     const handlePageHide = () => {
@@ -74,7 +78,7 @@ export function useAssets() {
         pendingCleanupTimeoutRef.current = null
       }
     }
-  }, [])
+  }, [cleanupPendingUpload])
 
   const requestUploadSignature = async (file: File) => {
     const response = await fetchWithTimeout("/api/assets/signature", {

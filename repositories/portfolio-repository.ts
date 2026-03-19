@@ -100,6 +100,16 @@ export async function listPortfolioItems(collection: PortfolioCollection, userId
   return items.map((item: unknown) => toPlainItem(item))
 }
 
+export async function listPortfolioItemsByOwnerId(
+  collection: PortfolioCollection,
+  ownerId: string
+) {
+  await connectDB()
+  const Model = collectionModels[collection]
+  const items = await Model.find({ ownerId }).sort(collectionSorts[collection]).lean()
+  return items.map((item: unknown) => toPlainItem(item))
+}
+
 export async function getPortfolioItemById(
   collection: PortfolioCollection,
   id: string,

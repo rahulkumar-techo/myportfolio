@@ -1,4 +1,5 @@
 import type { AssetItem } from "@/lib/types"
+import { connectDB } from "@/lib/db"
 import { AssetModel } from "@/model/portfolio.model"
 import { findFirstAdmin, findUserById } from "@/repositories/user-repository"
 
@@ -41,6 +42,12 @@ export async function listAssets(userId: string) {
 
 export async function listPublicAssets() {
   const ownerId = await getAssetOwnerId()
+  const items = await AssetModel.find({ ownerId }).sort({ uploadedAt: -1 }).lean()
+  return items.map((item: unknown) => toPlainAsset(item))
+}
+
+export async function listPublicAssetsByOwnerId(ownerId: string) {
+  await connectDB()
   const items = await AssetModel.find({ ownerId }).sort({ uploadedAt: -1 }).lean()
   return items.map((item: unknown) => toPlainAsset(item))
 }

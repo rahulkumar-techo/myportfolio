@@ -13,7 +13,7 @@ const navItems = [
   { href: '/#about', label: 'About' },
   { href: '/#skills', label: 'Skills' },
   { href: '/#experience', label: 'Experience' },
-  { href: '/#contact', label: 'Contact' },
+  { href: '/contact', label: 'Contact' },
 ];
 const dropdownItems = [
   { href: '/projects', label: 'Projects' },
@@ -154,7 +154,7 @@ export default function Navigation() {
               </Link>
             </div>
             <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
-              <Link href="/#contact">Get in Touch</Link>
+              <Link href="/contact">Get in Touch</Link>
             </Button>
           </div>
 

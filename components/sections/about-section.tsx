@@ -4,7 +4,6 @@ import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { MapPin, Mail, Calendar, Code2, Coffee, Rocket } from 'lucide-react'
 import Image from 'next/image'
-import { buildCloudinaryImageUrl } from '@/lib/cloudinary-images'
 import { usePublicProfile } from '@/hooks/usePublicProfile'
 
 export default function AboutSection() {

@@ -123,3 +123,9 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* Performance: defer offscreen rendering to reduce main-thread work. */
+.content-visibility-auto {
+  content-visibility: auto;
+  contain-intrinsic-size: 800px 1200px;
+}

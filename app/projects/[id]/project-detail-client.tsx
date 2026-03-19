@@ -289,7 +289,7 @@ export default function ProjectDetailClient({ projectId, initialProject }: Proje
                     Interested in a similar project?
                   </p>
                   <Button asChild className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
-                    <Link href="/#contact">
+                    <Link href="/contact">
                       Let&apos;s Talk
                     </Link>
                   </Button>

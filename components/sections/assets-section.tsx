@@ -17,6 +17,19 @@ function assetIcon(asset: AssetItem) {
   return FileText;
 }
 
+function formatAssetDate(value: string | Date) {
+  const date = new Date(value);
+
+  if (Number.isNaN(date.getTime())) {
+    return '';
+  }
+
+  const day = String(date.getUTCDate()).padStart(2, '0');
+  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+  const year = date.getUTCFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 export default function AssetsSection() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
@@ -122,7 +135,7 @@ export default function AssetsSection() {
                     <h3 className="mb-2 text-lg font-semibold text-foreground break-words">{asset.label}</h3>
                     <p className="mb-2 break-all text-sm text-muted-foreground">{asset.originalName}</p>
                     <p className="mb-6 text-xs text-muted-foreground">
-                      {new Date(asset.uploadedAt).toLocaleDateString()}
+                      {formatAssetDate(asset.uploadedAt)}
                     </p>
 
                     <div className="mt-auto">

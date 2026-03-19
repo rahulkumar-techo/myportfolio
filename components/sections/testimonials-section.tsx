@@ -1,9 +1,9 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Image from 'next/image';
 import { motion, useInView } from 'framer-motion';
 import { MessageSquare, Star, Quote, Loader2, Send, CheckCircle2, LogOut } from 'lucide-react';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
-import { buildCloudinaryImageUrl } from '@/lib/cloudinary-images';
+import { buildCloudinaryImageUrl, isCloudinaryUrl } from '@/lib/cloudinary-images';
 import { useTestimonials } from '@/hooks/useTestimonials';
 import type { Testimonial } from '@/lib/types';
 import {
@@ -29,6 +29,14 @@ import {
 } from '@/components/ui/pagination';
 
 function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; index: number }) {
+  const fallbackAvatar = '/placeholder-user.jpg';
+  const rawAvatar = testimonial.avatarUrl || '';
+  const resolvedAvatar = isCloudinaryUrl(rawAvatar)
+    ? buildCloudinaryImageUrl(rawAvatar, 'avatar')
+    : rawAvatar.startsWith('http') || rawAvatar.startsWith('/')
+      ? rawAvatar
+      : fallbackAvatar;
+  const [avatarSrc, setAvatarSrc] = useState(resolvedAvatar || fallbackAvatar);
   const [imageFailed, setImageFailed] = useState(false);
 
   return (
@@ -82,13 +90,19 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
             <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
               {!imageFailed ? (
                 <Image
-                  src={buildCloudinaryImageUrl(testimonial.avatarUrl || '/placeholder-user.jpg', 'avatar')}
+                  src={avatarSrc}
                   alt={testimonial.name}
                   width={48}
                   height={48}
-                  unoptimized
+                  loading="lazy"
                   className="h-12 w-12 rounded-full object-cover"
-                  onError={() => setImageFailed(true)}
+                  onError={() => {
+                    if (avatarSrc !== fallbackAvatar) {
+                      setAvatarSrc(fallbackAvatar);
+                      return;
+                    }
+                    setImageFailed(true);
+                  }}
                 />
               ) : (
                 <span className="text-lg font-bold text-primary">
