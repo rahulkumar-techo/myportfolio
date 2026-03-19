@@ -111,9 +111,9 @@ export default function AboutSection() {
 
                 {/* avatar */}
 
-                <div className="relative flex-shrink-0">
+                <div className="relative flex-shrink-0  ">
 
-                  <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
+                  <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
 
                     <span className="text-xl md:text-3xl font-bold text-primary">
 
@@ -123,7 +123,7 @@ export default function AboutSection() {
                         width={100}
                         height={100}
                         unoptimized
-                        className="rounded-2xl"
+                        className=""
                       />
 
                     </span>

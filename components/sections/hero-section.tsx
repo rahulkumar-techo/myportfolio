@@ -6,7 +6,7 @@ import { ChevronDown, Sparkles, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { usePublicProfile } from '@/hooks/usePublicProfile';
-import HeroScene from '@/components/three/hero-scene';
+// import HeroScene from '@/components/three/hero-scene';
 
 export default function HeroSection() {
   const ref = useRef<HTMLElement | null>(null);
@@ -25,17 +25,25 @@ export default function HeroSection() {
   return (
     <section id="hero" ref={ref} className="relative min-h-screen overflow-hidden">
       {/* 3D Scene */}
-      <div className="absolute inset-0 z-0">
+      {/* <div className="absolute inset-0 z-0">
         {showScene ? (
-          <HeroScene />
+         <video
+  autoPlay
+  muted
+  loop
+  playsInline
+  className="w-full h-full object-cover"
+>
+  <source src="/sora-2.mp4" type="video/mp4" />
+</video>
         ) : (
           <div className="h-full w-full bg-gradient-to-b from-background via-background/80 to-background" />
         )}
-      </div>
+      </div> */}
 
       {/* Grid Background */}
       <div className="absolute inset-0 grid-bg opacity-30 z-0" />
-      
+
       {/* Scanline Effect */}
       <div className="absolute inset-0 scanlines z-0" />
 
@@ -105,7 +113,7 @@ export default function HeroSection() {
                 <span className="absolute inset-0 bg-gradient-to-r from-primary to-accent opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
             </Button>
-            
+
             <Button
               asChild
               size="lg"
