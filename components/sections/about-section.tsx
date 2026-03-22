@@ -4,7 +4,7 @@ import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { MapPin, Mail, Calendar, Code2, Coffee, Rocket } from 'lucide-react'
 import Image from 'next/image'
-import { usePublicProfile } from '@/hooks/usePublicProfile'
+import { usePublicProfile } from '@/hooks/usePublicProfile';
 
 export default function AboutSection() {
 
@@ -97,115 +97,100 @@ export default function AboutSection() {
             animate={isInView ? { opacity: 1, x: 0 } : {}}
             transition={{ duration: 0.6, delay: 0.2 }}
           >
+            <div className="relative rounded-2xl overflow-hidden backdrop-blur-2xl border border-white/10">
 
-            <div className="glass-card rounded-2xl p-5 md:p-8 relative overflow-hidden ">
+              {/* 🔹 Background Image */}
+              <div className="absolute inset-0 bg-[url('/avatar.png')] bg-cover bg-center opacity-20" />
 
-              {/* holographic border */}
+              {/* 🔹 Dark Overlay */}
+              <div className="absolute inset-0 bg-black/60" />
 
-              <div className="absolute inset-0 rounded-2xl border border-primary/20" />
-              <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary via-accent to-primary" />
+              {/* 🔹 Glow Gradient */}
+              <div className="absolute inset-0 bg-linear-to-br from-primary/10 via-transparent to-accent/10" />
 
-              {/* PROFILE HEADER */}
+              {/* 🔹 Border Top Glow */}
+              <div className="absolute top-0 left-0 right-0 h-0.5 bg-linear-to-r from-primary via-accent to-primary" />
 
-              <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 md:gap-6 mb-6">
+              {/* 🔹 CONTENT */}
+              <div className="relative z-10 p-5 md:p-8">
 
-                {/* avatar */}
+                {/* ===== HEADER ===== */}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-5 mb-6">
 
-                <div className="relative flex-shrink-0  ">
-
-                  <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
-
-                    <span className="text-xl md:text-3xl font-bold text-primary">
-
+                  {/* Avatar */}
+                  <div className="relative shrink-0">
+                    <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
                       <Image
                         alt="avatar"
                         src={avatarUrl}
                         width={100}
                         height={100}
                         unoptimized
-                        className=""
                       />
+                    </div>
 
-                    </span>
-
+                    {/* Online Indicator */}
+                    <div className="absolute -bottom-2 -right-2 w-5 h-5 rounded-full bg-green-500 border-4 border-black" />
                   </div>
 
-                  <div className="absolute -bottom-2 -right-2 w-5 h-5 rounded-full bg-green-500 border-4 border-background" />
+                  {/* Info */}
+                  <div className="flex-1">
+                    <h3 className="text-lg md:text-2xl font-bold text-white mb-1">
+                      {profileName}
+                    </h3>
 
+                    <p className="text-primary font-mono text-xs md:text-sm mb-3">
+                      {profile?.settings.siteTagline || 'Public profile summary'}
+                    </p>
+
+                    <div className="flex flex-wrap gap-3 text-xs md:text-sm text-gray-400">
+
+                      <span className="flex items-center gap-1">
+                        <MapPin className="w-4 h-4" />
+                        {location}
+                      </span>
+
+                      <span className="flex items-center gap-1 break-all">
+                        <Mail className="w-4 h-4" />
+                        {email}
+                      </span>
+
+                    </div>
+                  </div>
                 </div>
 
-                {/* info */}
+                {/* ===== BIO ===== */}
+                <p className="text-gray-400 leading-relaxed text-sm md:text-base mb-6">
+                  {bio}
+                </p>
 
-                <div className="flex-1">
+                {/* ===== STATS ===== */}
+                <div className="grid grid-cols-3 gap-3 md:gap-4">
+                  {stats.map((stat, index) => (
+                    <motion.div
+                      key={stat.label}
+                      initial={{ opacity: 0, y: 20 }}
+                      animate={isInView ? { opacity: 1, y: 0 } : {}}
+                      transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
+                      className="rounded-xl p-3 md:p-4 text-center transition-all duration-300 
+                       bg-white/5 border border-white/10
+                       hover:-translate-y-1 hover:border-primary/30 hover:bg-primary/10"
+                    >
+                      <stat.icon className="mx-auto mb-2 h-5 w-5 text-primary group-hover:text-accent md:h-6 md:w-6" />
 
-                  <h3 className="text-lg md:text-2xl font-bold text-foreground mb-1">
-                    {profileName}
-                  </h3>
+                      <div className="text-lg md:text-2xl font-bold text-white">
+                        {stat.value.toLocaleString()}{stat.suffix}
+                      </div>
 
-                  <p className="text-primary font-mono text-xs md:text-sm mb-3">
-                    {profile?.settings.siteTagline || 'Public profile summary'}
-                  </p>
-
-                  <div className="flex flex-wrap gap-3 text-xs md:text-sm text-muted-foreground">
-
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {location}
-                    </span>
-
-                    <span className="flex items-center gap-1 break-all">
-                      <Mail className="w-4 h-4" />
-                      {email}
-                    </span>
-
-                  </div>
-
+                      <div className="text-[10px] md:text-xs text-gray-400">
+                        {stat.label}
+                      </div>
+                    </motion.div>
+                  ))}
                 </div>
 
               </div>
-
-
-              {/* BIO */}
-
-              <p className="text-muted-foreground leading-relaxed text-sm md:text-base mb-6">
-                {bio}
-              </p>
-
-
-              {/* STATS */}
-
-              <div className="grid grid-cols-3 gap-3 md:gap-4 ">
-
-                {stats.map((stat, index) => (
-
-                  <motion.div
-                    key={stat.label}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={isInView ? { opacity: 1, y: 0 } : {}}
-                    transition={{ duration: 0.4, delay: 0.4 + index * 0.1 }}
-                    className="glass-card rounded-xl border border-transparent p-3 text-center group transition-all duration-300 hover:-translate-y-1 hover:border-primary/30 hover:bg-primary/10 md:p-4"
-                  >
-
-                    <stat.icon className="mx-auto mb-2 h-5 w-5 text-primary transition duration-300 group-hover:scale-110 group-hover:text-accent md:h-6 md:w-6" />
-
-                    <div className="text-lg font-bold text-foreground transition-colors duration-300 group-hover:text-primary md:text-2xl">
-
-                      {stat.value.toLocaleString()}{stat.suffix}
-
-                    </div>
-
-                    <div className="text-[10px] text-muted-foreground transition-colors duration-300 group-hover:text-foreground/80 md:text-xs">
-                      {stat.label}
-                    </div>
-
-                  </motion.div>
-
-                ))}
-
-              </div>
-
             </div>
-
           </motion.div>
 
 
