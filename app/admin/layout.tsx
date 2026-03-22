@@ -15,6 +15,7 @@ import {
   LogOut,
   Menu,
   User,
+  HardDrive,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -31,6 +32,7 @@ import { useAdminSettings } from '@/hooks/useSettings';
 
 const navItems = [
   { href: '/admin', icon: LayoutDashboard, label: 'Dashboard' },
+  { href: '/admin/storage', icon: HardDrive, label: 'Storage' },
   { href: '/admin/projects', icon: FolderKanban, label: 'Projects' },
   { href: '/admin/skills', icon: Cpu, label: 'Skills' },
   { href: '/admin/experience', icon: Briefcase, label: 'Experience' },

@@ -111,6 +111,12 @@ export interface AnalyticsUser {
   lastLoginProvider?: string | null;
 }
 
+export interface StorageUsage {
+  used: number;
+  total: number;
+  remaining: number;
+}
+
 export interface AdminAnalytics {
   totals: {
     users: number;
@@ -125,6 +131,7 @@ export interface AdminAnalytics {
   }[];
   activeUsers: AnalyticsUser[];
   users: AnalyticsUser[];
+  storage: StorageUsage;
 }
 
 export interface SiteSettings {

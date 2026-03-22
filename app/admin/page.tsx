@@ -18,7 +18,8 @@ import {
   Trash2,
   UserCheck,
   UserX,
-  Users
+  Users,
+  HardDrive
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -95,6 +96,7 @@ export default function AdminDashboard() {
     () => (analytics?.users ?? []).slice((userPage - 1) * usersPerPage, userPage * usersPerPage),
     [analytics?.users, userPage]
   );
+  const storageUsage = analytics?.storage;
 
   useEffect(() => {
     if (userPage > totalUserPages) {
@@ -230,6 +232,18 @@ export default function AdminDashboard() {
                 Blocked Users
               </div>
               <p className="text-3xl font-bold text-foreground">{analytics?.totals.blocked ?? 0}</p>
+            </div>
+            <div className="rounded-xl border border-border/50 bg-secondary/30 p-4 md:col-span-3">
+              <div className="mb-3 flex items-center gap-2 text-muted-foreground">
+                <HardDrive className="h-4 w-4 text-primary" />
+                Storage Usage
+              </div>
+              <p className="text-3xl font-bold text-foreground">
+                {storageUsage ? `${storageUsage.used.toFixed(2)} / ${storageUsage.total} MB` : '—'}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {storageUsage ? `${storageUsage.remaining.toFixed(2)} MB remaining` : ''}
+              </p>
             </div>
           </div>
 

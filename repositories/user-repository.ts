@@ -1,4 +1,5 @@
 import { connectDB } from "@/lib/db"
+import { getStorageUsage } from "@/lib/services/storage.service"
 import {
   AssetModel,
   ContactMessageModel,
@@ -157,14 +158,17 @@ export async function findOrCreateOAuthUser(input: OAuthUserInput): Promise<OAut
 }
 
 export async function getUserAnalytics() {
-  await connectDB()
+  const conn = await connectDB()
 
-  const users = await UserModel.find(
-    {},
-    "name email role blocked image createdAt lastLoginAt lastLoginProvider"
-  )
-    .sort({ lastLoginAt: -1, createdAt: -1 })
-    .lean()
+  const [users, storage] = await Promise.all([
+    UserModel.find(
+      {},
+      "name email role blocked image createdAt lastLoginAt lastLoginProvider"
+    )
+      .sort({ lastLoginAt: -1, createdAt: -1 })
+      .lean(),
+    getStorageUsage(conn)
+  ])
 
   const now = Date.now()
   const activeUsers = users
@@ -215,7 +219,8 @@ export async function getUserAnalytics() {
     },
     growth,
     activeUsers,
-    users: usersList
+    users: usersList,
+    storage
   }
 }
 
@@ -355,3 +360,6 @@ export async function updateUserProfileImage(userId: string, imageUrl: string) {
 
   return user
 }
+
+
+
