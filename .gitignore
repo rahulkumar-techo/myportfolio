@@ -1,5 +1,8 @@
 # Dependencies
 node_modules/
+.lighthouse
+lighthouse-reports
+lighthouse-report.html
 
 # Next.js build output
 .next/

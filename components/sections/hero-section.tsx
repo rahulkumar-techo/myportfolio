@@ -20,8 +20,6 @@ export default function HeroSection() {
     ? profile.highlights.topSkills
     : ['React', 'Next.js', 'TypeScript', 'Node.js'];
 
-  const showScene = true;
-
   return (
     <section id="hero" ref={ref} className="relative min-h-screen overflow-hidden">
       {/* 3D Scene */}

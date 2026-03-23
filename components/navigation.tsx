@@ -3,21 +3,20 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Github, Linkedin, Briefcase, ImageIcon, ChevronDown } from 'lucide-react';
+import { Menu, X, Github, Linkedin, Briefcase, ImageIcon, ChevronDown, Instagram } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { SiInstagram } from 'react-icons/si';
 import ThemeToggle from '@/components/theme-toggle';
 import Image from 'next/image';
 
 const navItems = [
   { href: '/#about', label: 'About' },
-  { href: '/#skills', label: 'Skills' },
-  { href: '/#experience', label: 'Experience' },
+  { href: '/experience', label: 'Experience' },
   { href: '/contact', label: 'Contact' },
 ];
 const dropdownItems = [
   { href: '/projects', label: 'Projects' },
   { href: '/assets', label: 'Assets' },
+  { href: '/github', label: 'GitHub' },
 ];
 
 export default function Navigation() {
@@ -108,8 +107,10 @@ export default function Navigation() {
                         >
                           {item.href === '/projects' ? (
                             <Briefcase className="h-4 w-4" />
-                          ) : (
+                          ) : item.href === '/assets' ? (
                             <ImageIcon className="h-4 w-4" />
+                          ) : (
+                            <Github className="h-4 w-4" />
                           )}
                           {item.label}
                         </Link>
@@ -150,7 +151,7 @@ export default function Navigation() {
                 className="p-2 text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Instagram"
               >
-                <SiInstagram className="w-5 h-5" />
+                <Instagram className="w-5 h-5" />
               </Link>
             </div>
             <Button asChild className="bg-primary hover:bg-primary/90 text-primary-foreground">
@@ -190,7 +191,7 @@ export default function Navigation() {
               className="p-2 text-muted-foreground hover:text-primary transition-colors"
               aria-label="Instagram"
             >
-              <SiInstagram className="w-4 h-4" />
+              <Instagram className="w-4 h-4" />
             </Link>
 
             {/* Mobile menu button */}
@@ -230,7 +231,7 @@ export default function Navigation() {
               className="absolute top-0 right-0 bottom-0 w-3/4 max-w-sm glass-card border-l border-border/50 p-8 pt-24"
             >
               <ul className="flex flex-col gap-4">
-                {[navItems[0], navItems[1]].map((item, index) => (
+                {navItems.map((item, index) => (
                   <motion.li
                     key={item.href}
                     initial={{ opacity: 0, x: 20 }}
@@ -288,8 +289,10 @@ export default function Navigation() {
                           >
                             {item.href === '/projects' ? (
                               <Briefcase className="h-5 w-5" />
-                            ) : (
+                            ) : item.href === '/assets' ? (
                               <ImageIcon className="h-5 w-5" />
+                            ) : (
+                              <Github className="h-5 w-5" />
                             )}
                             {item.label}
                           </Link>
@@ -299,22 +302,6 @@ export default function Navigation() {
                   )}
                 </AnimatePresence>
 
-                {[navItems[2], navItems[3]].map((item, index) => (
-                  <motion.li
-                    key={item.href}
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.6 + index * 0.1 }}
-                  >
-                    <Link
-                      href={item.href}
-                      onClick={() => setIsMobileMenuOpen(false)}
-                      className="py-3 text-lg text-foreground hover:text-primary transition-colors border-b border-border/30 flex items-center gap-2"
-                    >
-                      {item.label}
-                    </Link>
-                  </motion.li>
-                ))}
               </ul>
 
             </motion.nav>

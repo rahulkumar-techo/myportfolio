@@ -11,22 +11,6 @@ import { Cpu, Globe, Server, Settings, Code } from "lucide-react"
 import { useSkills } from "@/hooks/useSkills"
 import type { Skill as ManagedSkill } from "@/lib/types"
 
-import {
-    SiReact,
-    SiNextdotjs,
-    SiTailwindcss,
-    SiTypescript,
-    SiJavascript,
-    SiNodedotjs,
-    SiMongodb,
-    SiPostgresql,
-    SiDocker,
-    SiRedis,
-    SiPython,
-    SiGraphql
-} from "react-icons/si"
-
-
 type Category = "frontend" | "backend" | "devops" | "languages" | "tools"
 
 
@@ -35,20 +19,18 @@ type Category = "frontend" | "backend" | "devops" | "languages" | "tools"
 /* ------------------------------------------------ */
 
 const TECH_STACK = {
-
-    react: { icon: SiReact, color: "#61DAFB" },
-    nextjs: { icon: SiNextdotjs, color: "#111827" },
-    tailwind: { icon: SiTailwindcss, color: "#38BDF8" },
-    typescript: { icon: SiTypescript, color: "#3178C6" },
-    javascript: { icon: SiJavascript, color: "#F7DF1E" },
-    nodejs: { icon: SiNodedotjs, color: "#68A063" },
-    mongodb: { icon: SiMongodb, color: "#47A248" },
-    postgresql: { icon: SiPostgresql, color: "#336791" },
-    docker: { icon: SiDocker, color: "#2496ED" },
-    redis: { icon: SiRedis, color: "#DC382D" },
-    python: { icon: SiPython, color: "#3776AB" },
-    graphql: { icon: SiGraphql, color: "#E10098" }
-
+    react: { icon: Code, color: "#61DAFB" },
+    nextjs: { icon: Globe, color: "#111827" },
+    tailwind: { icon: Settings, color: "#38BDF8" },
+    typescript: { icon: Code, color: "#3178C6" },
+    javascript: { icon: Code, color: "#F7DF1E" },
+    nodejs: { icon: Server, color: "#68A063" },
+    mongodb: { icon: Server, color: "#47A248" },
+    postgresql: { icon: Server, color: "#336791" },
+    docker: { icon: Settings, color: "#2496ED" },
+    redis: { icon: Server, color: "#DC382D" },
+    python: { icon: Code, color: "#3776AB" },
+    graphql: { icon: Cpu, color: "#E10098" }
 } as const
 
 const TECH_ALIASES: Record<string, keyof typeof TECH_STACK> = {
@@ -120,8 +102,7 @@ function SkillOrb({
 
     const techKey = resolveTechKey(skill)
     const tech = TECH_STACK[techKey]
-    const Icon = tech?.icon
-    const fallbackLabel = skill.name.trim().slice(0, 2).toUpperCase()
+    const Icon = tech?.icon ?? Code
 
     const angle = (index / total) * Math.PI * 2
     const x = Math.cos(angle) * radius
@@ -167,24 +148,10 @@ flex items-center justify-center
 group-hover:scale-110 transition
 ">
 
-                    {Icon && (
-
-                        <Icon
-                            className="
-w-5 h-5
-md:w-6 md:h-6
-lg:w-7 lg:h-7
-"
-                            style={{ color: tech.color }}
-                        />
-
-                    )}
-
-                    {!Icon ? (
-                        <span className="text-[10px] md:text-xs lg:text-sm font-semibold text-primary">
-                            {fallbackLabel}
-                        </span>
-                    ) : null}
+                    <Icon
+                        className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
+                        style={{ color: tech?.color || "var(--color-primary)" }}
+                    />
 
                 </div>
 

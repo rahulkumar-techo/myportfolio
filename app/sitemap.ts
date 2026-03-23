@@ -30,6 +30,14 @@ export default async function sitemap() {
       url: `${siteUrl}/assets`,
       lastModified: new Date()
     },
+    {
+      url: `${siteUrl}/github`,
+      lastModified: new Date()
+    },
+    {
+      url: `${siteUrl}/experience`,
+      lastModified: new Date()
+    },
     ...projectUrls
   ]
 }

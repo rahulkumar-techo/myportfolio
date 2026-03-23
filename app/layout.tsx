@@ -3,7 +3,7 @@
  */
 
 import type { Viewport } from 'next'
-import { Roboto, Orbitron, JetBrains_Mono } from 'next/font/google'
+import { Roboto, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import AuthProvider from '@/components/provider/auth-provider'
@@ -17,12 +17,6 @@ const roboto = Roboto({
   subsets: ['latin'],
   variable: '--font-roboto',
   weight: ['300', '400', '500', '700'],
-  display: 'swap',
-})
-
-const orbitron = Orbitron({
-  subsets: ['latin'],
-  variable: '--font-orbitron',
   display: 'swap',
 })
 
@@ -90,7 +84,7 @@ export default function RootLayout({
 
       <body
         suppressHydrationWarning
-        className={`${roboto.variable} ${orbitron.variable} ${jetbrainsMono.variable} font-sans antialiased`}
+        className={`${roboto.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"
