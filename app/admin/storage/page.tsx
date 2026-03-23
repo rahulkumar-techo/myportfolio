@@ -41,16 +41,16 @@ export default function StorageDashboardPage() {
   const activityData = activity ?? mockActivity;
 
   return (
-    <div className="relative space-y-8">
-      <div className="pointer-events-none absolute -top-32 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-indigo-500/30 blur-[120px]" />
-      <div className="pointer-events-none absolute right-0 top-1/3 h-64 w-64 rounded-full bg-cyan-400/20 blur-[120px]" />
+    <div className="relative space-y-8 bg-white text-slate-900">
+      <div className="pointer-events-none absolute -top-32 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-indigo-500/20 blur-[120px]" />
+      <div className="pointer-events-none absolute right-0 top-1/3 h-64 w-64 rounded-full bg-cyan-400/15 blur-[120px]" />
 
       <header className="space-y-3">
-        <p className="text-sm uppercase tracking-[0.3em] text-gray-400">Storage Analytics</p>
-        <h1 className="text-3xl font-semibold text-white sm:text-4xl">
+        <p className="text-sm uppercase tracking-[0.3em] text-gray-500">Storage Analytics</p>
+        <h1 className="text-3xl font-semibold text-slate-900 sm:text-4xl">
           Portfolio Storage Dashboard
         </h1>
-        <p className="max-w-2xl text-base text-gray-400">
+        <p className="max-w-2xl text-base text-slate-600">
           Monitor how your MongoDB storage evolves, which collections grow fastest, and how usage trends over time.
         </p>
       </header>

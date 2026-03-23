@@ -47,12 +47,12 @@ describe("project page helpers", () => {
         title: "Alpha Project | Portfolio",
         description: "Alpha description",
         alternates: {
-          canonical: "https://rahulkumar.dev/projects/alpha"
+          canonical: "https://rahulkumardev.vercel.app/projects/alpha"
         },
         openGraph: expect.objectContaining({
           title: "Alpha Project | Portfolio",
           description: "Alpha description",
-          url: "https://rahulkumar.dev/projects/alpha",
+          url: "https://rahulkumardev.vercel.app/projects/alpha",
           type: "article"
         }),
         twitter: expect.objectContaining({

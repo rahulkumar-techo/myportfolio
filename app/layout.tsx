@@ -1,65 +1,100 @@
+/**
+ * Root layout with optimized SEO, fonts, and structured data
+ */
+
 import type { Viewport } from 'next'
 import { Roboto, Orbitron, JetBrains_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
-import AuthProvider from '@/components/provider/auth-provider';
-import { ThemeProvider } from '@/components/theme-provider';
-import { siteUrl } from "@/utils/meta-data";
-export { metadata } from "@/utils/meta-data"; 
+import AuthProvider from '@/components/provider/auth-provider'
+import { ThemeProvider } from '@/components/theme-provider'
+import { siteUrl } from "@/utils/meta-data"
 
+export { metadata } from "@/utils/meta-data"
+
+// ✅ Font optimization (already good)
 const roboto = Roboto({
   subsets: ['latin'],
   variable: '--font-roboto',
   weight: ['300', '400', '500', '700'],
   display: 'swap',
-});
+})
 
 const orbitron = Orbitron({
   subsets: ['latin'],
   variable: '--font-orbitron',
   display: 'swap',
-});
+})
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
   variable: '--font-jetbrains-mono',
   display: 'swap',
-});
+})
 
-
-
+// ✅ Viewport config
 export const viewport: Viewport = {
-  themeColor: '#0a0a1a',
+  themeColor: '#ffffff',
   width: 'device-width',
   initialScale: 1,
 }
 
-const personJsonLd = {
-  "@context": "https://schema.org",
-  "@type": "Person",
-  name: "Rahul Kumar",
-  url: siteUrl,
-  jobTitle: "Full Stack Developer",
-  sameAs: [
-    "https://github.com/rahulkumar-techo",
-    "https://linkedin.com/in/rahul",
-  ],
-};
+// 🔥 Improved JSON-LD (Person + Website)
+const structuredData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: "Rahul Kumar",
+    url: siteUrl,
+    jobTitle: "Full Stack Developer",
+    description:
+      "Full Stack Developer specializing in Next.js, Node.js, and AI applications",
+    sameAs: [
+      "https://github.com/rahulkumar-techo",
+      "https://linkedin.com/in/rahul",
+      "https://instagram.com/mr_rpraja",
+    ],
+    knowsAbout: [
+      "Next.js",
+      "Node.js",
+      "React",
+      "AI",
+      "Microservices",
+    ],
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: "Rahul Kumar Portfolio",
+    url: siteUrl,
+  },
+]
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode
-}>) {
+}) {
   return (
     <html lang="en" suppressHydrationWarning>
+      
+      {/* ✅ Move structured data to HEAD (IMPORTANT) */}
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify(structuredData),
+          }}
+        />
+      </head>
+
       <body
         suppressHydrationWarning
         className={`${roboto.variable} ${orbitron.variable} ${jetbrainsMono.variable} font-sans antialiased`}
       >
         <ThemeProvider
           attribute="class"
-          defaultTheme="dark"
+          defaultTheme="light"
           enableSystem
           disableTransitionOnChange
         >
@@ -67,11 +102,8 @@ export default function RootLayout({
             {children}
           </AuthProvider>
         </ThemeProvider>
+
         <Analytics />
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(personJsonLd) }}
-        />
       </body>
     </html>
   )
