@@ -53,23 +53,37 @@ export async function generateMetadata(
   }
 
   const canonicalId = project.slug ?? project.id;
+  const ogImage = project.coverImage?.url
+    ? project.coverImage.url.startsWith("http")
+      ? project.coverImage.url
+      : `${siteUrl}${project.coverImage.url.startsWith("/") ? "" : "/"}${project.coverImage.url}`
+    : `${siteUrl}/og_image.png`
 
   return {
-    title: `${project.title} | Portfolio`,
+    title: `${project.title} Case Study | Portfolio`,
     description: project.description,
     alternates: {
       canonical: `${siteUrl}/projects/${canonicalId}`,
     },
     openGraph: {
-      title: `${project.title} | Portfolio`,
+      title: `${project.title} Case Study | Portfolio`,
       description: project.description,
       url: `${siteUrl}/projects/${canonicalId}`,
       type: 'article',
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: project.title,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
-      title: `${project.title} | Portfolio`,
+      title: `${project.title} Case Study | Portfolio`,
       description: project.description,
+      images: [ogImage],
     },
   };
 }
@@ -82,5 +96,34 @@ export default async function ProjectPage({ params }: { params: Promise<{ id: st
     notFound();
   }
 
-  return <ProjectDetailClient projectId={id} initialProject={project} />;
+  const canonicalId = project.slug ?? project.id;
+  const jsonLdImage = project.coverImage?.url
+    ? project.coverImage.url.startsWith("http")
+      ? project.coverImage.url
+      : `${siteUrl}${project.coverImage.url.startsWith("/") ? "" : "/"}${project.coverImage.url}`
+    : `${siteUrl}/og_image.png`;
+
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "CreativeWork",
+    name: project.title,
+    description: project.description,
+    url: `${siteUrl}/projects/${canonicalId}`,
+    image: jsonLdImage,
+    keywords: project.techStack?.join(", "),
+    author: {
+      "@type": "Person",
+      "@id": `${siteUrl}/#person`,
+    },
+  };
+
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ProjectDetailClient projectId={id} initialProject={project} />
+    </>
+  );
 }

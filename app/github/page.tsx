@@ -221,7 +221,6 @@ export default async function GitHubPage() {
                     fill
                     sizes="96px"
                     className="object-cover"
-                    unoptimized
                   />
                 </div>
 

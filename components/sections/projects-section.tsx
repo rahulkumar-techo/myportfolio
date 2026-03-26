@@ -27,7 +27,6 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
               src={buildCloudinaryImageUrl(project.coverImage.url, 'thumbnail')}
               alt={project.title}
               fill
-              unoptimized
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
               className="object-cover"
             />
@@ -137,6 +136,7 @@ export default function ProjectsSection() {
       <div className="container mx-auto px-4 relative z-10">
         {/* Section Header */}
         <motion.div
+          id="featured"
           initial={{ opacity: 0, y: 20 }}
           animate={isInView ? { opacity: 1, y: 0 } : {}}
           transition={{ duration: 0.6 }}
@@ -148,10 +148,10 @@ export default function ProjectsSection() {
           </span>
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
             <span className="text-foreground">Featured </span>
-            <span className="text-primary text-glow-cyan">Projects</span>
+            <span className="text-primary text-glow-cyan">Projects & Case Studies</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            A collection of projects that showcase my skills and passion for building
+            Real-world Next.js, Node.js, and AI builds with architecture, results, and lessons learned.
           </p>
         </motion.div>
 
@@ -161,11 +161,19 @@ export default function ProjectsSection() {
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {showcaseProjects.map((project: Project, index: number) => (
-              <ProjectCard key={project.id} project={project} index={index} />
-            ))}
-          </div>
+          <>
+            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {showcaseProjects.map((project: Project, index: number) => (
+                <ProjectCard key={project.id} project={project} index={index} />
+              ))}
+            </div>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-muted-foreground">
+              <Link className="hover:text-primary transition-colors" href="/blog">Read the Blog</Link>
+              <Link className="hover:text-primary transition-colors" href="/projects">All Projects</Link>
+              <Link className="hover:text-primary transition-colors" href="/case-studies">Case Studies</Link>
+              <Link className="hover:text-primary transition-colors" href="/#skills">Skills</Link>
+            </div>
+          </>
         )}
 
         {/* View All Button */}

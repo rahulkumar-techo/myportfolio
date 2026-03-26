@@ -1,3 +1,4 @@
+import type { Metadata } from 'next';
 import Navigation from '@/components/navigation';
 import Footer from '@/components/footer';
 import dynamic from 'next/dynamic';
@@ -7,8 +8,44 @@ import AboutSection from '@/components/sections/about-section';
 import PublicSWRProvider from '@/components/public-swr-provider';
 import { getPublicHomeData, serializeForClient } from '@/lib/public-data';
 import PageLoader from '@/components/page-loader';
+import { siteUrl } from '@/utils/meta-data';
 
 export const revalidate = 60;
+
+export async function generateMetadata(): Promise<Metadata> {
+  const homeData = await getPublicHomeData();
+  const siteTitle = homeData?.profile?.profile?.name || homeData?.profile?.settings?.siteTitle || 'Rahul Kumar';
+  const bio = homeData?.profile?.settings?.bio || 'Full Stack Developer specializing in Next.js, Node.js, AI, and microservices.';
+  const description = bio.length > 155 ? `${bio.slice(0, 152).trim()}...` : bio;
+
+  return {
+    title: 'Full Stack Developer | Next.js, Node.js, AI, Microservices',
+    description,
+    alternates: {
+      canonical: siteUrl,
+    },
+    openGraph: {
+      title: 'Full Stack Developer | Next.js, Node.js, AI, Microservices',
+      description,
+      url: siteUrl,
+      type: 'website',
+      images: [
+        {
+          url: `${siteUrl}/og_image.png`,
+          width: 1200,
+          height: 630,
+          alt: `${siteTitle} Portfolio`,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: 'Full Stack Developer | Next.js, Node.js, AI, Microservices',
+      description,
+      images: [`${siteUrl}/og_image.png`],
+    },
+  };
+}
 
 const SkillsSection = dynamic(() => import('@/components/sections/skills-section'), { loading: () => null });
 const ProjectsSection = dynamic(() => import('@/components/sections/projects-section'), { loading: () => null });

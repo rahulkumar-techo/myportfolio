@@ -13,13 +13,13 @@ export const metadata: Metadata = {
   // 🔥 Title Optimization (SEO + CTR)
   title: {
     default:
-      "Rahul Kumar | Full Stack Developer (Next.js, Node.js, AI, Microservices)",
-    template: "%s | Rahul Kumar (Full Stack Developer)",
+      "Full Stack Developer | Next.js, Node.js, AI, Microservices",
+    template: "%s | Rahul Kumar",
   },
 
   // 🔥 Strong Description (Google + Recruiters)
   description:
-    "Rahul Kumar is a Full Stack Developer from India specializing in Next.js, Node.js, Microservices, and AI-powered applications. Explore real-world projects, skills, and experience.",
+    "Rahul Kumar builds fast, scalable web apps with Next.js, Node.js, AI, and microservices. Explore projects, case studies, skills, and the developer blog.",
 
   // 🔥 SEO Identity
   applicationName: "Rahul Kumar Portfolio",
@@ -68,15 +68,14 @@ export const metadata: Metadata = {
 
   // 🔥 Open Graph (Facebook, LinkedIn, WhatsApp)
   openGraph: {
-    title:
-      "Rahul Kumar | Full Stack Developer (Next.js, Node.js, AI, Microservices)",
+    title: "Full Stack Developer | Next.js, Node.js, AI, Microservices",
     description:
-      "Portfolio of Rahul Kumar – Full Stack Developer building scalable web applications with Next.js, Node.js, and AI.",
+      "Portfolio of Rahul Kumar: full stack developer building scalable web applications with Next.js, Node.js, AI, and microservices.",
     url: siteUrl,
     siteName: "Rahul Kumar Portfolio",
     images: [
       {
-        url: `${siteUrl}/og-image.png`, // MUST be absolute
+        url: `${siteUrl}/og_image.png`, // MUST be absolute
         width: 1200,
         height: 630,
         alt: "Rahul Kumar Portfolio",
@@ -89,10 +88,10 @@ export const metadata: Metadata = {
   // 🔥 Twitter SEO
   twitter: {
     card: "summary_large_image",
-    title: "Rahul Kumar | Full Stack Developer",
+    title: "Full Stack Developer | Next.js, Node.js, AI, Microservices",
     description:
-      "Full Stack Developer building scalable web applications with Next.js, Node.js, and AI.",
-    images: [`${siteUrl}/og-image.png`], // FIXED
+      "Rahul Kumar builds scalable web apps with Next.js, Node.js, AI, and microservices. Explore projects, case studies, and the blog.",
+    images: [`${siteUrl}/og_image.png`], // FIXED
   },
 
   // 🔥 Robots (Indexing Control)

@@ -38,11 +38,13 @@ const structuredData = [
   {
     "@context": "https://schema.org",
     "@type": "Person",
+    "@id": `${siteUrl}/#person`,
     name: "Rahul Kumar",
     url: siteUrl,
     jobTitle: "Full Stack Developer",
     description:
       "Full Stack Developer specializing in Next.js, Node.js, and AI applications",
+    image: `${siteUrl}/og_image.png`,
     sameAs: [
       "https://github.com/rahulkumar-techo",
       "https://linkedin.com/in/rahul",
@@ -59,8 +61,20 @@ const structuredData = [
   {
     "@context": "https://schema.org",
     "@type": "WebSite",
+    "@id": `${siteUrl}/#website`,
     name: "Rahul Kumar Portfolio",
     url: siteUrl,
+    description:
+      "Portfolio and blog of Rahul Kumar, full stack developer specializing in Next.js, Node.js, AI, and microservices.",
+    publisher: {
+      "@type": "Person",
+      "@id": `${siteUrl}/#person`,
+    },
+    potentialAction: {
+      "@type": "SearchAction",
+      target: `${siteUrl}/blog?query={search_term_string}`,
+      "query-input": "required name=search_term_string",
+    },
   },
 ]
 

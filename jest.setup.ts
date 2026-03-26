@@ -35,6 +35,18 @@ if (!global.WritableStream) {
   })
 }
 
+if (!global.ResizeObserver) {
+  class ResizeObserverMock {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  }
+
+  Object.defineProperty(global, "ResizeObserver", {
+    value: ResizeObserverMock
+  })
+}
+
 const originalFetch = global.fetch?.bind(globalThis)
 const originalRequest = global.Request
 const originalResponse = global.Response

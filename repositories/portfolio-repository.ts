@@ -2,6 +2,7 @@ import { connectDB } from "@/lib/db"
 import {
   ContactMessageModel,
   ExperienceModel,
+  BlogPostModel,
   ProjectModel,
   SkillModel,
   TestimonialModel
@@ -10,6 +11,7 @@ import { UserModel } from "@/model/user.model"
 
 export type PortfolioCollection =
   | "projects"
+  | "blogs"
   | "skills"
   | "experiences"
   | "testimonials"
@@ -17,6 +19,7 @@ export type PortfolioCollection =
 
 const collectionModels = {
   projects: ProjectModel,
+  blogs: BlogPostModel,
   skills: SkillModel,
   experiences: ExperienceModel,
   testimonials: TestimonialModel,
@@ -25,6 +28,7 @@ const collectionModels = {
 
 const collectionSorts: Record<PortfolioCollection, Record<string, 1 | -1>> = {
   projects: { createdAt: -1 },
+  blogs: { publishedAt: -1, createdAt: -1 },
   skills: { name: 1 },
   experiences: { startDate: -1 },
   testimonials: { createdAt: -1 },

@@ -30,6 +30,10 @@ export const ProjectSchema = new Schema({
   description: String,
   slug: String,
   longDescription: String,
+  problem: String,
+  solution: String,
+  architecture: String,
+  results: String,
   techStack: [String],
   coverImage: { type: CloudinaryImageSchema, default: null },
   galleryImages: {
@@ -47,6 +51,26 @@ export const ProjectSchema = new Schema({
 
 ProjectSchema.index({ ownerId: 1, id: 1 }, { unique: true })
 ProjectSchema.index({ ownerId: 1, slug: 1 })
+
+// Blog posts for the public blog.
+export const BlogPostSchema = new Schema({
+  ...ownerField,
+  id: { type: String, required: true },
+  title: { type: String, required: true },
+  slug: { type: String, required: true },
+  description: { type: String, required: true },
+  content: { type: String, required: true },
+  tags: { type: [String], default: [] },
+  coverImage: { type: CloudinaryImageSchema, default: null },
+  readingTime: { type: String, default: "" },
+  featured: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: null },
+  publishedAt: { type: Date, default: null }
+})
+
+BlogPostSchema.index({ ownerId: 1, id: 1 }, { unique: true })
+BlogPostSchema.index({ ownerId: 1, slug: 1 })
 
 // Standalone collection for skills shown on the public site and admin.
 export const SkillSchema = new Schema({
@@ -188,6 +212,7 @@ SettingsSchema.index({ ownerId: 1 }, { unique: true })
 
 // Models are reused during hot reload to avoid recompilation errors.
 export const ProjectModel = models.Project || model("Project", ProjectSchema)
+export const BlogPostModel = models.BlogPost || model("BlogPost", BlogPostSchema)
 export const SkillModel = models.Skill || model("Skill", SkillSchema)
 export const ExperienceModel = models.Experience || model("Experience", ExperienceSchema)
 export const TestimonialModel = models.Testimonial || model("Testimonial", TestimonialSchema)

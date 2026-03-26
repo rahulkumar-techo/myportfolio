@@ -88,6 +88,10 @@ export async function POST(request: Request) {
       description: body.description,
       slug: body.slug || slugify(body.title || ""),
       longDescription: body.longDescription || "",
+      problem: body.problem || "",
+      solution: body.solution || "",
+      architecture: body.architecture || "",
+      results: body.results || "",
       techStack: body.techStack || [],
       coverImage: rawCoverImage && typeof rawCoverImage.url === "string"
         ? rawCoverImage

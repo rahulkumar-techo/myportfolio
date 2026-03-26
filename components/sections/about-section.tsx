@@ -4,6 +4,7 @@ import { useRef } from 'react'
 import { motion, useInView } from 'framer-motion'
 import { MapPin, Mail, Calendar, Code2, Coffee, Rocket } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { usePublicProfile } from '@/hooks/usePublicProfile';
 
 export default function AboutSection() {
@@ -74,8 +75,8 @@ export default function AboutSection() {
 
           <h2 className="text-2xl md:text-4xl lg:text-5xl font-bold mb-4">
 
-            <span className="text-foreground">Crafting </span>
-            <span className="text-primary text-glow-cyan">Digital Excellence</span>
+            <span className="text-foreground">About {profileName} </span>
+            <span className="text-primary text-glow-cyan">Full Stack Developer</span>
 
           </h2>
 
@@ -102,7 +103,10 @@ export default function AboutSection() {
             <div className="relative rounded-2xl overflow-hidden backdrop-blur-2xl border border-white/10">
 
               {/* 🔹 Background Image */}
-              <div className="absolute inset-0 bg-[url('/avatar.png')] bg-cover bg-center opacity-20" />
+              <div
+                className="absolute inset-0 bg-cover bg-center opacity-20"
+                style={{ backgroundImage: `url('${avatarUrl}')` }}
+              />
 
               {/* 🔹 Dark Overlay */}
               <div className="absolute inset-0 bg-black/60" />
@@ -123,11 +127,10 @@ export default function AboutSection() {
                   <div className="relative shrink-0">
                     <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
                       <Image
-                        alt="avatar"
+                        alt="Profile avatar"
                         src={avatarUrl}
                         width={100}
                         height={100}
-                        unoptimized
                       />
                     </div>
 
@@ -165,6 +168,20 @@ export default function AboutSection() {
                 <p className="text-gray-400 leading-relaxed text-sm md:text-base mb-6">
                   {bio}
                 </p>
+
+                <div className="rounded-xl border border-white/10 bg-white/5 p-4 mb-6">
+                  <p className="text-xs uppercase tracking-[0.25em] text-primary mb-3">Explore</p>
+                  <div className="flex flex-wrap gap-3 text-xs md:text-sm text-gray-300">
+                    <Link className="hover:text-primary transition-colors" href="/projects">Projects</Link>
+                    <Link className="hover:text-primary transition-colors" href="/case-studies">Case Studies</Link>
+                    <Link className="hover:text-primary transition-colors" href="/blog">Developer Blog</Link>
+                    <Link className="hover:text-primary transition-colors" href="/#skills">Skills</Link>
+                    <Link className="hover:text-primary transition-colors" href="/experience">Experience</Link>
+                    <Link className="hover:text-primary transition-colors" href="/contact">Contact</Link>
+                    <Link className="hover:text-primary transition-colors" href="/assets">Assets</Link>
+                    <Link className="hover:text-primary transition-colors" href="/github">GitHub</Link>
+                  </div>
+                </div>
 
                 {/* ===== STATS ===== */}
                 <div className="grid grid-cols-3 gap-3 md:gap-4">

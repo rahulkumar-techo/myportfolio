@@ -18,6 +18,27 @@ interface ProjectDetailClientProps {
 
 export default function ProjectDetailClient({ projectId, initialProject }: ProjectDetailClientProps) {
   const { project, isLoading, error } = useProject(projectId, initialProject);
+  const techPreview = project?.techStack?.slice(0, 3) ?? [];
+  const architectureLines = project?.architecture
+    ? project.architecture.split("\n").map((line) => line.trim()).filter(Boolean)
+    : [];
+  const resultLines = project?.results
+    ? project.results.split("\n").map((line) => line.trim()).filter(Boolean)
+    : [];
+  const architecturePoints = architectureLines.length > 0
+    ? architectureLines
+    : [
+        techPreview.length ? `Layered frontend and backend built with ${techPreview.join(', ')}.` : 'Layered frontend and backend built with modern full stack tooling.',
+        'API-first design with reusable services and typed contracts.',
+        'Optimized assets delivery with caching and CDN-ready media.',
+      ];
+  const resultPoints = resultLines.length > 0
+    ? resultLines
+    : [
+        'Improved performance, SEO, and Core Web Vitals.',
+        'Clear conversion-focused UX that guides users to key actions.',
+        'Maintainable architecture ready for future feature growth.',
+      ];
 
   if (isLoading && !project) {
     return (
@@ -149,7 +170,6 @@ export default function ProjectDetailClient({ projectId, initialProject }: Proje
                     alt={project.title}
                     width={1280}
                     height={720}
-                    unoptimized
                     sizes="(max-width: 1280px) 100vw, 1280px"
                     className="h-full w-full object-cover"
                   />
@@ -168,45 +188,75 @@ export default function ProjectDetailClient({ projectId, initialProject }: Proje
                 transition={{ delay: 0.3 }}
                 className="lg:col-span-2 space-y-8"
               >
-                {/* About */}
+                {/* Problem */}
                 <div className="glass-card rounded-2xl p-8">
                   <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
                     <span className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
                       <Code2 className="w-5 h-5 text-primary" />
                     </span>
-                    About the Project
+                    Problem
                   </h2>
-                  <div className="prose prose-invert max-w-none">
-                    <p className="text-muted-foreground leading-relaxed">
-                      {project.longDescription || project.description}
-                    </p>
+                  <div className="rich-text">
+                    <p>{project.problem || project.description}</p>
                   </div>
                 </div>
 
-                {/* Key Features */}
+                {/* Solution */}
                 <div className="glass-card rounded-2xl p-8">
                   <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
                     <span className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
                       <Layers className="w-5 h-5 text-accent" />
                     </span>
-                    Key Features
+                    Solution
+                  </h2>
+                  <div className="rich-text">
+                    <p>{project.solution || project.longDescription || project.description}</p>
+                  </div>
+                </div>
+
+                {/* Architecture */}
+                <div className="glass-card rounded-2xl p-8">
+                  <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center">
+                      <Layers className="w-5 h-5 text-primary" />
+                    </span>
+                    Architecture
                   </h2>
                   <ul className="space-y-3">
-                    {[
-                      'Modern responsive design',
-                      'High performance optimization',
-                      'Clean and maintainable code',
-                      'Comprehensive documentation',
-                    ].map((feature, index) => (
+                    {architecturePoints.map((point, index) => (
                       <motion.li
-                        key={index}
+                        key={point}
                         initial={{ opacity: 0, x: -20 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.4 + index * 0.1 }}
                         className="flex items-start gap-3 text-muted-foreground"
                       >
                         <span className="text-primary mt-1">{'>'}</span>
-                        {feature}
+                        {point}
+                      </motion.li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Results */}
+                <div className="glass-card rounded-2xl p-8">
+                  <h2 className="text-2xl font-bold text-foreground mb-4 flex items-center gap-3">
+                    <span className="w-10 h-10 rounded-lg bg-accent/20 flex items-center justify-center">
+                      <Code2 className="w-5 h-5 text-accent" />
+                    </span>
+                    Results
+                  </h2>
+                  <ul className="space-y-3">
+                    {resultPoints.map((point, index) => (
+                      <motion.li
+                        key={point}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.4 + index * 0.1 }}
+                        className="flex items-start gap-3 text-muted-foreground"
+                      >
+                        <span className="text-primary mt-1">{'>'}</span>
+                        {point}
                       </motion.li>
                     ))}
                   </ul>
@@ -228,7 +278,6 @@ export default function ProjectDetailClient({ projectId, initialProject }: Proje
                               alt={`${project.title} gallery ${index + 1}`}
                               width={640}
                               height={360}
-                              unoptimized
                               sizes="(max-width: 768px) 100vw, 50vw"
                               className="h-full w-full rounded-lg object-cover"
                             />
@@ -293,6 +342,16 @@ export default function ProjectDetailClient({ projectId, initialProject }: Proje
                       Let&apos;s Talk
                     </Link>
                   </Button>
+                </div>
+
+                <div className="glass-card rounded-2xl p-6">
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Related Content</h3>
+                  <div className="flex flex-col gap-2 text-sm text-muted-foreground">
+                    <Link className="hover:text-primary transition-colors" href="/blog">Read the Blog</Link>
+                    <Link className="hover:text-primary transition-colors" href="/projects">All Projects</Link>
+                    <Link className="hover:text-primary transition-colors" href="/#skills">Skills</Link>
+                    <Link className="hover:text-primary transition-colors" href="/contact">Start a Project</Link>
+                  </div>
                 </div>
               </motion.div>
             </div>

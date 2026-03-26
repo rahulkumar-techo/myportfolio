@@ -12,10 +12,7 @@ export default function HeroSection() {
   const ref = useRef<HTMLElement | null>(null);
   const { profile } = usePublicProfile();
 
-  const headingName = profile?.settings.siteTitle || profile?.profile.name || 'Developer Portfolio';
-  const tagline =
-    profile?.settings.siteTagline ||
-    'Full-stack developer building immersive web experiences and modern products.';
+  const headingName = profile?.settings.siteTitle || profile?.profile.name || 'Rahul Kumar';
   const techPreview = profile?.highlights.topSkills?.length
     ? profile.highlights.topSkills
     : ['React', 'Next.js', 'TypeScript', 'Node.js'];
@@ -75,10 +72,9 @@ export default function HeroSection() {
             transition={{ delay: 1 }}
             className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight"
           >
-            <span className="text-foreground">{headingName} </span>
-            <br />
-            <span className="text-glow-purple text-accent">Digital Experiences</span>
-            <span className="text-foreground"> That Ship</span>
+            <span className="text-foreground">
+              Full Stack Developer | Next.js, Node.js, AI, Microservices
+            </span>
           </motion.h1>
 
           {/* Subtitle */}
@@ -88,7 +84,7 @@ export default function HeroSection() {
             transition={{ delay: 1.2 }}
             className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed"
           >
-            {tagline}
+            {`${headingName} builds fast, scalable web applications and AI-powered products that convert visitors into customers.`}
           </motion.p>
 
           {/* CTA Buttons */}
@@ -121,6 +117,17 @@ export default function HeroSection() {
               <Link href="/contact">
                 <Zap className="w-5 h-5 mr-2" />
                 Get in Touch
+              </Link>
+            </Button>
+
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="border-border hover:border-primary hover:bg-primary/10 transition-all"
+            >
+              <Link href="/blog">
+                Read the Blog
               </Link>
             </Button>
           </motion.div>

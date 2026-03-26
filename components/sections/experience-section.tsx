@@ -184,11 +184,11 @@ export default function ExperienceSection() {
             JOURNEY
           </span>
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            <span className="text-foreground">Work </span>
+            <span className="text-foreground">Full Stack </span>
             <span className="text-accent text-glow-purple">Experience</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            A timeline of my professional growth and achievements
+            Experience building scalable web products with Next.js, Node.js, AI, and microservices.
           </p>
         </motion.div>
 

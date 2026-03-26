@@ -6,6 +6,10 @@ type ProjectSource = Partial<Project> & {
   description?: string
   slug?: string
   longDescription?: string
+  problem?: string
+  solution?: string
+  architecture?: string
+  results?: string
   techStack?: unknown
   coverImage?: unknown
   image?: unknown
@@ -70,6 +74,10 @@ export function normalizeProject(project: ProjectSource): Project {
     description: project.description ?? "",
     slug: typeof project.slug === "string" ? project.slug : undefined,
     longDescription: project.longDescription ?? "",
+    problem: project.problem ?? "",
+    solution: project.solution ?? "",
+    architecture: project.architecture ?? "",
+    results: project.results ?? "",
     techStack: Array.isArray(project.techStack)
       ? project.techStack.filter((tech): tech is string => typeof tech === "string")
       : [],

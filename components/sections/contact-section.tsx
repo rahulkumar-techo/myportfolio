@@ -151,11 +151,11 @@ export default function ContactSection() {
             CONTACT
           </span>
           <h2 className="text-3xl md:text-5xl font-bold mb-4">
-            <span className="text-foreground">Let&apos;s </span>
-            <span className="text-accent text-glow-purple">Connect</span>
+            <span className="text-foreground">Contact a </span>
+            <span className="text-accent text-glow-purple">Full Stack Developer</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Have a project in mind? Let&apos;s build something amazing together
+            Share your Next.js, Node.js, or AI project goals and get a clear delivery plan.
           </p>
         </motion.div>
 

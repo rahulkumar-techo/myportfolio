@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Github, Linkedin, Briefcase, ImageIcon, ChevronDown, Instagram } from 'lucide-react';
+import { Menu, X, Github, Linkedin, Briefcase, ImageIcon, ChevronDown, Instagram, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/theme-toggle';
 import Image from 'next/image';
@@ -15,6 +15,8 @@ const navItems = [
 ];
 const dropdownItems = [
   { href: '/projects', label: 'Projects' },
+  { href: '/case-studies', label: 'Case Studies' },
+  { href: '/blog', label: 'Blog' },
   { href: '/assets', label: 'Assets' },
   { href: '/github', label: 'GitHub' },
 ];
@@ -105,8 +107,10 @@ export default function Navigation() {
                           href={item.href}
                           className="flex items-center gap-2 px-4 py-2 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 transition-colors"
                         >
-                          {item.href === '/projects' ? (
+                          {item.href === '/projects' || item.href === '/case-studies' ? (
                             <Briefcase className="h-4 w-4" />
+                          ) : item.href === '/blog' ? (
+                            <BookOpen className="h-4 w-4" />
                           ) : item.href === '/assets' ? (
                             <ImageIcon className="h-4 w-4" />
                           ) : (
@@ -287,8 +291,10 @@ export default function Navigation() {
                             onClick={() => setIsMobileMenuOpen(false)}
                             className="py-3 text-lg text-foreground hover:text-primary transition-colors border-b border-border/30 flex items-center gap-2"
                           >
-                            {item.href === '/projects' ? (
+                            {item.href === '/projects' || item.href === '/case-studies' ? (
                               <Briefcase className="h-5 w-5" />
+                            ) : item.href === '/blog' ? (
+                              <BookOpen className="h-5 w-5" />
                             ) : item.href === '/assets' ? (
                               <ImageIcon className="h-5 w-5" />
                             ) : (

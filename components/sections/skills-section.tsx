@@ -8,6 +8,7 @@
 import { useRef } from "react"
 import { motion, useInView } from "framer-motion"
 import { Cpu, Globe, Server, Settings, Code } from "lucide-react"
+import Link from "next/link"
 import { useSkills } from "@/hooks/useSkills"
 import type { Skill as ManagedSkill } from "@/lib/types"
 
@@ -340,9 +341,7 @@ export default function SkillsSection() {
                     </span>
 
                     <h2 className="text-3xl md:text-5xl font-bold mt-6">
-
-                        Skills & <span className="text-accent">Technologies</span>
-
+                        Full Stack Skills in <span className="text-accent">Next.js, Node.js, AI</span>
                     </h2>
 
                 </div>
@@ -469,6 +468,12 @@ left-1/2 top-1/2
 
                     </div>
                 ) : null}
+
+                <div className="mt-10 flex flex-wrap items-center justify-center gap-3 text-sm text-muted-foreground">
+                    <Link className="hover:text-primary transition-colors" href="/case-studies">View Case Studies</Link>
+                    <Link className="hover:text-primary transition-colors" href="/blog">Read the Blog</Link>
+                    <Link className="hover:text-primary transition-colors" href="/contact">Work With Me</Link>
+                </div>
 
             </div>
 

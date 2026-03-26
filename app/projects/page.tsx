@@ -34,7 +34,6 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
               src={buildCloudinaryImageUrl(project.coverImage.url, 'thumbnail')}
               alt={project.title}
               fill
-              unoptimized
               sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
               className="object-cover"
             />
@@ -176,6 +175,7 @@ export default function ProjectsPage() {
 
           {/* Header */}
           <motion.div
+            id="featured"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-12"
@@ -185,12 +185,18 @@ export default function ProjectsPage() {
               ALL PROJECTS
             </span>
             <h1 className="text-4xl md:text-6xl font-bold mb-4">
-              <span className="text-foreground">Project </span>
-              <span className="text-primary text-glow-cyan">Gallery</span>
+              <span className="text-foreground">Projects & </span>
+              <span className="text-primary text-glow-cyan">Case Studies</span>
             </h1>
             <p className="text-muted-foreground max-w-2xl mx-auto">
-              Explore my complete collection of projects spanning various technologies and domains
+              Deep dives into Next.js, Node.js, AI, and microservices builds with real-world results.
             </p>
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-sm text-muted-foreground">
+              <Link className="hover:text-primary transition-colors" href="/blog">Read the Blog</Link>
+              <Link className="hover:text-primary transition-colors" href="/case-studies">Case Studies</Link>
+              <Link className="hover:text-primary transition-colors" href="/#skills">Skills</Link>
+              <Link className="hover:text-primary transition-colors" href="/contact">Contact</Link>
+            </div>
           </motion.div>
 
           {/* Category Filter */}

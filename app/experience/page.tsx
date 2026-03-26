@@ -1,35 +1,12 @@
-import type { Metadata } from "next";
 import Link from "next/link";
 import { Briefcase, Calendar, ExternalLink, MapPin } from "lucide-react";
 import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
 import { getPublicHomeData } from "@/lib/public-data";
-import { siteUrl } from "@/utils/meta-data";
 import type { Experience } from "@/lib/types";
 
 export const revalidate = 60;
 
-export const metadata: Metadata = {
-  title: "Experience | Rahul Kumar",
-  description:
-    "Professional experience, roles, achievements, and technologies used across Rahul Kumar's career.",
-  alternates: {
-    canonical: `${siteUrl}/experience`
-  },
-  openGraph: {
-    title: "Experience | Rahul Kumar",
-    description:
-      "Explore Rahul Kumar's work experience, achievements, and key technologies.",
-    url: `${siteUrl}/experience`,
-    type: "website"
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Experience | Rahul Kumar",
-    description:
-      "Work experience timeline, achievements, and tech stack highlights."
-  }
-};
 
 function formatDate(value: string | undefined) {
   if (!value) return "Present";
@@ -82,7 +59,7 @@ export default async function ExperiencePage() {
               Experience
             </span>
             <h1 className="mt-6 text-3xl font-semibold text-slate-900 sm:text-4xl dark:text-white">
-              Work Experience Timeline
+              Full Stack Developer Experience
             </h1>
             <p className="mt-4 text-base leading-relaxed text-slate-600 dark:text-slate-300">
               A detailed overview of roles, responsibilities, achievements, and

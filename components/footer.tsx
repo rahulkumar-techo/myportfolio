@@ -7,7 +7,10 @@ import { usePublicProfile } from '@/hooks/usePublicProfile';
 
 const footerLinks = [
   { href: '#about', label: 'About' },
+  { href: '/#skills', label: 'Skills' },
   { href: '/projects', label: 'Projects' },
+  { href: '/case-studies', label: 'Case Studies' },
+  { href: '/blog', label: 'Blog' },
   { href: '/experience', label: 'Experience' },
   { href: '/contact', label: 'Contact' },
   { href: '/admin', label: 'Admin', isExternal: true },

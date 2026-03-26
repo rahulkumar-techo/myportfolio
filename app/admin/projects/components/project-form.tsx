@@ -15,6 +15,10 @@ export type ProjectFormState = {
   title: string
   description: string
   longDescription: string
+  problem: string
+  solution: string
+  architecture: string
+  results: string
   category: string
   techStack: string
   coverImage: CloudinaryImage | null
@@ -37,7 +41,7 @@ type ProjectFormProps = {
   setImageUrlInput: (value: string) => void
   galleryUrlInput: string
   setGalleryUrlInput: (value: string) => void
-  onSubmit: (event: FormEvent) => void
+  onSubmit: (event: FormEvent<HTMLFormElement>) => void
   onCancel: () => void
   onCoverUpload: (file: File | null) => void
   onGalleryUpload: (files: FileList | null) => void
@@ -116,6 +120,59 @@ export function ProjectForm({
           onChange={(event) => setFormData((current) => ({ ...current, longDescription: event.target.value }))}
           rows={5}
         />
+      </div>
+
+      <div className="space-y-4 rounded-xl border border-border/60 bg-muted/10 p-4">
+        <div>
+          <h3 className="text-sm font-semibold text-foreground">Case Study Highlights</h3>
+          <p className="text-xs text-muted-foreground">
+            These fields power the case study sections on the project detail page.
+          </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="project-problem">Problem</Label>
+          <Textarea
+            id="project-problem"
+            value={formData.problem}
+            onChange={(event) => setFormData((current) => ({ ...current, problem: event.target.value }))}
+            rows={3}
+            placeholder="What challenge did this project solve?"
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="project-solution">Solution</Label>
+          <Textarea
+            id="project-solution"
+            value={formData.solution}
+            onChange={(event) => setFormData((current) => ({ ...current, solution: event.target.value }))}
+            rows={3}
+            placeholder="Summarize the approach and key decisions."
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="project-architecture">Architecture</Label>
+          <Textarea
+            id="project-architecture"
+            value={formData.architecture}
+            onChange={(event) => setFormData((current) => ({ ...current, architecture: event.target.value }))}
+            rows={3}
+            placeholder="Outline the system architecture in a few lines."
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="project-results">Results</Label>
+          <Textarea
+            id="project-results"
+            value={formData.results}
+            onChange={(event) => setFormData((current) => ({ ...current, results: event.target.value }))}
+            rows={3}
+            placeholder="Share impact metrics or outcomes."
+          />
+        </div>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">

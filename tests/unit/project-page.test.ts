@@ -44,20 +44,20 @@ describe("project page helpers", () => {
 
     expect(metadata).toEqual(
       expect.objectContaining({
-        title: "Alpha Project | Portfolio",
+        title: "Alpha Project Case Study | Portfolio",
         description: "Alpha description",
         alternates: {
           canonical: "https://rahulkumardev.vercel.app/projects/alpha"
         },
         openGraph: expect.objectContaining({
-          title: "Alpha Project | Portfolio",
+          title: "Alpha Project Case Study | Portfolio",
           description: "Alpha description",
           url: "https://rahulkumardev.vercel.app/projects/alpha",
           type: "article"
         }),
         twitter: expect.objectContaining({
           card: "summary_large_image",
-          title: "Alpha Project | Portfolio",
+          title: "Alpha Project Case Study | Portfolio",
           description: "Alpha description"
         })
       })

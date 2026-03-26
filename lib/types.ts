@@ -15,6 +15,10 @@ export interface Project {
   description: string;
   slug?: string;
   longDescription?: string;
+  problem?: string;
+  solution?: string;
+  architecture?: string;
+  results?: string;
   techStack: string[];
   coverImage?: CloudinaryImage | null;
   galleryImages?: CloudinaryImage[];
@@ -24,6 +28,21 @@ export interface Project {
   category: string;
   createdAt: string | Date;
   updatedAt?: string | Date;
+}
+
+export interface BlogPost {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  content: string;
+  tags: string[];
+  coverImage?: CloudinaryImage | null;
+  readingTime?: string;
+  featured?: boolean;
+  createdAt: string | Date;
+  updatedAt?: string | Date | null;
+  publishedAt?: string | Date | null;
 }
 
 export interface Skill {
