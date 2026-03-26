@@ -12,7 +12,9 @@ export default function AboutSection() {
   const isInView = useInView(ref, { once: true, margin: '-100px' })
   const { profile } = usePublicProfile()
 
-  const avatarUrl = profile?.profile.image || '/avatar.png'
+  const rawAvatarUrl = typeof profile?.profile.image === 'string' ? profile.profile.image.trim() : ''
+  const isGoogleAvatar = /googleusercontent\.com|ggpht\.com/i.test(rawAvatarUrl)
+  const avatarUrl = !isGoogleAvatar && rawAvatarUrl ? rawAvatarUrl : '/avatar.png'
   const profileName = profile?.profile.name || profile?.settings.siteTitle || 'Portfolio Owner'
   const location = profile?.settings.location || 'Location not set'
   const email = profile?.settings.contactEmail || profile?.profile.email || 'Email not set'
