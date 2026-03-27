@@ -22,6 +22,11 @@ export default function ContactSection() {
   const { user, loginWithGoogle } = useAuth();
   const { settings } = usePublicSettings();
   const { sendMessage } = useContact();
+  const [emailCopied, setEmailCopied] = useState(false);
+  const emailValue = settings?.contactEmail || '';
+  const obfuscatedEmail = emailValue
+    ? emailValue.replace('@', ' [at] ').replace(/\./g, ' [dot] ')
+    : 'No contact email set';
   const initAudioContext = async () => {
     if (audioContextRef.current) {
       if (audioContextRef.current.state === 'suspended') {
@@ -132,6 +137,20 @@ export default function ContactSection() {
     }
   };
 
+  const handleCopyEmail = async () => {
+    if (!emailValue) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(emailValue);
+      setEmailCopied(true);
+      setTimeout(() => setEmailCopied(false), 2500);
+    } catch {
+      // Ignore clipboard failures.
+    }
+  };
+
   return (
     <section id="contact" className="relative py-24 md:py-32 overflow-hidden" ref={ref}>
       {/* Background */}
@@ -176,12 +195,15 @@ export default function ContactSection() {
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground">Email</p>
-                      <Link
-                      href={`mailto:${settings?.contactEmail || ''}`}
-                      className="text-foreground hover:text-primary transition-colors"
+                    <p className="text-foreground">{obfuscatedEmail}</p>
+                    <button
+                      type="button"
+                      onClick={handleCopyEmail}
+                      className="mt-2 text-xs font-mono text-primary hover:text-accent transition-colors"
+                      aria-label="Copy email address"
                     >
-                      {settings?.contactEmail || 'No contact email set'}
-                    </Link>
+                      {emailCopied ? 'Copied email' : 'Copy email'}
+                    </button>
                   </div>
                 </div>
               </div>

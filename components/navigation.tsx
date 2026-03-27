@@ -9,7 +9,7 @@ import ThemeToggle from '@/components/theme-toggle';
 import Image from 'next/image';
 
 const navItems = [
-  { href: '/#about', label: 'About' },
+  { href: '/about', label: 'About' },
   { href: '/experience', label: 'Experience' },
   { href: '/contact', label: 'Contact' },
 ];
@@ -74,7 +74,7 @@ export default function Navigation() {
           </Link>
 
           {/* Desktop Navigation */}
-          <ul className="hidden md:flex items-center gap-1">
+          <ul className="hidden lg:flex items-center gap-1">
             {navItems.map((item) => (
               <li key={item.href}>
 
@@ -127,7 +127,7 @@ export default function Navigation() {
           </ul>
 
           {/* Social Links & CTA */}
-          <div className="hidden md:flex items-center gap-4">
+          <div className="hidden lg:flex items-center gap-4">
             <ThemeToggle />
             <div className="flex items-center gap-2">
               <Link
@@ -164,7 +164,7 @@ export default function Navigation() {
           </div>
 
           {/* Mobile Actions */}
-          <div className="flex items-center gap-1 md:hidden">
+          <div className="flex items-center gap-1 lg:hidden">
             <ThemeToggle />
 
             {/* Social icons */}
@@ -217,12 +217,12 @@ export default function Navigation() {
       {/* Mobile Menu */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
-            className="fixed inset-0 z-40 md:hidden"
-          >
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+            className="fixed inset-0 z-40 lg:hidden"
+            >
             <div
               className="absolute inset-0 bg-background/80 backdrop-blur-lg"
               onClick={() => setIsMobileMenuOpen(false)}

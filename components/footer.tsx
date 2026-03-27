@@ -6,7 +6,7 @@ import { Github, Linkedin, Twitter, Heart, ArrowUp } from 'lucide-react';
 import { usePublicProfile } from '@/hooks/usePublicProfile';
 
 const footerLinks = [
-  { href: '#about', label: 'About' },
+  { href: '/about', label: 'About' },
   { href: '/#skills', label: 'Skills' },
   { href: '/projects', label: 'Projects' },
   { href: '/case-studies', label: 'Case Studies' },

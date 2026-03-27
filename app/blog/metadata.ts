@@ -5,6 +5,14 @@ export const metadata: Metadata = {
   title: "Developer Blog | Rahul Kumar",
   description:
     "Insights on Next.js, Node.js, AI, and microservices. Tutorials, case studies, and practical engineering advice.",
+  keywords: [
+    "Developer Blog",
+    "Next.js Tutorials",
+    "Node.js Articles",
+    "AI Engineering",
+    "Full Stack Developer Blog",
+    "Rahul Kumar",
+  ],
   alternates: {
     canonical: `${siteUrl}/blog`,
   },

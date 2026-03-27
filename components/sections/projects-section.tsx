@@ -10,7 +10,31 @@ import { buildCloudinaryImageUrl } from '@/lib/cloudinary-images';
 import { useProjects } from '@/hooks/useProjects';
 import type { Project } from '@/lib/types';
 
+function clampText(value: string, maxChars: number) {
+  const trimmed = value.replace(/\s+/g, ' ').trim();
+  if (trimmed.length <= maxChars) {
+    return trimmed;
+  }
+  return `${trimmed.slice(0, maxChars - 1).trim()}...`;
+}
+
+function getProjectSummary(project: Project) {
+  const problem = project.problem || project.description;
+  const solution = project.solution || project.longDescription || project.description;
+  const impact = project.results || 'Faster performance, clearer UX, and stronger discoverability.';
+  const techStack = project.techStack.length > 0 ? project.techStack.join(', ') : 'Modern full stack tooling.';
+
+  return {
+    problem: clampText(problem, 120),
+    solution: clampText(solution, 120),
+    techStack: clampText(techStack, 120),
+    impact: clampText(impact, 120),
+  };
+}
+
 function ProjectCard({ project, index }: { project: Project; index: number }) {
+  const summary = getProjectSummary(project);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -84,6 +108,25 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
             {project.description}
           </p>
 
+          <dl className="mb-4 space-y-2 text-xs text-muted-foreground">
+            <div className="flex gap-2">
+              <dt className="font-semibold text-foreground">Problem</dt>
+              <dd className="line-clamp-2">{summary.problem}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-semibold text-foreground">Solution</dt>
+              <dd className="line-clamp-2">{summary.solution}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-semibold text-foreground">Tech Stack</dt>
+              <dd className="line-clamp-2">{summary.techStack}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-semibold text-foreground">Impact</dt>
+              <dd className="line-clamp-2">{summary.impact}</dd>
+            </div>
+          </dl>
+
           {/* Tech Stack */}
           <div className="flex flex-wrap gap-2 mb-4">
             {project.techStack.slice(0, 4).map((tech) => (
@@ -151,7 +194,7 @@ export default function ProjectsSection() {
             <span className="text-primary text-glow-cyan">Projects & Case Studies</span>
           </h2>
           <p className="text-muted-foreground max-w-2xl mx-auto">
-            Real-world Next.js, Node.js, and AI builds with architecture, results, and lessons learned.
+            Full Stack Developer case studies featuring Next.js, Node.js, and AI builds with clear architecture, results, and lessons learned.
           </p>
         </motion.div>
 

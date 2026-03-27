@@ -5,6 +5,13 @@ export const metadata: Metadata = {
   title: "Contact | Rahul Kumar",
   description:
     "Start a project with Rahul Kumar. Get in touch for Next.js, Node.js, AI, and microservices development.",
+  keywords: [
+    "Contact Full Stack Developer",
+    "Hire Next.js Developer",
+    "Node.js Developer Contact",
+    "AI Developer Portfolio",
+    "Rahul Kumar",
+  ],
   alternates: {
     canonical: `${siteUrl}/contact`,
   },

@@ -19,6 +19,11 @@ interface ProjectDetailClientProps {
 export default function ProjectDetailClient({ projectId, initialProject }: ProjectDetailClientProps) {
   const { project, isLoading, error } = useProject(projectId, initialProject);
   const techPreview = project?.techStack?.slice(0, 3) ?? [];
+  const summaryProblem = project?.problem || project?.description || '';
+  const summarySolution = project?.solution || project?.longDescription || project?.description || '';
+  const summaryImpact =
+    project?.results || 'Performance improvements, clearer UX, and stronger search visibility.';
+  const summaryTech = project?.techStack?.length ? project.techStack.join(', ') : 'Modern full stack tooling.';
   const architectureLines = project?.architecture
     ? project.architecture.split("\n").map((line) => line.trim()).filter(Boolean)
     : [];
@@ -134,6 +139,29 @@ export default function ProjectDetailClient({ projectId, initialProject }: Proje
               <p className="text-xl text-muted-foreground mb-6">
                 {project.description}
               </p>
+
+              {/* Case Study Summary */}
+              <div className="glass-card rounded-2xl p-6 mb-6">
+                <h2 className="text-lg font-semibold text-foreground mb-4">Case Study Summary</h2>
+                <dl className="space-y-3 text-sm text-muted-foreground">
+                  <div className="flex flex-col gap-1">
+                    <dt className="font-semibold text-foreground">Problem</dt>
+                    <dd>{summaryProblem}</dd>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <dt className="font-semibold text-foreground">Solution</dt>
+                    <dd>{summarySolution}</dd>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <dt className="font-semibold text-foreground">Tech Stack</dt>
+                    <dd>{summaryTech}</dd>
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <dt className="font-semibold text-foreground">Impact</dt>
+                    <dd>{summaryImpact}</dd>
+                  </div>
+                </dl>
+              </div>
 
               {/* Action Buttons */}
               <div className="flex flex-wrap gap-4">

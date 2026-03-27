@@ -11,6 +11,7 @@ import { Cpu, Globe, Server, Settings, Code } from "lucide-react"
 import Link from "next/link"
 import { useSkills } from "@/hooks/useSkills"
 import type { Skill as ManagedSkill } from "@/lib/types"
+import Image from "next/image"
 
 type Category = "frontend" | "backend" | "devops" | "languages" | "tools"
 
@@ -28,10 +29,35 @@ const TECH_STACK = {
     nodejs: { icon: Server, color: "#68A063" },
     mongodb: { icon: Server, color: "#47A248" },
     postgresql: { icon: Server, color: "#336791" },
+    mysql: { icon: Server, color: "#4479A1" },
     docker: { icon: Settings, color: "#2496ED" },
     redis: { icon: Server, color: "#DC382D" },
     python: { icon: Code, color: "#3776AB" },
-    graphql: { icon: Cpu, color: "#E10098" }
+    graphql: { icon: Cpu, color: "#E10098" },
+    aws: { icon: Settings, color: "#FF9900" },
+    kubernetes: { icon: Settings, color: "#326CE5" },
+    github: { icon: Code, color: "#FFFFFF" },
+    git: { icon: Code, color: "#F05032" }
+} as const
+
+const TECH_LOGOS: Record<string, { slug: string; color: string; monochrome?: boolean }> = {
+    react: { slug: "react", color: "61DAFB" },
+    nextjs: { slug: "nextdotjs", color: "000000", monochrome: true },
+    tailwind: { slug: "tailwindcss", color: "38BDF8" },
+    typescript: { slug: "typescript", color: "3178C6" },
+    javascript: { slug: "javascript", color: "F7DF1E" },
+    nodejs: { slug: "nodedotjs", color: "339933" },
+    mongodb: { slug: "mongodb", color: "47A248" },
+    postgresql: { slug: "postgresql", color: "336791" },
+    mysql: { slug: "mysql", color: "4479A1" },
+    docker: { slug: "docker", color: "2496ED" },
+    redis: { slug: "redis", color: "DC382D" },
+    python: { slug: "python", color: "3776AB" },
+    graphql: { slug: "graphql", color: "E10098" },
+    aws: { slug: "amazonaws", color: "FF9900" },
+    kubernetes: { slug: "kubernetes", color: "326CE5" },
+    git: { slug: "git", color: "F05032" },
+    github: { slug: "github", color: "000000", monochrome: true },
 } as const
 
 const TECH_ALIASES: Record<string, keyof typeof TECH_STACK> = {
@@ -50,13 +76,54 @@ const TECH_ALIASES: Record<string, keyof typeof TECH_STACK> = {
     postgres: "postgresql",
     postgressql: "postgresql",
     postgre: "postgresql",
+    mysql: "mysql",
+    sql: "mysql",
     py: "python",
-    gql: "graphql"
+    gql: "graphql",
+    aws: "aws",
+    amazonwebservices: "aws",
+    k8s: "kubernetes",
+    kubernetes: "kubernetes",
+    github: "github",
+    git: "git",
 }
 
 function resolveTechKey(skill: ManagedSkill) {
     const rawKey = (skill.icon || skill.name).toLowerCase().replace(/[^a-z0-9]/g, "")
     return TECH_ALIASES[rawKey] || (rawKey as keyof typeof TECH_STACK)
+}
+
+function getTechLogoUrl(skill: ManagedSkill) {
+    const key = resolveTechKey(skill)
+    const logo = TECH_LOGOS[key]
+    if (!logo) {
+        return ""
+    }
+    return `https://cdn.simpleicons.org/${logo.slug}/${logo.color}`
+}
+
+function isMonochromeLogo(skill: ManagedSkill) {
+    const key = resolveTechKey(skill)
+    return Boolean(TECH_LOGOS[key]?.monochrome)
+}
+
+function SkillLogo({
+    skill,
+    className
+}: { skill: ManagedSkill; className?: string }) {
+    const logoUrl = getTechLogoUrl(skill)
+    const mono = isMonochromeLogo(skill)
+    const src = logoUrl || "/placeholder-logo.svg"
+    return (
+        <Image
+            src={src}
+            alt={`${skill.name} logo`}
+            title={skill.name}
+            width={20}
+            height={20}
+            className={`${className ?? "h-5 w-5"}${mono ? " dark:invert" : ""} object-contain`}
+        />
+    )
 }
 
 
@@ -103,7 +170,8 @@ function SkillOrb({
 
     const techKey = resolveTechKey(skill)
     const tech = TECH_STACK[techKey]
-    const Icon = tech?.icon ?? Code
+    const logoUrl = getTechLogoUrl(skill)
+    const mono = isMonochromeLogo(skill)
 
     const angle = (index / total) * Math.PI * 2
     const x = Math.cos(angle) * radius
@@ -149,9 +217,13 @@ flex items-center justify-center
 group-hover:scale-110 transition
 ">
 
-                    <Icon
-                        className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
-                        style={{ color: tech?.color || "var(--color-primary)" }}
+                    <Image
+                        src={logoUrl || "/placeholder-logo.svg"}
+                        alt={`${skill.name} logo`}
+                        title={skill.name}
+                        width={28}
+                        height={28}
+                        className={`w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7${mono ? " dark:invert" : ""} object-contain`}
                     />
 
                 </div>
@@ -268,7 +340,10 @@ function CategoryCard({
 
                         <div className="flex justify-between text-sm mb-1">
 
-                            <span>{skill.name}</span>
+                            <span className="flex items-center gap-2">
+                                <SkillLogo skill={skill} className="h-4 w-4" />
+                                {skill.name}
+                            </span>
                             <span className="text-primary">{skill.proficiency}%</span>
 
                         </div>
@@ -343,6 +418,16 @@ export default function SkillsSection() {
                     <h2 className="text-3xl md:text-5xl font-bold mt-6">
                         Full Stack Skills in <span className="text-accent">Next.js, Node.js, AI</span>
                     </h2>
+                    <p className="mt-4 mx-auto max-w-3xl text-sm md:text-base text-muted-foreground">
+                        I focus on the tools that help ship production ready apps: Next.js App Router for modern UX,
+                        Node.js APIs for scalable data, and AI workflows for automation and personalization. As a Full Stack Developer,
+                        I combine design systems, strong typing, and performance tuning so each feature feels fast, accessible, and easy to maintain.
+                    </p>
+                    <p className="mt-3 mx-auto max-w-3xl text-sm md:text-base text-muted-foreground">
+                        You will see frontend skills mapped to the experiences users touch, backend skills tied to reliability,
+                        and DevOps practices that keep deployments smooth. This is the practical stack behind my AI Developer Portfolio,
+                        tailored for real products and measurable results.
+                    </p>
 
                 </div>
 

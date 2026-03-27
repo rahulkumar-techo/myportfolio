@@ -13,13 +13,13 @@ export const metadata: Metadata = {
   // 🔥 Title Optimization (SEO + CTR)
   title: {
     default:
-      "Full Stack Developer | Next.js, Node.js, AI, Microservices",
+      "Full Stack Developer | Next.js Developer | Node.js Developer | AI Developer Portfolio",
     template: "%s | Rahul Kumar",
   },
 
   // 🔥 Strong Description (Google + Recruiters)
   description:
-    "Rahul Kumar builds fast, scalable web apps with Next.js, Node.js, AI, and microservices. Explore projects, case studies, skills, and the developer blog.",
+    "Rahul Kumar is a Full Stack Developer, Next.js Developer, and Node.js Developer - an AI Developer Portfolio with projects, case studies, skills, and contact.",
 
   // 🔥 SEO Identity
   applicationName: "Rahul Kumar Portfolio",
@@ -48,14 +48,21 @@ export const metadata: Metadata = {
   // 🔥 CLEAN KEYWORDS (No Spam)
   keywords: [
     "Rahul Kumar",
+    "Full Stack Developer",
     "Full Stack Developer India",
     "Next.js Developer",
     "Node.js Developer",
+    "AI Developer Portfolio",
     "React Developer",
     "AI Developer",
+    "AI Engineer",
+    "AI Web Developer",
     "Microservices Developer",
     "Software Engineer Portfolio",
     "Web Developer Portfolio",
+    "Next.js App Router",
+    "TypeScript Developer",
+    "Portfolio Website",
   ],
 
   // 🔥 Canonical + Language
@@ -68,9 +75,9 @@ export const metadata: Metadata = {
 
   // 🔥 Open Graph (Facebook, LinkedIn, WhatsApp)
   openGraph: {
-    title: "Full Stack Developer | Next.js, Node.js, AI, Microservices",
+    title: "Full Stack Developer | Next.js Developer | Node.js Developer | AI Developer Portfolio",
     description:
-      "Portfolio of Rahul Kumar: full stack developer building scalable web applications with Next.js, Node.js, AI, and microservices.",
+      "Full Stack Developer portfolio with Next.js, Node.js, and AI projects, case studies, and skills.",
     url: siteUrl,
     siteName: "Rahul Kumar Portfolio",
     images: [
@@ -88,9 +95,9 @@ export const metadata: Metadata = {
   // 🔥 Twitter SEO
   twitter: {
     card: "summary_large_image",
-    title: "Full Stack Developer | Next.js, Node.js, AI, Microservices",
+    title: "Full Stack Developer | Next.js Developer | Node.js Developer | AI Developer Portfolio",
     description:
-      "Rahul Kumar builds scalable web apps with Next.js, Node.js, AI, and microservices. Explore projects, case studies, and the blog.",
+      "Full Stack Developer portfolio with Next.js, Node.js, and AI work. Explore projects, case studies, and the blog.",
     images: [`${siteUrl}/og_image.png`], // FIXED
   },
 

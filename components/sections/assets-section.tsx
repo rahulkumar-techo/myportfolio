@@ -6,6 +6,8 @@ import { Download, FileImage, FileText, FolderOpen, Loader2 } from 'lucide-react
 import { Button } from '@/components/ui/button';
 import { usePublicAssets } from '@/hooks/usePublicAssets';
 import type { AssetItem } from '@/lib/types';
+import Image from 'next/image';
+import { buildCloudinaryImageUrl, isCloudinaryUrl } from '@/lib/cloudinary-images';
 
 const categoryOrder: AssetItem['category'][] = ['cv', 'achievement', 'image', 'certificate', 'other'];
 
@@ -17,18 +19,27 @@ function assetIcon(asset: AssetItem) {
   return FileText;
 }
 
-function formatAssetDate(value: string | Date) {
-  const date = new Date(value);
+function getFileExtension(asset: AssetItem) {
+  const name = asset.originalName || asset.fileUrl;
+  const match = name.match(/\.([a-z0-9]+)(?:\?|#|$)/i);
+  return match ? match[1].toUpperCase() : 'FILE';
+}
 
-  if (Number.isNaN(date.getTime())) {
+function buildCloudinaryPdfPreviewUrl(fileUrl: string) {
+  if (!fileUrl || !isCloudinaryUrl(fileUrl)) {
     return '';
   }
 
-  const day = String(date.getUTCDate()).padStart(2, '0');
-  const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-  const year = date.getUTCFullYear();
-  return `${day}/${month}/${year}`;
+  const markerIndex = fileUrl.indexOf('/upload/');
+  const prefix = fileUrl.slice(0, markerIndex + '/upload/'.length);
+  const suffix = fileUrl.slice(markerIndex + '/upload/'.length);
+  return `${prefix}f_jpg,pg_1,q_auto:good,w_900/${suffix}`;
 }
+
+function isPdf(asset: AssetItem) {
+  return asset.fileType === 'application/pdf' || asset.fileUrl.toLowerCase().includes('.pdf');
+}
+
 
 export default function AssetsSection() {
   const ref = useRef(null);
@@ -109,9 +120,16 @@ export default function AssetsSection() {
             <p className="mt-2 text-sm text-muted-foreground">Choose another category or feature more assets.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
             {filteredAssets.map((asset, index) => {
               const Icon = assetIcon(asset);
+              const fileExt = getFileExtension(asset);
+              const showImage = asset.fileType.startsWith('image/');
+              const showPdf = isPdf(asset);
+              const imagePreviewUrl = showImage
+                ? buildCloudinaryImageUrl(asset.fileUrl, 'asset-preview')
+                : '';
+              const pdfPreviewUrl = showPdf ? buildCloudinaryPdfPreviewUrl(asset.fileUrl) : '';
 
               return (
                 <motion.div
@@ -120,25 +138,55 @@ export default function AssetsSection() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.08 }}
-                  className="group min-w-0"
+                  className="group min-w-0 w-full max-w-[320px]"
                 >
-                  <div className="flex h-full min-w-0 flex-col rounded-2xl p-5 sm:p-6 glass-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/30">
-                    <div className="mb-5 flex items-center justify-between">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                        <Icon className="h-6 w-6" />
+                  <div className="flex h-full min-w-0 flex-col rounded-2xl p-3 glass-card transition-all duration-300 hover:-translate-y-1 hover:border-primary/30">
+                    <div className="flex flex-col gap-3">
+                      <div className="relative overflow-hidden rounded-xl border border-white/10 bg-secondary/30">
+                        <div className="relative aspect-square w-full">
+                          {showImage ? (
+                            <Image
+                              src={imagePreviewUrl || asset.fileUrl}
+                              alt={asset.label}
+                              fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                              className="object-contain"
+                            />
+                          ) : showPdf && pdfPreviewUrl ? (
+                            <Image
+                              src={pdfPreviewUrl}
+                              alt={`${asset.label} preview`}
+                              fill
+                              sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+                              className="object-contain"
+                            />
+                          ) : (
+                            <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-muted-foreground">
+                              <Icon className="h-8 w-8 text-primary/60" />
+                              <span className="rounded-full bg-secondary px-3 py-1 text-xs font-mono uppercase tracking-[0.2em]">
+                                {fileExt}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                        <div className="absolute inset-0 flex items-center justify-center bg-background/70 opacity-0 transition-opacity duration-200 group-hover:opacity-100">
+                          <Button
+                            asChild
+                            variant="outline"
+                            className="border-primary/40 text-primary hover:border-primary hover:bg-primary/10"
+                          >
+                            <a href={asset.fileUrl} target="_blank" rel="noopener noreferrer">
+                              View
+                            </a>
+                          </Button>
+                        </div>
                       </div>
-                      <span className="rounded-full bg-secondary px-3 py-1 text-xs uppercase tracking-[0.2em] text-muted-foreground">
-                        {asset.category}
-                      </span>
-                    </div>
 
-                    <h3 className="mb-2 text-lg font-semibold text-foreground break-words">{asset.label}</h3>
-                    <p className="mb-2 break-all text-sm text-muted-foreground">{asset.originalName}</p>
-                    <p className="mb-6 text-xs text-muted-foreground">
-                      {formatAssetDate(asset.uploadedAt)}
-                    </p>
+                      <div className="min-w-0">
+                        <h3 className="text-sm font-semibold text-foreground truncate">{asset.label}</h3>
+                        <p className="text-[11px] text-muted-foreground truncate">{asset.originalName}</p>
+                      </div>
 
-                    <div className="mt-auto">
                       <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
                         <a href={asset.fileUrl} download={asset.originalName}>
                           <Download className="mr-2 h-4 w-4" />

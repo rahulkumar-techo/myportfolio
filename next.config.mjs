@@ -8,6 +8,7 @@ const nextConfig = {
       { protocol: "https", hostname: "res.cloudinary.com" },
       { protocol: "https", hostname: "github.com" },
       { protocol: "https", hostname: "avatars.githubusercontent.com" },
+      { protocol: "https", hostname: "cdn.simpleicons.org" },
       { protocol: "https", hostname: "lh3.googleusercontent.com" },
       { protocol: "https", hostname: "lh4.googleusercontent.com" },
       { protocol: "https", hostname: "lh5.googleusercontent.com" },

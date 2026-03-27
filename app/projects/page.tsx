@@ -18,7 +18,31 @@ import {
   PaginationPrevious
 } from '@/components/ui/pagination';
 
+function clampText(value: string, maxChars: number) {
+  const trimmed = value.replace(/\s+/g, ' ').trim();
+  if (trimmed.length <= maxChars) {
+    return trimmed;
+  }
+  return `${trimmed.slice(0, maxChars - 1).trim()}...`;
+}
+
+function getProjectSummary(project: Project) {
+  const problem = project.problem || project.description;
+  const solution = project.solution || project.longDescription || project.description;
+  const impact = project.results || 'Performance gains, clearer UX, and stronger SEO signals.';
+  const techStack = project.techStack.length > 0 ? project.techStack.join(', ') : 'Modern full stack tooling.';
+
+  return {
+    problem: clampText(problem, 140),
+    solution: clampText(solution, 140),
+    techStack: clampText(techStack, 140),
+    impact: clampText(impact, 140),
+  };
+}
+
 function ProjectCard({ project, index }: { project: Project; index: number }) {
+  const summary = getProjectSummary(project);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 30 }}
@@ -90,6 +114,25 @@ function ProjectCard({ project, index }: { project: Project; index: number }) {
           <p className="text-sm text-muted-foreground mb-4">
             {project.description}
           </p>
+
+          <dl className="mb-4 space-y-2 text-xs text-muted-foreground">
+            <div className="flex gap-2">
+              <dt className="font-semibold text-foreground">Problem</dt>
+              <dd className="line-clamp-2">{summary.problem}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-semibold text-foreground">Solution</dt>
+              <dd className="line-clamp-2">{summary.solution}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-semibold text-foreground">Tech Stack</dt>
+              <dd className="line-clamp-2">{summary.techStack}</dd>
+            </div>
+            <div className="flex gap-2">
+              <dt className="font-semibold text-foreground">Impact</dt>
+              <dd className="line-clamp-2">{summary.impact}</dd>
+            </div>
+          </dl>
 
           {/* Tech Stack */}
           <div className="flex flex-wrap gap-2 mb-4">

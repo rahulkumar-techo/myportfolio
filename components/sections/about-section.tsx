@@ -18,8 +18,11 @@ export default function AboutSection() {
   const avatarUrl = !isGoogleAvatar && rawAvatarUrl ? rawAvatarUrl : '/avatar.png'
   const profileName = profile?.profile.name || profile?.settings.siteTitle || 'Portfolio Owner'
   const location = profile?.settings.location || 'Location not set'
-  const email = profile?.settings.contactEmail || profile?.profile.email || 'Email not set'
-  const bio = profile?.settings.bio || 'Use admin settings to describe your background and strengths.'
+  const emailValue = profile?.settings.contactEmail || profile?.profile.email || 'Email not set'
+  const displayEmail = emailValue.includes('@')
+    ? emailValue.replace('@', ' [at] ').replace(/\./g, ' [dot] ')
+    : emailValue
+  const bio = profile?.settings.bio || 'Full Stack Developer and Next.js Developer focused on fast, SEO-ready web apps, Node.js APIs, and AI-driven experiences.'
   const stats = [
     {
       icon: Calendar,
@@ -82,7 +85,7 @@ export default function AboutSection() {
 
           <p className="text-muted-foreground max-w-xl mx-auto text-sm md:text-base">
 
-            Passionate about creating innovative solutions that make a difference
+            Full Stack Developer, Next.js Developer, and Node.js Developer focused on SEO-friendly, high-impact web products.
 
           </p>
 
@@ -127,7 +130,7 @@ export default function AboutSection() {
                   <div className="relative shrink-0">
                     <div className="w-16 h-16 md:w-24 md:h-24 rounded-2xl overflow-hidden bg-gradient-to-br from-primary/20 to-accent/20 flex items-center justify-center">
                       <Image
-                        alt="Profile avatar"
+                        alt={`${profileName} avatar`}
                         src={avatarUrl}
                         width={100}
                         height={100}
@@ -157,7 +160,7 @@ export default function AboutSection() {
 
                       <span className="flex items-center gap-1 break-all">
                         <Mail className="w-4 h-4" />
-                        {email}
+                        {displayEmail}
                       </span>
 
                     </div>
@@ -238,8 +241,8 @@ export default function AboutSection() {
 
               <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
 
-                I believe in crafting experiences that are not just functional but memorable.
-                Every project is an opportunity to push boundaries.
+                I craft experiences that are functional, memorable, and discoverable. As a Full Stack Developer,
+                I balance UX, performance, and technical SEO so pages load fast and rank well.
 
               </p>
 
@@ -260,8 +263,8 @@ export default function AboutSection() {
 
               <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
 
-                The intersection of technology and creativity fascinates me.
-                I thrive on solving complex problems with elegant solutions.
+                The intersection of technology and creativity fascinates me. I build Next.js and Node.js systems
+                that solve real business problems with simple, scalable architecture.
 
               </p>
 
@@ -283,7 +286,7 @@ export default function AboutSection() {
               <p className="text-muted-foreground text-sm md:text-base leading-relaxed">
 
                 When I am not coding you will find me exploring new technologies,
-                contributing to open-source, or enjoying a cup of coffee.
+                contributing to open-source, or refining this AI Developer Portfolio.
 
               </p>
 

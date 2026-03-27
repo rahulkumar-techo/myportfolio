@@ -4,7 +4,7 @@ import Footer from '@/components/footer';
 import dynamic from 'next/dynamic';
 import HomeClient from '@/components/home-client';
 import HeroSection from '@/components/sections/hero-section';
-import AboutSection from '@/components/sections/about-section';
+import AboutPreviewSection from '@/components/sections/about-preview-section';
 import PublicSWRProvider from '@/components/public-swr-provider';
 import { getPublicHomeData, serializeForClient } from '@/lib/public-data';
 import PageLoader from '@/components/page-loader';
@@ -15,17 +15,27 @@ export const revalidate = 60;
 export async function generateMetadata(): Promise<Metadata> {
   const homeData = await getPublicHomeData();
   const siteTitle = homeData?.profile?.profile?.name || homeData?.profile?.settings?.siteTitle || 'Rahul Kumar';
-  const bio = homeData?.profile?.settings?.bio || 'Full Stack Developer specializing in Next.js, Node.js, AI, and microservices.';
-  const description = bio.length > 155 ? `${bio.slice(0, 152).trim()}...` : bio;
+  const fallbackDescription =
+    'Rahul Kumar is a Full Stack Developer, Next.js Developer, and Node.js Developer - an AI Developer Portfolio with projects, case studies, skills, and contact.';
+  const description = fallbackDescription;
 
   return {
-    title: 'Full Stack Developer | Next.js, Node.js, AI, Microservices',
+    title: 'Full Stack Developer | Next.js Developer | Node.js Developer | AI Developer Portfolio',
     description,
+    keywords: [
+      'Full Stack Developer',
+      'Next.js Developer',
+      'Node.js Developer',
+      'AI Developer Portfolio',
+      'React Developer',
+      'TypeScript Developer',
+      'Portfolio Website',
+    ],
     alternates: {
       canonical: siteUrl,
     },
     openGraph: {
-      title: 'Full Stack Developer | Next.js, Node.js, AI, Microservices',
+      title: 'Full Stack Developer | Next.js Developer | Node.js Developer | AI Developer Portfolio',
       description,
       url: siteUrl,
       type: 'website',
@@ -40,7 +50,7 @@ export async function generateMetadata(): Promise<Metadata> {
     },
     twitter: {
       card: 'summary_large_image',
-      title: 'Full Stack Developer | Next.js, Node.js, AI, Microservices',
+      title: 'Full Stack Developer | Next.js Developer | Node.js Developer | AI Developer Portfolio',
       description,
       images: [`${siteUrl}/og_image.png`],
     },
@@ -78,8 +88,8 @@ export default async function Home() {
         <HeroSection />
         
         {/* About Section */}
-        <AboutSection />
-        
+        <AboutPreviewSection />
+
         {/* Skills Section */}
         <div className="content-visibility-auto">
           <SkillsSection />

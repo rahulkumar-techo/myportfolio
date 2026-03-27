@@ -6,16 +6,33 @@ import { ChevronDown, Sparkles, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { usePublicProfile } from '@/hooks/usePublicProfile';
+import TypingText from '@/components/typing-text';
 // import HeroScene from '@/components/three/hero-scene';
 
 export default function HeroSection() {
   const ref = useRef<HTMLElement | null>(null);
   const { profile } = usePublicProfile();
 
-  const headingName = profile?.settings.siteTitle || profile?.profile.name || 'Rahul Kumar';
+  const DEFAULT_HERO = {
+    name: 'Rahul Kumar',
+    tagline: 'Full Stack Developer | Next.js, Node.js, and AI',
+    bio:
+      'Rahul Kumar builds fast, scalable web applications and AI-powered products that turn traffic into customers, with clean architecture, technical SEO, and measurable impact.',
+    topSkills: ['React', 'Next.js', 'TypeScript', 'Node.js']
+  };
+
+  const headingName = profile?.settings.siteTitle || profile?.profile.name || DEFAULT_HERO.name;
   const techPreview = profile?.highlights.topSkills?.length
     ? profile.highlights.topSkills
-    : ['React', 'Next.js', 'TypeScript', 'Node.js'];
+    : DEFAULT_HERO.topSkills;
+  const taglineRaw =
+    profile?.settings.siteTagline || DEFAULT_HERO.tagline;
+  const taglineParts = taglineRaw.split('|').map((part) => part.trim()).filter(Boolean);
+  const taglineLead = taglineParts.length > 1 ? `${taglineParts[0]} | ` : taglineRaw;
+  const taglineTyped = taglineParts.length > 1 ? taglineParts.slice(1).join(' | ') : '';
+  const heroBio =
+    profile?.settings.bio ||
+    `${headingName} builds fast, scalable web applications and AI-powered products that turn traffic into customers, with clean architecture, technical SEO, and measurable impact.`;
 
   return (
     <section id="hero" ref={ref} className="relative min-h-screen overflow-hidden">
@@ -72,9 +89,18 @@ export default function HeroSection() {
             transition={{ delay: 1 }}
             className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight"
           >
-            <span className="text-foreground">
-              Full Stack Developer | Next.js, Node.js, AI, Microservices
-            </span>
+            <span className="text-foreground">{taglineLead}</span>
+            {taglineTyped ? (
+              <span className="text-primary">
+                <TypingText
+                  text={taglineTyped}
+                  speed={38}
+                  delay={300}
+                  loop
+                  pause={1600}
+                />
+              </span>
+            ) : null}
           </motion.h1>
 
           {/* Subtitle */}
@@ -84,7 +110,7 @@ export default function HeroSection() {
             transition={{ delay: 1.2 }}
             className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed"
           >
-            {`${headingName} builds fast, scalable web applications and AI-powered products that convert visitors into customers.`}
+            {heroBio}
           </motion.p>
 
           {/* CTA Buttons */}
