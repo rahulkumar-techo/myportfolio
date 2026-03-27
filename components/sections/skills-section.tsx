@@ -170,8 +170,7 @@ function SkillOrb({
 
     const techKey = resolveTechKey(skill)
     const tech = TECH_STACK[techKey]
-    const logoUrl = getTechLogoUrl(skill)
-    const mono = isMonochromeLogo(skill)
+    const Icon = tech?.icon ?? Code
 
     const angle = (index / total) * Math.PI * 2
     const x = Math.cos(angle) * radius
@@ -217,13 +216,9 @@ flex items-center justify-center
 group-hover:scale-110 transition
 ">
 
-                    <Image
-                        src={logoUrl || "/placeholder-logo.svg"}
-                        alt={`${skill.name} logo`}
-                        title={skill.name}
-                        width={28}
-                        height={28}
-                        className={`w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7${mono ? " dark:invert" : ""} object-contain`}
+                    <Icon
+                        className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
+                        style={{ color: tech?.color || "var(--color-primary)" }}
                     />
 
                 </div>
