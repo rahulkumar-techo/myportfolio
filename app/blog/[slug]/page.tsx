@@ -80,7 +80,7 @@ export default async function BlogPostPage({
     notFound();
   }
 
-  const html = renderMarkdownToHtml(post.content);
+  const html = await renderMarkdownToHtml(post.content);
   const relatedPosts = (await fetchBlogs())
     .filter((item) => item.slug !== post.slug)
     .slice(0, 3);

@@ -1,96 +1,48 @@
-function escapeHtml(value: string) {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-}
+import { unified } from "unified";
+import remarkParse from "remark-parse";
+import remarkGfm from "remark-gfm";
+import remarkRehype from "remark-rehype";
+import rehypeRaw from "rehype-raw";
+import rehypeSanitize, { defaultSchema } from "rehype-sanitize";
+import rehypeStringify from "rehype-stringify";
 
-function renderInline(value: string) {
-  let output = escapeHtml(value);
-  output = output.replace(/`([^`]+)`/g, "<code>$1</code>");
-  output = output.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
-  output = output.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2">$1</a>');
-  return output;
-}
+const sanitizeSchema = {
+  ...defaultSchema,
+  tagNames: Array.from(
+    new Set([...(defaultSchema.tagNames ?? []), "img", "h1", "h2", "h3", "h4", "h5", "h6"])
+  ),
+  attributes: {
+    ...(defaultSchema.attributes ?? {}),
+    a: [
+      ...((defaultSchema.attributes?.a as string[] | undefined) ?? []),
+      "href",
+      "title",
+      "target",
+      "rel",
+    ],
+    img: ["src", "alt", "title", "width", "height", "loading", "decoding"],
+    code: [
+      ...((defaultSchema.attributes?.code as string[] | undefined) ?? []),
+      "className",
+    ],
+    pre: [
+      ...((defaultSchema.attributes?.pre as string[] | undefined) ?? []),
+      "className",
+    ],
+  },
+};
 
-export function renderMarkdownToHtml(markdown: string) {
-  const lines = markdown.split(/\r?\n/);
-  let html = "";
-  let inList = false;
-  let inCode = false;
-  let codeBuffer: string[] = [];
-  let paragraphBuffer: string[] = [];
+export async function renderMarkdownToHtml(markdown: string) {
+  if (!markdown?.trim()) return "";
 
-  const flushParagraph = () => {
-    if (paragraphBuffer.length === 0) return;
-    html += `<p>${renderInline(paragraphBuffer.join(" "))}</p>`;
-    paragraphBuffer = [];
-  };
+  const file = await unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkRehype, { allowDangerousHtml: true })
+    .use(rehypeRaw)
+    .use(rehypeSanitize, sanitizeSchema)
+    .use(rehypeStringify)
+    .process(markdown);
 
-  const closeList = () => {
-    if (!inList) return;
-    html += "</ul>";
-    inList = false;
-  };
-
-  const flushCode = () => {
-    if (codeBuffer.length === 0) return;
-    html += `<pre><code>${escapeHtml(codeBuffer.join("\n"))}</code></pre>`;
-    codeBuffer = [];
-  };
-
-  for (const rawLine of lines) {
-    const line = rawLine.trim();
-
-    if (line.startsWith("```")) {
-      if (inCode) {
-        inCode = false;
-        flushCode();
-      } else {
-        flushParagraph();
-        closeList();
-        inCode = true;
-      }
-      continue;
-    }
-
-    if (inCode) {
-      codeBuffer.push(rawLine);
-      continue;
-    }
-
-    if (line === "") {
-      flushParagraph();
-      closeList();
-      continue;
-    }
-
-    const headingMatch = line.match(/^(#{1,3})\s+(.*)$/);
-    if (headingMatch) {
-      flushParagraph();
-      closeList();
-      const level = headingMatch[1].length;
-      html += `<h${level}>${renderInline(headingMatch[2])}</h${level}>`;
-      continue;
-    }
-
-    const listMatch = line.match(/^[-*]\s+(.*)$/);
-    if (listMatch) {
-      flushParagraph();
-      if (!inList) {
-        html += "<ul>";
-        inList = true;
-      }
-      html += `<li>${renderInline(listMatch[1])}</li>`;
-      continue;
-    }
-
-    paragraphBuffer.push(line);
-  }
-
-  flushParagraph();
-  closeList();
-  flushCode();
-
-  return html;
+  return String(file);
 }
