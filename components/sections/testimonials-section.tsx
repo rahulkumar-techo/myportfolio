@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { useAuth } from '@/hooks/useAuth';
+import { SessionProvider } from 'next-auth/react';
 import { buildCloudinaryImageUrl, isCloudinaryUrl } from '@/lib/cloudinary-images';
 import { useTestimonials } from '@/hooks/useTestimonials';
 import type { Testimonial } from '@/lib/types';
@@ -128,7 +129,7 @@ function TestimonialCard({ testimonial, index }: { testimonial: Testimonial; ind
   );
 }
 
-export default function TestimonialsSection() {
+function TestimonialsSectionInner() {
   const ref = useRef(null);
   const isInView = useInView(ref, { once: true, margin: '-100px' });
   const { testimonials, isLoading, createTestimonial } = useTestimonials();
@@ -444,5 +445,13 @@ export default function TestimonialsSection() {
         </div>
       </div>
     </section>
+  );
+}
+
+export default function TestimonialsSection() {
+  return (
+    <SessionProvider>
+      <TestimonialsSectionInner />
+    </SessionProvider>
   );
 }
