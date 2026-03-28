@@ -12,6 +12,7 @@ const navItems = [
   { href: '/about', label: 'About' },
   { href: '/experience', label: 'Experience' },
   { href: '/contact', label: 'Contact' },
+  { href: '/notifications', label: 'Notifications' },
 ];
 const dropdownItems = [
   { href: '/projects', label: 'Projects' },

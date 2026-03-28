@@ -1,6 +1,159 @@
-// Generate HTML email template for new project notification
+// Generate HTML email templates for content notifications
 
-interface EmailTemplateProps {
+type ContentType = "project" | "blog" | "asset";
+
+interface NotificationEmailProps {
+  username: string;
+  email: string;
+  userAvatar: string;
+  contentTitle: string;
+  contentDescription: string;
+  contentUrl: string;
+  contentType: ContentType;
+  companyLogo: string;
+  unsubscribeUrl?: string;
+}
+
+function getContentLabel(type: ContentType) {
+  switch (type) {
+    case "blog":
+      return "New Blog Post";
+    case "asset":
+      return "New Asset Uploaded";
+    default:
+      return "New Project Published";
+  }
+}
+
+function getCtaLabel(type: ContentType) {
+  switch (type) {
+    case "blog":
+      return "Read Blog";
+    case "asset":
+      return "View Asset";
+    default:
+      return "View Project";
+  }
+}
+
+export function generateNotificationEmailTemplate({
+  username,
+  email,
+  userAvatar,
+  contentTitle,
+  contentDescription,
+  contentUrl,
+  contentType,
+  companyLogo,
+  unsubscribeUrl,
+}: NotificationEmailProps) {
+  const title = getContentLabel(contentType);
+  const ctaLabel = getCtaLabel(contentType);
+
+  return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <title>${title}</title>
+  </head>
+
+  <body style="font-family: Arial, sans-serif; background:#f5f6fa; padding:20px;">
+    <div style="max-width:620px; margin:auto; background:white; border-radius:14px; overflow:hidden; border:1px solid #e6e8ee;">
+      <div style="background:#0f172a; padding:24px; text-align:center;">
+        <img src="${companyLogo}" alt="Portfolio" width="120" style="display:inline-block;" />
+      </div>
+
+      <div style="padding:28px 32px 8px; text-align:center;">
+        <img src="${userAvatar}" width="64" height="64" style="border-radius:50%; border:2px solid #e2e8f0;" />
+        <h2 style="margin:16px 0 6px; color:#0f172a;">Hello ${username}</h2>
+        <p style="margin:0; color:#64748b; font-size:13px;">${email}</p>
+      </div>
+
+      <div style="padding:24px 32px;">
+        <h3 style="margin-top:0; color:#0f172a;">${title}</h3>
+        <p style="color:#475569; line-height:1.6;">
+          A fresh update just landed on the portfolio. Here is the latest drop:
+        </p>
+
+        <div style="background:#f8fafc; border-radius:12px; padding:18px; border:1px solid #e2e8f0;">
+          <h4 style="margin:0 0 8px; color:#0f172a;">${contentTitle}</h4>
+          <p style="margin:0; color:#64748b; line-height:1.6;">
+            ${contentDescription}
+          </p>
+        </div>
+
+        <div style="text-align:center; margin:28px 0 10px;">
+          <a href="${contentUrl}"
+             style="background:#4f46e5; color:white; padding:12px 22px; text-decoration:none; border-radius:8px; font-weight:600; display:inline-block;">
+             ${ctaLabel}
+          </a>
+        </div>
+      </div>
+
+      <div style="background:#f1f5f9; padding:16px 24px; text-align:center; font-size:12px; color:#64748b;">
+        <p style="margin:0;">You are receiving this update because you subscribed on the portfolio site.</p>
+        ${unsubscribeUrl ? `<p style="margin:6px 0 0;"><a href="${unsubscribeUrl}" style="color:#4f46e5;">Unsubscribe</a></p>` : ""}
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+}
+
+interface ConfirmationEmailProps {
+  username: string;
+  email: string;
+  userAvatar: string;
+  confirmUrl: string;
+  companyLogo: string;
+}
+
+export function generateConfirmationEmailTemplate({
+  username,
+  email,
+  userAvatar,
+  confirmUrl,
+  companyLogo,
+}: ConfirmationEmailProps) {
+  return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Confirm Your Subscription</title>
+  </head>
+  <body style="font-family: Arial, sans-serif; background:#f5f6fa; padding:20px;">
+    <div style="max-width:620px; margin:auto; background:white; border-radius:14px; overflow:hidden; border:1px solid #e6e8ee;">
+      <div style="background:#0f172a; padding:24px; text-align:center;">
+        <img src="${companyLogo}" alt="Portfolio" width="120" style="display:inline-block;" />
+      </div>
+      <div style="padding:28px 32px 8px; text-align:center;">
+        <img src="${userAvatar}" width="64" height="64" style="border-radius:50%; border:2px solid #e2e8f0;" />
+        <h2 style="margin:16px 0 6px; color:#0f172a;">Confirm your subscription</h2>
+        <p style="margin:0; color:#64748b; font-size:13px;">${email}</p>
+      </div>
+      <div style="padding:24px 32px;">
+        <p style="color:#475569; line-height:1.6;">
+          Hi ${username}, please confirm your email to start receiving portfolio updates.
+        </p>
+        <div style="text-align:center; margin:28px 0 10px;">
+          <a href="${confirmUrl}"
+             style="background:#4f46e5; color:white; padding:12px 22px; text-decoration:none; border-radius:8px; font-weight:600; display:inline-block;">
+             Confirm Subscription
+          </a>
+        </div>
+        <p style="color:#94a3b8; font-size:12px; text-align:center;">
+          If you did not request updates, you can ignore this email.
+        </p>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+}
+
+interface ProjectTemplateProps {
   username: string;
   email: string;
   userAvatar: string;
@@ -8,6 +161,7 @@ interface EmailTemplateProps {
   projectDescription: string;
   projectUrl: string;
   companyLogo: string;
+  unsubscribeUrl?: string;
 }
 
 export function generateProjectEmailTemplate({
@@ -18,70 +172,17 @@ export function generateProjectEmailTemplate({
   projectDescription,
   projectUrl,
   companyLogo,
-}: EmailTemplateProps) {
-
-  return `
-  <!DOCTYPE html>
-  <html>
-  <head>
-    <meta charset="UTF-8">
-    <title>New Project Published</title>
-  </head>
-
-  <body style="font-family: Arial, sans-serif; background:#f5f6fa; padding:20px;">
-
-    <div style="max-width:600px; margin:auto; background:white; border-radius:10px; overflow:hidden;">
-
-      <!-- Company Logo -->
-      <div style="background:#111; padding:20px; text-align:center;">
-        <img src="${companyLogo}" alt="Company Logo" width="120"/>
-      </div>
-
-      <!-- User Info -->
-      <div style="padding:20px; text-align:center;">
-        <img src="${userAvatar}" width="70" height="70" style="border-radius:50%;" />
-        <h2>Hello ${username} 👋</h2>
-        <p style="color:#777;">${email}</p>
-      </div>
-
-      <!-- Project Message -->
-      <div style="padding:20px;">
-        <h3>🚀 New Project Published</h3>
-
-        <p>
-          A new project has been added to our portfolio.
-          Check it out and explore the latest work.
-        </p>
-
-        <h4>${projectTitle}</h4>
-
-        <p style="color:#555;">
-          ${projectDescription}
-        </p>
-
-        <!-- Button -->
-        <div style="text-align:center; margin:30px 0;">
-          <a href="${projectUrl}"
-             style="
-             background:#4f46e5;
-             color:white;
-             padding:12px 20px;
-             text-decoration:none;
-             border-radius:6px;
-             font-weight:bold;">
-             View Project
-          </a>
-        </div>
-      </div>
-
-      <!-- Footer -->
-      <div style="background:#f1f1f1; padding:15px; text-align:center; font-size:12px; color:#666;">
-        © 2026 Your Company. All rights reserved.
-      </div>
-
-    </div>
-
-  </body>
-  </html>
-  `;
+  unsubscribeUrl,
+}: ProjectTemplateProps) {
+  return generateNotificationEmailTemplate({
+    username,
+    email,
+    userAvatar,
+    contentTitle: projectTitle,
+    contentDescription: projectDescription,
+    contentUrl: projectUrl,
+    contentType: "project",
+    companyLogo,
+    unsubscribeUrl
+  });
 }

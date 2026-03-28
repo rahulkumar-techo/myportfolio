@@ -2,8 +2,7 @@ import { NextResponse } from "next/server";
 import { requireAdminApiSession } from "@/lib/auth";
 import { createPortfolioItem, listPortfolioItems } from "@/repositories/portfolio-repository";
 import { removeTempProjectUploadsByPublicIds } from "@/repositories/temp-upload-repository";
-import { sendEmailsToUsers } from "@/utils/sendEmailsToUsers";
-import { findNonAdminUsers } from "@/repositories/user-repository";
+import { notifySubscribers } from "@/utils/notify-subscribers";
 import { slugify } from "@/utils/slugify";
 
 export async function GET() {
@@ -114,7 +113,7 @@ export async function POST(request: Request) {
     const createMs = Date.now() - startMs;
     console.log("createPortfolioItem ms:", createMs);
 
-    // send email notification to non-admin users
+    // notify subscribers about the new project
     if (savedProject) {
       const usedPublicIds = [
         newProject.coverImage?.publicId,
@@ -123,12 +122,16 @@ export async function POST(request: Request) {
 
       await removeTempProjectUploadsByPublicIds(session.user.id, usedPublicIds)
 
-      const users = await findNonAdminUsers();
-      await sendEmailsToUsers(users, newProject, {
-        fireAndForget: true,
-        delayMs: 200,
-        retryAttempts: 2,
-        retryDelayMs: 400
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+      const projectUrl = baseUrl
+        ? `${baseUrl}/projects/${newProject.slug}`
+        : `/projects/${newProject.slug}`;
+
+      await notifySubscribers({
+        type: "project",
+        title: newProject.title,
+        description: newProject.description,
+        url: projectUrl
       });
     }
 

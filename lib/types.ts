@@ -168,6 +168,34 @@ export interface SiteSettings {
   adminNotificationSound?: 'none' | 'beep' | 'chime' | 'soft';
 }
 
+export interface NotificationSubscriber {
+  id: string;
+  name: string;
+  email: string;
+  status: 'pending' | 'subscribed' | 'unsubscribed';
+  preferences: {
+    blogs: boolean;
+    projects: boolean;
+    assets: boolean;
+  };
+  source?: string;
+  createdAt?: string | Date;
+  updatedAt?: string | Date | null;
+}
+
+export interface PushSubscriber {
+  id: string;
+  token: string;
+  preferences: {
+    blogs: boolean;
+    projects: boolean;
+    assets: boolean;
+  };
+  userAgent?: string;
+  createdAt?: string | Date;
+  lastSeenAt?: string | Date | null;
+}
+
 export interface PublicProfileSummary {
   profile: {
     name: string;

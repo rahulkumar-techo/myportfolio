@@ -3,6 +3,7 @@ import { requireAdminApiSession } from "@/lib/auth";
 import { createPortfolioItem, listPortfolioItems } from "@/repositories/portfolio-repository";
 import { slugify } from "@/utils/slugify";
 import { estimateReadingTime } from "@/lib/blog";
+import { notifySubscribers } from "@/utils/notify-subscribers";
 
 function normalizeTags(value: unknown) {
   if (Array.isArray(value)) {
@@ -81,6 +82,18 @@ export async function POST(request: Request) {
   };
 
   const created = await createPortfolioItem("blogs", newBlog, session.user.id);
+
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const blogUrl = baseUrl
+    ? `${baseUrl}/blog/${newBlog.slug}`
+    : `/blog/${newBlog.slug}`;
+
+  await notifySubscribers({
+    type: "blog",
+    title: newBlog.title,
+    description: newBlog.description,
+    url: blogUrl
+  });
 
   return NextResponse.json({ success: true, data: created }, { status: 201 });
 }

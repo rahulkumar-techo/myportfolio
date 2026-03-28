@@ -1,6 +1,7 @@
 import Navigation from '@/components/navigation'
 import Footer from '@/components/footer'
 import ContactSection from '@/components/sections/contact-section'
+import ManageNotifications from '@/components/notifications/manage-notifications'
 import PublicSWRProvider from '@/components/public-swr-provider'
 import { getPublicProfileData, serializeForClient } from '@/lib/public-data'
 
@@ -18,6 +19,7 @@ export default async function ContactPage() {
       <main className="relative">
         <Navigation />
         <ContactSection />
+        <ManageNotifications />
         <Footer />
       </main>
     </PublicSWRProvider>

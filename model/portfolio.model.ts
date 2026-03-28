@@ -210,6 +210,62 @@ export const SettingsSchema = new Schema({
 
 SettingsSchema.index({ ownerId: 1 }, { unique: true })
 
+// Email subscribers for notifications (non-auth visitors).
+export const NotificationSubscriberSchema = new Schema({
+  ...ownerField,
+  email: { type: String, required: true, lowercase: true, trim: true },
+  name: { type: String, default: "" },
+  status: {
+    type: String,
+    enum: ["pending", "subscribed", "unsubscribed"],
+    default: "pending"
+  },
+  verificationToken: { type: String, default: null },
+  verificationExpiresAt: { type: Date, default: null },
+  preferences: {
+    blogs: { type: Boolean, default: true },
+    projects: { type: Boolean, default: true },
+    assets: { type: Boolean, default: true }
+  },
+  source: { type: String, default: "website" },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: null }
+})
+
+NotificationSubscriberSchema.index({ ownerId: 1, email: 1 }, { unique: true })
+
+// Push notification tokens (FCM).
+export const PushSubscriberSchema = new Schema({
+  ...ownerField,
+  token: { type: String, required: true },
+  preferences: {
+    blogs: { type: Boolean, default: true },
+    projects: { type: Boolean, default: true },
+    assets: { type: Boolean, default: true }
+  },
+  userAgent: { type: String, default: "" },
+  createdAt: { type: Date, default: Date.now },
+  lastSeenAt: { type: Date, default: Date.now }
+})
+
+PushSubscriberSchema.index({ ownerId: 1, token: 1 }, { unique: true })
+
+// Notification feed entries (visible to subscribers).
+export const NotificationLogSchema = new Schema({
+  ...ownerField,
+  type: {
+    type: String,
+    enum: ["project", "blog", "asset"],
+    required: true
+  },
+  title: { type: String, required: true },
+  description: { type: String, default: "" },
+  url: { type: String, default: "" },
+  createdAt: { type: Date, default: Date.now }
+})
+
+NotificationLogSchema.index({ ownerId: 1, createdAt: -1 })
+
 // Models are reused during hot reload to avoid recompilation errors.
 export const ProjectModel = models.Project || model("Project", ProjectSchema)
 export const BlogPostModel = models.BlogPost || model("BlogPost", BlogPostSchema)
@@ -222,3 +278,9 @@ export const TempProjectUploadModel =
   models.TempProjectUpload || model("TempProjectUpload", TempProjectUploadSchema)
 export const TempAssetUploadModel = models.TempAssetUpload || model("TempAssetUpload", TempAssetUploadSchema)
 export const SettingsModel = models.Settings || model("Settings", SettingsSchema)
+export const NotificationSubscriberModel =
+  models.NotificationSubscriber || model("NotificationSubscriber", NotificationSubscriberSchema)
+export const PushSubscriberModel =
+  models.PushSubscriber || model("PushSubscriber", PushSubscriberSchema)
+export const NotificationLogModel =
+  models.NotificationLog || model("NotificationLog", NotificationLogSchema)

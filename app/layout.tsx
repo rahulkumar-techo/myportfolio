@@ -9,6 +9,7 @@ import './globals.css'
 import AuthProvider from '@/components/provider/auth-provider'
 import { ThemeProvider } from '@/components/theme-provider'
 import { siteUrl } from "@/utils/meta-data"
+import NotificationPrompt from "@/components/notifications/notification-prompt"
 
 export { metadata } from "@/utils/meta-data"
 
@@ -108,6 +109,7 @@ export default function RootLayout({
         >
           <AuthProvider>
             {children}
+            <NotificationPrompt />
           </AuthProvider>
         </ThemeProvider>
 

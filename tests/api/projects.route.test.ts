@@ -6,8 +6,7 @@ import { NextResponse } from "next/server"
 import { GET, POST } from "@/app/api/projects/route"
 import { createPortfolioItem, listPortfolioItems } from "@/repositories/portfolio-repository"
 import { requireAdminApiSession } from "@/lib/auth"
-import { findNonAdminUsers } from "@/repositories/user-repository"
-import { sendEmailsToUsers } from "@/utils/sendEmailsToUsers"
+import { notifySubscribers } from "@/utils/notify-subscribers"
 
 jest.mock("@/repositories/portfolio-repository", () => ({
   createPortfolioItem: jest.fn(),
@@ -18,19 +17,14 @@ jest.mock("@/lib/auth", () => ({
   requireAdminApiSession: jest.fn()
 }))
 
-jest.mock("@/repositories/user-repository", () => ({
-  findNonAdminUsers: jest.fn()
-}))
-
-jest.mock("@/utils/sendEmailsToUsers", () => ({
-  sendEmailsToUsers: jest.fn()
+jest.mock("@/utils/notify-subscribers", () => ({
+  notifySubscribers: jest.fn()
 }))
 
 const mockedCreatePortfolioItem = jest.mocked(createPortfolioItem)
 const mockedListPortfolioItems = jest.mocked(listPortfolioItems)
 const mockedRequireAdminApiSession = jest.mocked(requireAdminApiSession)
-const mockedFindNonAdminUsers = jest.mocked(findNonAdminUsers)
-const mockedSendEmailsToUsers = jest.mocked(sendEmailsToUsers)
+const mockedNotifySubscribers = jest.mocked(notifySubscribers)
 
 describe("/api/projects route", () => {
   let logSpy: jest.SpyInstance
@@ -116,8 +110,7 @@ describe("/api/projects route", () => {
       description: "A personal site",
       category: "Web"
     } as any)
-    mockedFindNonAdminUsers.mockResolvedValue([{ name: "User", email: "u@example.com" }] as any)
-    mockedSendEmailsToUsers.mockResolvedValue(undefined as any)
+    mockedNotifySubscribers.mockResolvedValue(undefined as any)
 
     const request = new Request("http://localhost/api/projects", {
       method: "POST",
@@ -144,15 +137,10 @@ describe("/api/projects route", () => {
       }),
       "admin-1"
     )
-    expect(mockedFindNonAdminUsers).toHaveBeenCalled()
-    expect(mockedSendEmailsToUsers).toHaveBeenCalledWith(
-      [{ name: "User", email: "u@example.com" }],
-      expect.objectContaining({ title: "Portfolio" }),
+    expect(mockedNotifySubscribers).toHaveBeenCalledWith(
       expect.objectContaining({
-        fireAndForget: true,
-        delayMs: 200,
-        retryAttempts: 2,
-        retryDelayMs: 400
+        type: "project",
+        title: "Portfolio"
       })
     )
   })

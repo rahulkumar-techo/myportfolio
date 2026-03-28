@@ -17,6 +17,7 @@ import {
   Menu,
   User,
   HardDrive,
+  Bell,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -41,6 +42,7 @@ const navItems = [
   { href: '/admin/testimonials', icon: MessageSquare, label: 'Testimonials' },
   { href: '/admin/messages', icon: Mail, label: 'Messages' },
   { href: '/admin/assets', icon: FolderOpen, label: 'Assets' },
+  { href: '/admin/notifications', icon: Bell, label: 'Notifications' },
   { href: '/admin/settings', icon: Settings, label: 'Settings' },
 ];
 

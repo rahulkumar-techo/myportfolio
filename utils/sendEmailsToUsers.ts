@@ -7,33 +7,37 @@ type EmailUser = {
   image?: string;
 };
 
-type EmailProject = {
+type NotificationType = "project" | "blog" | "asset";
+
+type EmailContent = {
+  type?: NotificationType;
   title: string;
   description: string;
-  slug?: string;
-  id?: string;
+  url: string;
 };
 
 export async function sendEmailsToUsers(
   users: EmailUser[],
-  project: EmailProject,
+  content: EmailContent,
   options?: {
     delayMs?: number;
     retryAttempts?: number;
     retryDelayMs?: number;
     maxDurationMs?: number;
     fireAndForget?: boolean;
+    unsubscribeUrl?: string;
   }
 ) {
   if (!users?.length) return;
 
   const payload = {
     users,
-    project,
+    content,
     delayMs: options?.delayMs ?? 250,
     retryAttempts: options?.retryAttempts ?? 3,
     retryDelayMs: options?.retryDelayMs ?? 500,
-    maxDurationMs: options?.maxDurationMs
+    maxDurationMs: options?.maxDurationMs,
+    unsubscribeUrl: options?.unsubscribeUrl
   };
 
   if (options?.fireAndForget) {

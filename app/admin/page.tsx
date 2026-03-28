@@ -13,6 +13,7 @@ import {
   Clock,
   Settings,
   Loader2,
+  Bell,
   LogOut,
   Shield,
   Trash2,
@@ -85,6 +86,7 @@ export default function AdminDashboard() {
     { label: 'Manage Skills', icon: Cpu, href: '/admin/skills' },
     { label: 'Manage Experience', icon: Briefcase, href: '/admin/experience' },
     { label: 'Open Assets', icon: FolderOpen, href: '/admin/assets' },
+    { label: 'Notifications', icon: Bell, href: '/admin/notifications' },
     { label: 'Open Settings', icon: Settings, href: '/admin/settings' },
   ];
 

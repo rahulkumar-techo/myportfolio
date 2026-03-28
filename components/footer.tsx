@@ -13,6 +13,7 @@ const footerLinks = [
   { href: '/blog', label: 'Blog' },
   { href: '/experience', label: 'Experience' },
   { href: '/contact', label: 'Contact' },
+  { href: '/contact#notification-preferences', label: 'Notifications' },
   { href: '/admin', label: 'Admin', isExternal: true },
 ];
 

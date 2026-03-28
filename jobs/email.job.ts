@@ -1,7 +1,7 @@
 /**
  * Email job processor
  */
-import { sendProjectMail } from "@/services/email.service";
+import { sendNotificationMail } from "@/services/email.service";
 
 type EmailUser = {
   name: string;
@@ -9,11 +9,13 @@ type EmailUser = {
   image?: string;
 };
 
-type EmailProject = {
+type NotificationType = "project" | "blog" | "asset";
+
+type EmailContent = {
+  type?: NotificationType;
   title: string;
   description: string;
-  slug?: string;
-  id?: string;
+  url: string;
 };
 
 function sleep(ms: number) {
@@ -42,26 +44,28 @@ async function withRetry<T>(
 
 export async function processEmailJob(data: {
   users: EmailUser[];
-  project: EmailProject;
+  content: EmailContent;
   delayMs?: number;
   retryAttempts?: number;
   retryDelayMs?: number;
   maxDurationMs?: number;
+  unsubscribeUrl?: string;
 }) {
   const {
     users,
-    project,
+    content,
     delayMs = 400,
     retryAttempts = 3,
     retryDelayMs = 500,
-    maxDurationMs
+    maxDurationMs,
+    unsubscribeUrl
   } = data || {};
 
-  if (!users || !project) {
+  if (!users || !content) {
     throw new Error("Invalid email job payload");
   }
 
-  console.log("Processing email job for project:", project.title);
+  console.log("Processing email job for content:", content.title);
 
   const deadline =
     typeof maxDurationMs === "number" && maxDurationMs > 0
@@ -84,17 +88,19 @@ export async function processEmailJob(data: {
 
     await withRetry(
       () =>
-        sendProjectMail({
+        sendNotificationMail({
           user: {
             name: user.name,
             email: user.email,
             image: user.image,
           },
-          project: {
-            title: project.title,
-            description: project.description,
-            slug: project.slug || project.id || "",
+          content: {
+            type: content.type ?? "project",
+            title: content.title,
+            description: content.description,
+            url: content.url,
           },
+          unsubscribeUrl
         }),
       retryAttempts,
       retryDelayMs

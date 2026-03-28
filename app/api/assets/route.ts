@@ -6,6 +6,7 @@ import { IMAGE_UPLOAD_PRESETS, type ImageUploadKind } from "@/lib/image-presets"
 import { createAsset, listPublicAssets } from "@/repositories/asset-repository"
 import { removeTempAssetUploadsByPublicIds } from "@/repositories/temp-asset-upload-repository"
 import type { AssetItem } from "@/lib/types"
+import { notifySubscribers } from "@/utils/notify-subscribers"
 
 export const runtime = "nodejs"
 export const maxDuration = 60
@@ -147,6 +148,16 @@ export async function POST(request: Request) {
       const createdAsset = await createAsset(session.user.id, asset)
       await removeTempAssetUploadsByPublicIds(session.user.id, [upload.publicId])
 
+      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || ""
+      const assetUrl = baseUrl ? `${baseUrl}/assets` : "/assets"
+
+      await notifySubscribers({
+        type: "asset",
+        title: createdAsset.label,
+        description: `New ${createdAsset.category} asset is now available.`,
+        url: assetUrl
+      })
+
       return NextResponse.json(
         {
           success: true,
@@ -210,6 +221,16 @@ export async function POST(request: Request) {
 
   try {
     const createdAsset = await createAsset(session.user.id, asset)
+
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || ""
+    const assetUrl = baseUrl ? `${baseUrl}/assets` : "/assets"
+
+    await notifySubscribers({
+      type: "asset",
+      title: createdAsset.label,
+      description: `New ${createdAsset.category} asset is now available.`,
+      url: assetUrl
+    })
 
     return NextResponse.json(
       {
