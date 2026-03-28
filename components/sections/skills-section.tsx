@@ -170,7 +170,6 @@ function SkillOrb({
 
     const techKey = resolveTechKey(skill)
     const tech = TECH_STACK[techKey]
-    const Icon = tech?.icon ?? Code
 
     const angle = (index / total) * Math.PI * 2
     const x = Math.cos(angle) * radius
@@ -216,9 +215,9 @@ flex items-center justify-center
 group-hover:scale-110 transition
 ">
 
-                    <Icon
-                        className="w-5 h-5 md:w-6 md:h-6 lg:w-7 lg:h-7"
-                        style={{ color: tech?.color || "var(--color-primary)" }}
+                    <SkillLogo
+                        skill={skill}
+                        className="h-5 w-5 md:h-6 md:w-6 lg:h-7 lg:w-7"
                     />
 
                 </div>
@@ -335,10 +334,7 @@ function CategoryCard({
 
                         <div className="flex justify-between text-sm mb-1">
 
-                            <span className="flex items-center gap-2">
-                                <SkillLogo skill={skill} className="h-4 w-4" />
-                                {skill.name}
-                            </span>
+                            <span>{skill.name}</span>
                             <span className="text-primary">{skill.proficiency}%</span>
 
                         </div>
