@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Menu, X, Github, Linkedin, Briefcase, ImageIcon, ChevronDown, Instagram, BookOpen, Bell } from 'lucide-react';
@@ -28,19 +28,17 @@ export default function Navigation() {
   const [isMobileWorkOpen, setIsMobileWorkOpen] = useState(false);
   const [notificationEntries, setNotificationEntries] = useState<NotificationFeedEntry[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
+  const notificationEntriesRef = useRef<NotificationFeedEntry[]>([]);
 
-  const refreshUnreadCount = useCallback(
-    (entriesOverride?: NotificationFeedEntry[]) => {
-      const entries = entriesOverride ?? notificationEntries;
-      const stored = safeParseIds(window.localStorage.getItem(READ_STORAGE_KEY));
-      const readIds = new Set(stored);
-      const unread = entries.reduce((total, entry) => {
-        return readIds.has(entryId(entry)) ? total : total + 1;
-      }, 0);
-      setUnreadCount(unread);
-    },
-    [notificationEntries]
-  );
+  const refreshUnreadCount = useCallback((entriesOverride?: NotificationFeedEntry[]) => {
+    const entries = entriesOverride ?? notificationEntriesRef.current;
+    const stored = safeParseIds(window.localStorage.getItem(READ_STORAGE_KEY));
+    const readIds = new Set(stored);
+    const unread = entries.reduce((total, entry) => {
+      return readIds.has(entryId(entry)) ? total : total + 1;
+    }, 0);
+    setUnreadCount(unread);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -67,6 +65,7 @@ export default function Navigation() {
         const data = await res.json();
         const entries = Array.isArray(data?.entries) ? data.entries : [];
         if (!active) return;
+        notificationEntriesRef.current = entries;
         setNotificationEntries(entries);
         refreshUnreadCount(entries);
       } catch {
