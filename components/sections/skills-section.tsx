@@ -114,6 +114,7 @@ function SkillLogo({
     const logoUrl = getTechLogoUrl(skill)
     const mono = isMonochromeLogo(skill)
     const src = logoUrl || "/placeholder-logo.svg"
+    const isRemote = src.startsWith("http")
     return (
         <Image
             src={src}
@@ -122,6 +123,7 @@ function SkillLogo({
             width={20}
             height={20}
             className={`${className ?? "h-5 w-5"}${mono ? " dark:invert" : ""} object-contain`}
+            unoptimized={isRemote}
         />
     )
 }

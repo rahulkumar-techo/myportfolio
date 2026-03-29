@@ -1,25 +1,26 @@
-# Portfolio
+# Portfolio Platform
 
-A modern full-stack developer portfolio built with Next.js, TypeScript, MongoDB, and NextAuth. It combines a public-facing portfolio website with an admin-managed content API for projects, skills, testimonials, messages, and settings.
+A full-stack developer portfolio with a public site, admin-managed content, and a notifications system for email and web push. Built on the Next.js App Router with TypeScript, MongoDB, and NextAuth.
 
-## Overview
+**Highlights**
+- Public portfolio website with rich UI and animated sections
+- Admin-managed content for projects, skills, experiences, testimonials, and assets
+- Notifications system for email and browser push
+- Authenticated admin dashboard and APIs
+- Modern component stack with Tailwind, Framer Motion, and Radix UI
 
-This project is more than a static portfolio. It includes:
+**Notification System Overview**
+- Users can subscribe by email and confirm via tokenized link
+- Users can enable browser push notifications (Firebase Messaging)
+- Admin can manage subscribers and preferences
+- A feed API provides the in-site notification center
 
-- a public portfolio website
-- project showcase pages
-- contact and testimonial submission APIs
-- admin-protected content management routes
-- user registration and authentication
-- settings and profile APIs for portfolio management
-
-The application currently uses both static frontend data and database-backed API routes, which makes it suitable as a portfolio evolving toward a lightweight CMS.
+![notification-diagram.png](/public/notification-diagram.png)
 
 ## Tech Stack
 
-### Frontend
-
-- Next.js 16
+**Frontend**
+- Next.js 16 (App Router)
 - React 19
 - TypeScript
 - Tailwind CSS v4
@@ -29,180 +30,160 @@ The application currently uses both static frontend data and database-backed API
 - React Hook Form
 - SWR
 - Recharts
-- Three.js
-- React Three Fiber
-- Drei
+- Three.js, React Three Fiber, Drei
 
-### Backend
-
-- Next.js App Router API routes
+**Backend**
+- Next.js API Routes (App Router)
 - NextAuth
+- MongoDB, Mongoose
 - JSON Web Token (`jsonwebtoken`)
-- MongoDB
-- Mongoose
 - bcryptjs
 - Zod
 
-### Tooling
-
+**Tooling**
 - ESLint
 - PostCSS
 - TypeScript
-
-## Features
-
-- public portfolio pages
-- project listing and project detail pages
-- skills, experience, and testimonial APIs
-- admin CRUD for portfolio resources
-- public messages/contact submission
-- protected admin settings endpoint
-- authenticated profile overview endpoint
-- Google-session gated submission flows for testimonials and contact
 
 ## Project Structure
 
 ```txt
 app/
   api/
-    admin/settings/
-    auth/[...nextauth]/
-    contact/
-    experience/
-    login/
-    messages/
-    profile/
-    projects/
-    register/
-    settings/
-    skills/
-    testimonials/
+  admin/
+  notifications/
   projects/
 components/
 hooks/
 lib/
 model/
 repositories/
+services/
+styles/
+utils/
 ```
 
-## API Modules
+## Core Features
 
-The main API groups are:
+- Public pages for projects, skills, assets, blog, and contact
+- Admin CRUD for portfolio resources
+- Notification Center UI with read/unread state
+- Email subscription flow with confirmation
+- Browser push notifications via Firebase Messaging
+- Admin overview dashboard and metrics
+- Profile and settings APIs
 
-- `auth`: login, register, next-auth
-- `projects`: list, create, update, delete projects
-- `skills`: list, filter, create, update, delete skills
-- `experience`: manage experience history
-- `testimonials`: public listing and controlled submission
-- `messages`: public message submission and admin inbox
-- `settings`: public and admin settings
-- `profile`: admin dashboard summary
+## Documentation
 
-For endpoint details, see [API.md](./API.md).
+- Docs index: `docs/README.md`
+- Routes and roles: `docs/ROUTES.md`
+- Architecture overview: `docs/ARCHITECTURE.md`
+- Notifications deep dive: `docs/NOTIFICATIONS.md`
+- Roadmap and upcoming features: `docs/ROADMAP.md`
+- API reference: `API.md`
+
+## API Documentation
+
+The API surface is documented in `API.md`.
 
 ## Authentication
 
-This project currently uses two auth approaches:
+Two mechanisms currently exist:
+- NextAuth session-based auth for protected routes
+- Custom JWT login for `/api/login`
 
-- `NextAuth` session-based auth for protected routes
-- custom JWT login for `/api/login`
+If you plan to extend this project, consider unifying auth for simpler maintenance.
 
-That split works technically only if both are intentionally supported, but in most cases it should be unified to reduce complexity.
+## Notifications Architecture
 
-## Data Layer
+**Key paths**
+- Feed: `GET /api/notifications/feed`
+- Email subscribe: `POST /api/notifications/subscribe`
+- Email confirm: `GET /notifications/confirm?token=...`
+- Push token register: `POST /api/notifications/token`
+- Preferences: `PUT /api/notifications/preferences`
+- Unsubscribe: `POST /api/notifications/unsubscribe`
 
-The app uses:
+**Client UI**
+- Notification prompt: `components/notifications/notification-prompt.tsx`
+- Notification center: `components/notifications/notification-feed.tsx`
+- Top nav unread badge: `components/navigation.tsx`
 
-- `Mongoose` for database access
-- repository helpers for portfolio items and users
-- likely collections for:
-  - users
-  - projects
-  - skills
-  - experiences
-  - testimonials
-  - contact messages
-  - settings
+**Backend / Data**
+- Notification repository: `repositories/notification-repository.ts`
+- Notification models: `model/portfolio.model.ts`
+- Email templating: `utils/email-template.ts`
+- Email sender: `services/email.service.ts`
+- Broadcast utilities: `utils/notify-subscribers.ts`
+- Push Service Worker: `public/firebase-messaging-sw.js`
 
-## UI and UX Libraries
+## Getting Started
 
-The frontend uses a strong component and animation stack:
-
-- Radix UI for accessible primitives
-- Framer Motion for animation
-- Tailwind CSS for styling
-- Lucide React for icons
-- Three.js ecosystem for 3D or motion-rich sections
-
-## Scripts
-
-```bash
-npm run dev
-npm run build
-npm run start
-npm run lint
-```
-
-## Installation
+1. Install dependencies.
+2. Configure environment variables.
+3. Run the dev server.
 
 ```bash
-npm install
-npm run dev
+pnpm install
+pnpm dev
 ```
-
-Open `http://localhost:3000`
 
 ## Environment Variables
 
-This project likely needs environment variables for:
+Create a `.env` file at the project root.
 
 ```env
 MONGODB_URI=
 NEXTAUTH_SECRET=
 NEXTAUTH_URL=
-JWT_SECRET=
 GOOGLE_CLIENT_ID=
 GOOGLE_CLIENT_SECRET=
+NEXT_PUBLIC_APP_URL=
+
+# Firebase (Client)
+NEXT_PUBLIC_FIREBASE_API_KEY=
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+NEXT_PUBLIC_FIREBASE_APP_ID=
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=
+NEXT_PUBLIC_FIREBASE_VAPID_KEY=
+
+# Firebase (Server)
+FIREBASE_PROJECT_ID=
+FIREBASE_CLIENT_EMAIL=
+FIREBASE_PRIVATE_KEY=
 ```
 
-Add any other variables required by your auth and database setup.
+## Scripts
 
-## Current Architecture Notes
+```bash
+pnpm dev
+pnpm build
+pnpm start
+pnpm lint
+```
 
-The code suggests two parallel content sources:
+## Deployment Notes
 
-- frontend pages like `app/projects` read from static data in `lib/data`
-- API routes use repository/database storage
+- Ensure `NEXTAUTH_URL` matches the production domain.
+- Ensure Firebase Web Push is configured for the production domain.
+- Clear any old service workers when updating `firebase-messaging-sw.js`.
 
-This means admin API updates may not yet automatically appear in all frontend pages until the UI is fully switched to database-driven fetching.
+## Troubleshooting
 
-## Known Improvement Areas
+**Notifications prompt shows errors**
+- Check `NEXT_PUBLIC_FIREBASE_VAPID_KEY`.
+- Confirm service worker is registered and active.
 
-- unify authentication strategy
-- standardize API responses
-- add schema validation with Zod everywhere
-- add automated tests
-- add CI/CD workflows
-- add Docker support
-- connect frontend pages fully to API-backed content
+**Push notifications fail in production**
+- Ensure `firebase-messaging-sw.js` is accessible at the root.
+- Verify Firebase config keys are correct.
 
-## Why This Project Is Useful
-
-This portfolio can serve as:
-
-- a personal developer portfolio
-- a lightweight portfolio CMS
-- a starter for a creator/admin dashboard
-- a base for adding CI/CD, Docker, and deployment workflows
-
-## Next Recommended Additions
-
-- `API.md` for route documentation
-- test setup with unit and API tests
-- GitHub Actions CI pipeline
-- Dockerfile and Docker Compose
-- Telegram notifications for workflow status or contact events
-- deployment workflow to container registry
+**Images missing in production**
+- Verify `next.config.mjs` remote image domains.
+- For SVGs hosted externally, consider `unoptimized` or self-hosting.
 
 ## License
 
