@@ -2,32 +2,38 @@
 
 importScripts("https://www.gstatic.com/firebasejs/12.11.0/firebase-app-compat.js");
 importScripts("https://www.gstatic.com/firebasejs/12.11.0/firebase-messaging-compat.js");
-import "dotenv/config";
 const firebaseConfig = {
- apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY ?? "",
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN ?? "",
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID ?? "",
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET ?? "",
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID ?? "",
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID ?? "",
-  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID ?? ""
+  apiKey: "AIzaSyB3HRTja3UFYPLOcLJHnDvJaNRHWoh_MF0",
+  authDomain: "myportfolio-b4612.firebaseapp.com",
+  projectId: "myportfolio-b4612",
+  storageBucket: "myportfolio-b4612.firebasestorage.app",
+  messagingSenderId: "983396163874",
+  appId: "1:983396163874:web:6d2ff013d8598df8e7857b",
+  measurementId: "G-PSJGJML845"
 };
 
-firebase.initializeApp(firebaseConfig);
+try {
+  if (firebaseConfig.apiKey) {
+    firebase.initializeApp(firebaseConfig);
+    const messaging = firebase.messaging();
 
-const messaging = firebase.messaging();
+    messaging.onBackgroundMessage((payload) => {
+      const notification = payload?.notification || {};
+      const title = notification.title || "New notification";
+      const options = {
+        body: notification.body || "",
+        icon: notification.icon || "/logo.png",
+        data: payload?.data || {}
+      };
 
-messaging.onBackgroundMessage((payload) => {
-  const notification = payload?.notification || {};
-  const title = notification.title || "New notification";
-  const options = {
-    body: notification.body || "",
-    icon: notification.icon || "/logo.png",
-    data: payload?.data || {}
-  };
-
-  self.registration.showNotification(title, options);
-});
+      self.registration.showNotification(title, options);
+    });
+  } else {
+    console.warn("Firebase messaging disabled: missing config.");
+  }
+} catch (err) {
+  console.error("Firebase messaging service worker failed to initialize.", err);
+}
 
 self.addEventListener("notificationclick", (event) => {
   event.notification.close();
