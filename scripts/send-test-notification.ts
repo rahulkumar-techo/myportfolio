@@ -1,6 +1,7 @@
 import "dotenv/config";
 import nodemailer from "nodemailer";
 import { generateNotificationEmailTemplate } from "@/utils/email-template";
+import { getAppBaseUrl } from "@/utils/app-url";
 
 function resolveRecipient() {
   const testEmail = process.env.TEST_NOTIFICATION_EMAIL;
@@ -51,7 +52,7 @@ async function run() {
 
   await transporter.verify();
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL ?? "";
+  const baseUrl = getAppBaseUrl();
   const html = generateNotificationEmailTemplate({
     username: "Test Subscriber",
     email: recipient,

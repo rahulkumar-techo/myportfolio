@@ -4,6 +4,7 @@ import { createPortfolioItem, listPortfolioItems } from "@/repositories/portfoli
 import { slugify } from "@/utils/slugify";
 import { estimateReadingTime } from "@/lib/blog";
 import { notifySubscribers } from "@/utils/notify-subscribers";
+import { getAppBaseUrl } from "@/utils/app-url";
 
 function normalizeTags(value: unknown) {
   if (Array.isArray(value)) {
@@ -83,7 +84,7 @@ export async function POST(request: Request) {
 
   const created = await createPortfolioItem("blogs", newBlog, session.user.id);
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const baseUrl = getAppBaseUrl();
   const blogUrl = baseUrl
     ? `${baseUrl}/blog/${newBlog.slug}`
     : `/blog/${newBlog.slug}`;

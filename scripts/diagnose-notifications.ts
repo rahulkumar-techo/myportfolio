@@ -82,7 +82,11 @@ function checkFirebase(): CheckResult {
 async function run() {
   const envChecks: CheckResult[] = [
     { label: "MONGODB_URI", ok: envFlag(process.env.MONGODB_URI) === "set" },
-    { label: "NEXT_PUBLIC_APP_URL", ok: envFlag(process.env.NEXT_PUBLIC_APP_URL) === "set" },
+    { label: "NEXT_PUBLIC_APP_URL (prod)", ok: envFlag(process.env.NEXT_PUBLIC_APP_URL) === "set" },
+    {
+      label: "NEXT_PUBLIC_APP_URL_DEV (dev)",
+      ok: envFlag(process.env.NEXT_PUBLIC_APP_URL_DEV) === "set" || process.env.NODE_ENV !== "development"
+    },
     { label: "GMAIL_EMAIL", ok: envFlag(process.env.GMAIL_EMAIL) === "set" },
     { label: "GMAIL_APP_PASSWORD", ok: envFlag(process.env.GMAIL_APP_PASSWORD) === "set" },
     {

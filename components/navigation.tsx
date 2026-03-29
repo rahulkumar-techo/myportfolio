@@ -1,18 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Menu, X, Github, Linkedin, Briefcase, ImageIcon, ChevronDown, Instagram, BookOpen } from 'lucide-react';
+import { Menu, X, Github, Linkedin, Briefcase, ImageIcon, ChevronDown, Instagram, BookOpen, Bell } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import ThemeToggle from '@/components/theme-toggle';
 import Image from 'next/image';
+import { entryId, READ_STORAGE_KEY, safeParseIds, NotificationFeedEntry } from '@/lib/notifications';
 
 const navItems = [
   { href: '/about', label: 'About' },
   { href: '/experience', label: 'Experience' },
   { href: '/contact', label: 'Contact' },
-  { href: '/notifications', label: 'Notifications' },
 ];
 const dropdownItems = [
   { href: '/projects', label: 'Projects' },
@@ -26,6 +26,21 @@ export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isMobileWorkOpen, setIsMobileWorkOpen] = useState(false);
+  const [notificationEntries, setNotificationEntries] = useState<NotificationFeedEntry[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+
+  const refreshUnreadCount = useCallback(
+    (entriesOverride?: NotificationFeedEntry[]) => {
+      const entries = entriesOverride ?? notificationEntries;
+      const stored = safeParseIds(window.localStorage.getItem(READ_STORAGE_KEY));
+      const readIds = new Set(stored);
+      const unread = entries.reduce((total, entry) => {
+        return readIds.has(entryId(entry)) ? total : total + 1;
+      }, 0);
+      setUnreadCount(unread);
+    },
+    [notificationEntries]
+  );
 
   useEffect(() => {
     const handleScroll = () => {
@@ -41,6 +56,46 @@ export default function Navigation() {
       setIsMobileWorkOpen(false);
     }
   }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    let active = true;
+
+    const loadNotifications = async () => {
+      try {
+        const res = await fetch('/api/notifications/feed?limit=50');
+        if (!res.ok) return;
+        const data = await res.json();
+        const entries = Array.isArray(data?.entries) ? data.entries : [];
+        if (!active) return;
+        setNotificationEntries(entries);
+        refreshUnreadCount(entries);
+      } catch {
+        // Ignore notification fetch failures to avoid blocking navigation.
+      }
+    };
+
+    loadNotifications();
+
+    const handleReadChange = () => {
+      refreshUnreadCount();
+    };
+
+    window.addEventListener('notifications:read-change', handleReadChange);
+    window.addEventListener('storage', handleReadChange);
+
+    return () => {
+      active = false;
+      window.removeEventListener('notifications:read-change', handleReadChange);
+      window.removeEventListener('storage', handleReadChange);
+    };
+  }, [refreshUnreadCount]);
+
+  const unreadBadge =
+    unreadCount > 0 ? (
+      <span className="absolute -right-1 -top-1 flex h-4 min-w-[16px] items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-primary-foreground">
+        {unreadCount > 99 ? '99+' : unreadCount}
+      </span>
+    ) : null;
 
   return (
     <>
@@ -129,6 +184,14 @@ export default function Navigation() {
 
           {/* Social Links & CTA */}
           <div className="hidden lg:flex items-center gap-4">
+            <Link
+              href="/notifications"
+              className="relative rounded-full p-2 text-muted-foreground transition-colors hover:text-primary"
+              aria-label="Notifications"
+            >
+              <Bell className="h-5 w-5" />
+              {unreadBadge}
+            </Link>
             <ThemeToggle />
             <div className="flex items-center gap-2">
               <Link
@@ -167,6 +230,15 @@ export default function Navigation() {
           {/* Mobile Actions */}
           <div className="flex items-center gap-1 lg:hidden">
             <ThemeToggle />
+
+            <Link
+              href="/notifications"
+              className="relative rounded-full p-2 text-muted-foreground transition-colors hover:text-primary"
+              aria-label="Notifications"
+            >
+              <Bell className="h-4 w-4" />
+              {unreadBadge}
+            </Link>
 
             {/* Social icons */}
             <Link

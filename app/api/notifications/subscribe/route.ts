@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getEmailSubscriber, upsertEmailSubscriber } from "@/repositories/notification-repository";
 import { sendConfirmationMail } from "@/services/email.service";
+import { getAppBaseUrl } from "@/utils/app-url";
 
 export const runtime = "nodejs";
 
@@ -28,7 +29,7 @@ export async function POST(request: Request) {
     source: "website"
   });
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+  const baseUrl = getAppBaseUrl();
   const confirmUrl = baseUrl
     ? `${baseUrl}/notifications/confirm?token=${subscriber.verificationToken}`
     : `/notifications/confirm?token=${subscriber.verificationToken}`;

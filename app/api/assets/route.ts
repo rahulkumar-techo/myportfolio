@@ -7,6 +7,7 @@ import { createAsset, listPublicAssets } from "@/repositories/asset-repository"
 import { removeTempAssetUploadsByPublicIds } from "@/repositories/temp-asset-upload-repository"
 import type { AssetItem } from "@/lib/types"
 import { notifySubscribers } from "@/utils/notify-subscribers"
+import { getAppBaseUrl } from "@/utils/app-url"
 
 export const runtime = "nodejs"
 export const maxDuration = 60
@@ -148,7 +149,7 @@ export async function POST(request: Request) {
       const createdAsset = await createAsset(session.user.id, asset)
       await removeTempAssetUploadsByPublicIds(session.user.id, [upload.publicId])
 
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || ""
+      const baseUrl = getAppBaseUrl()
       const assetUrl = baseUrl ? `${baseUrl}/assets` : "/assets"
 
       await notifySubscribers({
@@ -222,7 +223,7 @@ export async function POST(request: Request) {
   try {
     const createdAsset = await createAsset(session.user.id, asset)
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || ""
+    const baseUrl = getAppBaseUrl()
     const assetUrl = baseUrl ? `${baseUrl}/assets` : "/assets"
 
     await notifySubscribers({

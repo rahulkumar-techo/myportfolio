@@ -4,6 +4,7 @@ import { createPortfolioItem, listPortfolioItems } from "@/repositories/portfoli
 import { removeTempProjectUploadsByPublicIds } from "@/repositories/temp-upload-repository";
 import { notifySubscribers } from "@/utils/notify-subscribers";
 import { slugify } from "@/utils/slugify";
+import { getAppBaseUrl } from "@/utils/app-url";
 
 export async function GET() {
   const projects = await listPortfolioItems("projects")
@@ -122,7 +123,7 @@ export async function POST(request: Request) {
 
       await removeTempProjectUploadsByPublicIds(session.user.id, usedPublicIds)
 
-      const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+      const baseUrl = getAppBaseUrl();
       const projectUrl = baseUrl
         ? `${baseUrl}/projects/${newProject.slug}`
         : `/projects/${newProject.slug}`;

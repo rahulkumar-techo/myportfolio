@@ -6,6 +6,7 @@ import {
   listPushTokens,
   removePushTokens
 } from "@/repositories/notification-repository";
+import { getAppBaseUrl } from "@/utils/app-url";
 
 type NotificationType = "project" | "blog" | "asset";
 
@@ -48,7 +49,7 @@ export async function notifySubscribers(payload: NotificationPayload) {
     ]);
 
     if (emailSubscribers.length > 0) {
-      const unsubscribeUrlBase = process.env.NEXT_PUBLIC_APP_URL || "";
+      const unsubscribeUrlBase = getAppBaseUrl();
       const unsubscribeUrl = unsubscribeUrlBase
         ? `${unsubscribeUrlBase}/api/notifications/unsubscribe`
         : undefined;

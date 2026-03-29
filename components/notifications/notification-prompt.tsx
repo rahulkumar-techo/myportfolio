@@ -97,15 +97,27 @@ export default function NotificationPrompt() {
         throw new Error("Service workers are not supported.");
       }
 
+      if (!window.isSecureContext) {
+        throw new Error("Notifications require HTTPS (or localhost).");
+      }
+
       const vapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY;
       if (!vapidKey) {
         throw new Error("Notification key is not configured.");
       }
 
-      const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+      const registration =
+        (await navigator.serviceWorker.getRegistration()) ??
+        (await navigator.serviceWorker.register("/firebase-messaging-sw.js", { updateViaCache: "none" }));
+
+      const readyRegistration = await navigator.serviceWorker.ready;
+      if (!readyRegistration.active) {
+        throw new Error("Service worker is not active yet. Please try again.");
+      }
+
       const token = await getToken(messaging, {
         vapidKey,
-        serviceWorkerRegistration: registration
+        serviceWorkerRegistration: readyRegistration
       });
 
       if (!token) {
