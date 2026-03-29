@@ -56,6 +56,10 @@ export default async function sitemap() {
       url: `${siteUrl}/blog`,
       lastModified: new Date()
     },
+    {
+      url: `${siteUrl}/notifications`,
+      lastModified: new Date()
+    },
     ...projectUrls,
     ...posts.map((post) => ({
       url: `${siteUrl}/blog/${post.slug}`,

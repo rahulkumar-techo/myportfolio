@@ -7,6 +7,57 @@ import type { Metadata } from "next";
 
 export const siteUrl = "https://rahulkumardev.vercel.app";
 
+type PageMetadataInput = {
+  title: string;
+  description: string;
+  path: string;
+  keywords?: string[];
+  image?: string;
+  type?: "website" | "article";
+};
+
+export function buildPageMetadata({
+  title,
+  description,
+  path,
+  keywords,
+  image,
+  type = "website",
+}: PageMetadataInput): Metadata {
+  const normalizedPath = path === "/" ? "" : path.startsWith("/") ? path : `/${path}`;
+  const canonical = `${siteUrl}${normalizedPath}`;
+  const imageUrl = image ?? `${siteUrl}/og_image.png`;
+
+  return {
+    title,
+    description,
+    keywords,
+    alternates: {
+      canonical,
+    },
+    openGraph: {
+      title,
+      description,
+      url: canonical,
+      type,
+      images: [
+        {
+          url: imageUrl,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title,
+      description,
+      images: [imageUrl],
+    },
+  };
+}
+
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
 
@@ -65,9 +116,8 @@ export const metadata: Metadata = {
     "Portfolio Website",
   ],
 
-  // 🔥 Canonical + Language
+  // 🔥 Language
   alternates: {
-    canonical: siteUrl,
     languages: {
       "en-US": siteUrl,
     },

@@ -8,7 +8,7 @@ import AboutPreviewSection from '@/components/sections/about-preview-section';
 import PublicSWRProvider from '@/components/public-swr-provider';
 import { getPublicHomeData, serializeForClient } from '@/lib/public-data';
 import PageLoader from '@/components/page-loader';
-import { siteUrl } from '@/utils/meta-data';
+import { buildPageMetadata, siteUrl } from '@/utils/meta-data';
 
 export const revalidate = 60;
 
@@ -19,9 +19,10 @@ export async function generateMetadata(): Promise<Metadata> {
     'Rahul Kumar is a Full Stack Developer, Next.js Developer, and Node.js Developer - an AI Developer Portfolio with projects, case studies, skills, and contact.';
   const description = fallbackDescription;
 
-  return {
+  return buildPageMetadata({
     title: 'Full Stack Developer | Next.js Developer | Node.js Developer | AI Developer Portfolio',
     description,
+    path: '/',
     keywords: [
       'Full Stack Developer',
       'Next.js Developer',
@@ -31,30 +32,8 @@ export async function generateMetadata(): Promise<Metadata> {
       'TypeScript Developer',
       'Portfolio Website',
     ],
-    alternates: {
-      canonical: siteUrl,
-    },
-    openGraph: {
-      title: 'Full Stack Developer | Next.js Developer | Node.js Developer | AI Developer Portfolio',
-      description,
-      url: siteUrl,
-      type: 'website',
-      images: [
-        {
-          url: `${siteUrl}/og_image.png`,
-          width: 1200,
-          height: 630,
-          alt: `${siteTitle} Portfolio`,
-        },
-      ],
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: 'Full Stack Developer | Next.js Developer | Node.js Developer | AI Developer Portfolio',
-      description,
-      images: [`${siteUrl}/og_image.png`],
-    },
-  };
+    image: `${siteUrl}/og_image.png`,
+  });
 }
 
 const SkillsSection = dynamic(() => import('@/components/sections/skills-section'), { loading: () => null });

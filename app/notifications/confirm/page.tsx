@@ -1,10 +1,24 @@
 import Link from "next/link";
 import { confirmEmailSubscriber } from "@/repositories/notification-repository";
+import type { Metadata } from "next";
+import { siteUrl } from "@/utils/meta-data";
 
 export const dynamic = "force-dynamic";
 
 type ConfirmPageProps = {
   searchParams?: { token?: string };
+};
+
+export const metadata: Metadata = {
+  title: "Confirm Notification Subscription",
+  description: "Confirm your email subscription for portfolio updates.",
+  alternates: {
+    canonical: `${siteUrl}/notifications/confirm`,
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default async function ConfirmNotificationPage({ searchParams }: ConfirmPageProps) {

@@ -4,8 +4,22 @@ import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
 import { getPublicHomeData } from "@/lib/public-data";
 import type { Experience } from "@/lib/types";
+import { buildPageMetadata } from "@/utils/meta-data";
 
 export const revalidate = 60;
+
+export const metadata = buildPageMetadata({
+  title: "Experience | Full Stack Developer Journey",
+  description:
+    "Explore Rahul Kumar's professional experience, achievements, and technology stack across full stack roles.",
+  path: "/experience",
+  keywords: [
+    "Developer Experience",
+    "Full Stack Resume",
+    "Next.js Experience",
+    "Node.js Experience",
+  ],
+});
 
 
 function formatDate(value: string | undefined) {

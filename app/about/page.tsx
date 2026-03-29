@@ -4,8 +4,23 @@ import AboutSection from '@/components/sections/about-section';
 import SeoContentSection from '@/components/sections/seo-content-section';
 import TypingText from '@/components/typing-text';
 import Link from 'next/link';
+import { buildPageMetadata } from '@/utils/meta-data';
 
 export const revalidate = 60;
+
+export const metadata = buildPageMetadata({
+  title: 'About Rahul Kumar | Full Stack Developer',
+  description:
+    'Learn about Rahul Kumar, a Full Stack Developer focused on Next.js, Node.js, and AI-driven products, with a strong emphasis on performance and UX.',
+  path: '/about',
+  keywords: [
+    'About Rahul Kumar',
+    'Full Stack Developer',
+    'Next.js Developer',
+    'Node.js Developer',
+    'AI Developer',
+  ],
+});
 
 export default function AboutPage() {
   return (

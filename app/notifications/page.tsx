@@ -2,8 +2,17 @@ import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
 import { listNotificationFeedEntries } from "@/repositories/notification-repository";
 import NotificationFeed from "@/components/notifications/notification-feed";
+import { buildPageMetadata } from "@/utils/meta-data";
 
 export const revalidate = 60;
+
+export const metadata = buildPageMetadata({
+  title: "Notifications | Portfolio Updates",
+  description:
+    "Stay updated with the latest projects, blogs, and assets in the Notification Center.",
+  path: "/notifications",
+  keywords: ["Portfolio Updates", "Notifications", "Project Updates", "Blog Updates"],
+});
 
 export default async function NotificationsPage() {
   const entries = await listNotificationFeedEntries(50);

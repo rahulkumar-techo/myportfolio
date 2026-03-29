@@ -4,8 +4,23 @@ import Navigation from "@/components/navigation";
 import Footer from "@/components/footer";
 import { listPortfolioItems } from "@/repositories/portfolio-repository";
 import { normalizeBlogPosts } from "@/lib/blog";
+import { buildPageMetadata } from "@/utils/meta-data";
 
 export const revalidate = 60;
+
+export const metadata = buildPageMetadata({
+  title: "Developer Blog | Next.js, Node.js & AI",
+  description:
+    "Practical engineering notes, case studies, and performance insights across Next.js, Node.js, AI, and modern web development.",
+  path: "/blog",
+  keywords: [
+    "Developer Blog",
+    "Next.js Blog",
+    "Node.js Blog",
+    "AI Engineering",
+    "Web Performance",
+  ],
+});
 
 export default async function BlogPage() {
   const rawPosts = await listPortfolioItems("blogs");
