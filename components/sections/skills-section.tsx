@@ -5,7 +5,7 @@
 
 'use client'
 
-import { useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 import { motion, useInView } from "framer-motion"
 import { Cpu, Globe, Server, Settings, Code } from "lucide-react"
 import Link from "next/link"
@@ -157,6 +157,15 @@ const ORBIT_CONFIG = {
     languages: { radius: 350, duration: 55 }
 
 }
+
+const ORBIT_RINGS = {
+    frontend: 280,
+    backend: 420,
+    devops: 560,
+    languages: 700
+}
+
+const ORBIT_BASE_SIZE = 320
 
 
 /* ------------------------------------------------ */
@@ -374,6 +383,29 @@ export default function SkillsSection() {
     const ref = useRef(null)
     useInView(ref, { once: true })
     const { skills: liveSkills, isLoading } = useSkills()
+    const orbitRef = useRef<HTMLDivElement | null>(null)
+    const [orbitScale, setOrbitScale] = useState(1)
+
+    useEffect(() => {
+        const element = orbitRef.current
+        if (!element) {
+            return
+        }
+
+        const updateScale = () => {
+            const { width } = element.getBoundingClientRect()
+            if (!width) {
+                return
+            }
+            const nextScale = Math.min(1, width / ORBIT_BASE_SIZE)
+            setOrbitScale(nextScale)
+        }
+
+        updateScale()
+        const observer = new ResizeObserver(updateScale)
+        observer.observe(element)
+        return () => observer.disconnect()
+    }, [])
 
     const frontend = liveSkills.filter((skill: ManagedSkill) => skill.category === "frontend")
     const backend = liveSkills.filter((skill: ManagedSkill) => skill.category === "backend")
@@ -386,6 +418,18 @@ export default function SkillsSection() {
     const toolsCards = liveSkills.filter((skill: ManagedSkill) => skill.category === "tools")
     const hasOrbitalSkills = frontend.length > 0 || backend.length > 0 || devops.length > 0 || languages.length > 0
     const hasAnySkills = liveSkills.length > 0
+    const scaledOrbitConfig = {
+        frontend: { ...ORBIT_CONFIG.frontend, radius: ORBIT_CONFIG.frontend.radius * orbitScale },
+        backend: { ...ORBIT_CONFIG.backend, radius: ORBIT_CONFIG.backend.radius * orbitScale },
+        devops: { ...ORBIT_CONFIG.devops, radius: ORBIT_CONFIG.devops.radius * orbitScale },
+        languages: { ...ORBIT_CONFIG.languages, radius: ORBIT_CONFIG.languages.radius * orbitScale },
+    }
+    const ringSizes = {
+        frontend: ORBIT_RINGS.frontend * orbitScale,
+        backend: ORBIT_RINGS.backend * orbitScale,
+        devops: ORBIT_RINGS.devops * orbitScale,
+        languages: ORBIT_RINGS.languages * orbitScale,
+    }
 
     return (
 
@@ -430,12 +474,15 @@ export default function SkillsSection() {
                 <div className="flex justify-center relative mb-20">
 
                     {hasOrbitalSkills ? (
-                        <div className="
+                        <div
+                            ref={orbitRef}
+                            className="
 relative
-w-[320px] h-[320px]
+w-full max-w-[320px] aspect-square
 md:w-[520px] md:h-[520px]
 lg:w-[700px] lg:h-[700px]
-">
+"
+                        >
 
                             {/* CORE */}
 
@@ -465,57 +512,65 @@ flex items-center justify-center
 
                             {/* ORBIT RINGS */}
 
-                            <div className="
+                            <div
+                                style={{ width: ringSizes.frontend, height: ringSizes.frontend }}
+                                className="
 absolute
-w-[280px] h-[280px]
 border border-dashed border-blue-400/30
 rounded-full
 left-1/2 top-1/2
 -translate-x-1/2 -translate-y-1/2
-"/>
+"
+                            />
 
-                            <div className="
+                            <div
+                                style={{ width: ringSizes.backend, height: ringSizes.backend }}
+                                className="
 hidden md:block
 absolute
-w-[420px] h-[420px]
 border border-dashed border-green-400/30
 rounded-full
 left-1/2 top-1/2
 -translate-x-1/2 -translate-y-1/2
-"/>
+"
+                            />
 
-                            <div className="
+                            <div
+                                style={{ width: ringSizes.devops, height: ringSizes.devops }}
+                                className="
 hidden lg:block
 absolute
-w-[560px] h-[560px]
 border border-dashed border-purple-400/30
 rounded-full
 left-1/2 top-1/2
 -translate-x-1/2 -translate-y-1/2
-"/>
+"
+                            />
 
-                            <div className="
+                            <div
+                                style={{ width: ringSizes.languages, height: ringSizes.languages }}
+                                className="
 hidden lg:block
 absolute
-w-[700px] h-[700px]
 border border-dashed border-yellow-400/30
 rounded-full
 left-1/2 top-1/2
 -translate-x-1/2 -translate-y-1/2
-"/>
+"
+                            />
 
 
                             {/* ORBITS */}
 
-                            <OrbitLayer skills={frontend} {...ORBIT_CONFIG.frontend} />
+                            <OrbitLayer skills={frontend} {...scaledOrbitConfig.frontend} />
 
                             <div className="hidden md:block">
-                                <OrbitLayer skills={backend} {...ORBIT_CONFIG.backend} />
+                                <OrbitLayer skills={backend} {...scaledOrbitConfig.backend} />
                             </div>
 
                             <div className="hidden lg:block">
-                                <OrbitLayer skills={devops} {...ORBIT_CONFIG.devops} />
-                                <OrbitLayer skills={languages} {...ORBIT_CONFIG.languages} />
+                                <OrbitLayer skills={devops} {...scaledOrbitConfig.devops} />
+                                <OrbitLayer skills={languages} {...scaledOrbitConfig.languages} />
                             </div>
 
                         </div>

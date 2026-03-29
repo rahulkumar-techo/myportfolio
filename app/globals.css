@@ -146,6 +146,8 @@
   body {
     @apply bg-background text-foreground;
     font-family: "Google Sans", var(--font-roboto), Roboto, ui-sans-serif, system-ui, sans-serif;
+    width: 100%;
+    overflow-x: hidden;
   }
 
   h1,
@@ -272,6 +274,28 @@
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+/* Media elements should never overflow on small screens */
+img,
+video,
+canvas,
+svg {
+  max-width: 100%;
+  height: auto;
+}
+
+@media (max-width: 360px) {
+  html {
+    font-size: 15px;
+  }
+
+  .container {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
 }
 
 /* Custom scrollbar */

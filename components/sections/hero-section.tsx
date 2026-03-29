@@ -35,7 +35,7 @@ export default function HeroSection() {
     `${headingName} builds fast, scalable web applications and AI-powered products that turn traffic into customers, with clean architecture, technical SEO, and measurable impact.`;
 
   return (
-    <section id="hero" ref={ref} className="relative min-h-screen overflow-hidden">
+    <section id="hero" ref={ref} className="relative min-h-[100svh] overflow-hidden">
       {/* 3D Scene */}
       {/* <div className="absolute inset-0 z-0">
         {showScene ? (
@@ -60,7 +60,7 @@ export default function HeroSection() {
       <div className="absolute inset-0 scanlines z-0" />
 
       {/* Content Overlay */}
-      <div className="relative z-10 container mx-auto px-4 h-screen flex flex-col justify-center items-center text-center">
+      <div className="relative z-10 container mx-auto px-4 min-h-[100svh] pt-20 pb-14 flex flex-col justify-start sm:justify-center items-center text-center">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
@@ -72,7 +72,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, scale: 0.8 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ delay: 0.8 }}
-            className="inline-flex items-center gap-2 px-4 py-2 mb-6 glass-card rounded-full text-sm"
+            className="inline-flex items-center gap-2 px-4 py-2 mb-4 sm:mb-6 glass-card rounded-full text-xs xs:text-sm"
           >
             <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
             <span className="text-muted-foreground">
@@ -87,7 +87,7 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1 }}
-            className="text-4xl sm:text-5xl md:text-7xl font-bold mb-6 leading-tight"
+            className="text-3xl xs:text-4xl sm:text-5xl md:text-7xl font-bold mb-5 sm:mb-6 leading-tight text-balance"
           >
             <span className="text-foreground">{taglineLead}</span>
             {taglineTyped ? (
@@ -108,7 +108,7 @@ export default function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.2 }}
-            className="text-lg sm:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto leading-relaxed"
+            className="text-base xs:text-lg sm:text-xl text-muted-foreground mb-6 sm:mb-8 max-w-2xl mx-auto leading-relaxed"
           >
             {heroBio}
           </motion.p>
@@ -118,12 +118,12 @@ export default function HeroSection() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 1.4 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 w-full"
           >
             <Button
               asChild
               size="lg"
-              className="group relative overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground px-8"
+              className="group relative w-full max-w-xs sm:w-auto overflow-hidden bg-primary hover:bg-primary/90 text-primary-foreground px-8"
             >
               <Link href="#projects">
                 <span className="relative z-10 flex items-center gap-2">
@@ -138,7 +138,7 @@ export default function HeroSection() {
               asChild
               size="lg"
               variant="outline"
-              className="border-border hover:border-primary hover:bg-primary/10 transition-all"
+              className="w-full max-w-xs sm:w-auto border-border hover:border-primary hover:bg-primary/10 transition-all"
             >
               <Link href="/contact">
                 <Zap className="w-5 h-5 mr-2" />
@@ -150,7 +150,7 @@ export default function HeroSection() {
               asChild
               size="lg"
               variant="outline"
-              className="border-border hover:border-primary hover:bg-primary/10 transition-all"
+              className="w-full max-w-xs sm:w-auto border-border hover:border-primary hover:bg-primary/10 transition-all"
             >
               <Link href="/blog">
                 Read the Blog
@@ -163,7 +163,7 @@ export default function HeroSection() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 1.6 }}
-            className="mt-12 flex flex-wrap items-center justify-center gap-4"
+            className="mt-8 sm:mt-12 flex flex-wrap items-center justify-center gap-3 sm:gap-4"
           >
             {techPreview.map((tech, index) => (
               <motion.span
@@ -184,7 +184,7 @@ export default function HeroSection() {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 2 }}
-          className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          className="absolute bottom-6 left-1/2 -translate-x-1/2 hidden xs:flex"
         >
           <motion.div
             animate={{ y: [0, 10, 0] }}

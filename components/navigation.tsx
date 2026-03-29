@@ -105,7 +105,7 @@ export default function Navigation() {
         className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 backdrop-blur-2xl ${isScrolled ? 'glass-card backdrop-blur-2xl border-b border-border/50' : ''
           }`}
       >
-        <nav className="container mx-auto px-4 py-2 md:py-4 flex items-center justify-between ">
+        <nav className="container mx-auto px-3 sm:px-4 py-2 md:py-4 flex items-center justify-between ">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <div className="relative w-10 h-10">
@@ -240,35 +240,37 @@ export default function Navigation() {
             </Link>
 
             {/* Social icons */}
-            <Link
-              href="https://github.com/rahulkumar-techo"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 text-muted-foreground hover:text-primary transition-colors"
-              aria-label="GitHub"
-            >
-              <Github className="w-4 h-4" />
-            </Link>
+            <div className="hidden xs:flex items-center">
+              <Link
+                href="https://github.com/rahulkumar-techo"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                aria-label="GitHub"
+              >
+                <Github className="w-4 h-4" />
+              </Link>
 
-            <Link
-              href="https://www.linkedin.com/in/rahul-kumar-6a225127a/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 text-muted-foreground hover:text-primary transition-colors"
-              aria-label="LinkedIn"
-            >
-              <Linkedin className="w-4 h-4" />
-            </Link>
+              <Link
+                href="https://www.linkedin.com/in/rahul-kumar-6a225127a/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                aria-label="LinkedIn"
+              >
+                <Linkedin className="w-4 h-4" />
+              </Link>
 
-            <Link
-              href="https://www.instagram.com/mr_rpraja"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="p-2 text-muted-foreground hover:text-primary transition-colors"
-              aria-label="Instagram"
-            >
-              <Instagram className="w-4 h-4" />
-            </Link>
+              <Link
+                href="https://www.instagram.com/mr_rpraja"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                aria-label="Instagram"
+              >
+                <Instagram className="w-4 h-4" />
+              </Link>
+            </div>
 
             {/* Mobile menu button */}
             <button

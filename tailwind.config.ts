@@ -9,6 +9,9 @@ const config: Config = {
   ],
   theme: {
     extend: {
+      screens: {
+        xs: '360px',
+      },
       fontFamily: {
         sans: ['var(--font-roboto)', 'Roboto', 'ui-sans-serif', 'system-ui', 'sans-serif'],
         heading: ['var(--font-orbitron)', 'Orbitron', 'var(--font-roboto)', 'Roboto', 'ui-sans-serif', 'system-ui', 'sans-serif'],
