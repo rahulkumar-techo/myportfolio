@@ -25,7 +25,6 @@ const dropdownItems = [
 export default function Navigation() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMobileWorkOpen, setIsMobileWorkOpen] = useState(false);
   const [notificationEntries, setNotificationEntries] = useState<NotificationFeedEntry[]>([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const notificationEntriesRef = useRef<NotificationFeedEntry[]>([]);
@@ -48,12 +47,6 @@ export default function Navigation() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-  useEffect(() => {
-    if (!isMobileMenuOpen) {
-      setIsMobileWorkOpen(false);
-    }
-  }, [isMobileMenuOpen]);
 
   useEffect(() => {
     let active = true;
@@ -228,24 +221,24 @@ export default function Navigation() {
 
           {/* Mobile Actions */}
           <div className="flex items-center gap-1 lg:hidden">
-            <ThemeToggle />
+            <div className="admin-scroll flex items-center gap-1 overflow-x-auto pr-1 max-w-[70vw]">
+              <ThemeToggle />
 
-            <Link
-              href="/notifications"
-              className="relative rounded-full p-2 text-muted-foreground transition-colors hover:text-primary"
-              aria-label="Notifications"
-            >
-              <Bell className="h-4 w-4" />
-              {unreadBadge}
-            </Link>
+              <Link
+                href="/notifications"
+                className="relative rounded-full p-1.5 text-muted-foreground transition-colors hover:text-primary"
+                aria-label="Notifications"
+              >
+                <Bell className="h-4 w-4" />
+                {unreadBadge}
+              </Link>
 
-            {/* Social icons */}
-            <div className="hidden xs:flex items-center">
+              {/* Social icons */}
               <Link
                 href="https://github.com/rahulkumar-techo"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                className="rounded-full p-1.5 text-muted-foreground hover:text-primary transition-colors"
                 aria-label="GitHub"
               >
                 <Github className="w-4 h-4" />
@@ -255,7 +248,7 @@ export default function Navigation() {
                 href="https://www.linkedin.com/in/rahul-kumar-6a225127a/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                className="rounded-full p-1.5 text-muted-foreground hover:text-primary transition-colors"
                 aria-label="LinkedIn"
               >
                 <Linkedin className="w-4 h-4" />
@@ -265,7 +258,7 @@ export default function Navigation() {
                 href="https://www.instagram.com/mr_rpraja"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="p-2 text-muted-foreground hover:text-primary transition-colors"
+                className="rounded-full p-1.5 text-muted-foreground hover:text-primary transition-colors"
                 aria-label="Instagram"
               >
                 <Instagram className="w-4 h-4" />
@@ -275,7 +268,7 @@ export default function Navigation() {
             {/* Mobile menu button */}
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2 text-foreground"
+              className="shrink-0 p-2 text-foreground"
               aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
             >
               {isMobileMenuOpen ? (
@@ -306,7 +299,7 @@ export default function Navigation() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'spring', damping: 25, stiffness: 200 }}
-              className="absolute top-0 right-0 bottom-0 w-3/4 max-w-sm glass-card border-l border-border/50 p-8 pt-24"
+              className="absolute top-0 right-0 bottom-0 w-3/4 max-w-sm glass-card border-l border-border/50 p-8 pt-24 overflow-y-auto admin-scroll"
             >
               <ul className="flex flex-col gap-4">
                 {navItems.map((item, index) => (
@@ -330,59 +323,74 @@ export default function Navigation() {
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
+                  className="pt-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground"
                 >
-                  <button
-                    type="button"
-                    onClick={() => setIsMobileWorkOpen((prev) => !prev)}
-                    className="w-full pt-2 text-left text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center justify-between"
-                    aria-expanded={isMobileWorkOpen}
-                  >
-                    Work
-                    <ChevronDown
-                      className={`h-4 w-4 transition-transform duration-200 ${isMobileWorkOpen ? 'rotate-180' : ''}`}
-                    />
-                  </button>
+                  Work
                 </motion.li>
 
-                <AnimatePresence>
-                  {isMobileWorkOpen && (
-                    <motion.ul
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: 'auto', opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      transition={{ duration: 0.2 }}
-                      className="flex flex-col gap-2"
+                {dropdownItems.map((item, index) => (
+                  <motion.li
+                    key={item.href}
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: 0.05 + index * 0.05 }}
+                  >
+                    <Link
+                      href={item.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="py-3 text-lg text-foreground hover:text-primary transition-colors border-b border-border/30 flex items-center gap-2"
                     >
-                      {dropdownItems.map((item, index) => (
-                        <motion.li
-                          key={item.href}
-                          initial={{ opacity: 0, x: 20 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: 0.05 + index * 0.05 }}
-                        >
-                          <Link
-                            href={item.href}
-                            onClick={() => setIsMobileMenuOpen(false)}
-                            className="py-3 text-lg text-foreground hover:text-primary transition-colors border-b border-border/30 flex items-center gap-2"
-                          >
-                            {item.href === '/projects' || item.href === '/case-studies' ? (
-                              <Briefcase className="h-5 w-5" />
-                            ) : item.href === '/blog' ? (
-                              <BookOpen className="h-5 w-5" />
-                            ) : item.href === '/assets' ? (
-                              <ImageIcon className="h-5 w-5" />
-                            ) : (
-                              <Github className="h-5 w-5" />
-                            )}
-                            {item.label}
-                          </Link>
-                        </motion.li>
-                      ))}
-                    </motion.ul>
-                  )}
-                </AnimatePresence>
+                      {item.href === '/projects' || item.href === '/case-studies' ? (
+                        <Briefcase className="h-5 w-5" />
+                      ) : item.href === '/blog' ? (
+                        <BookOpen className="h-5 w-5" />
+                      ) : item.href === '/assets' ? (
+                        <ImageIcon className="h-5 w-5" />
+                      ) : (
+                        <Github className="h-5 w-5" />
+                      )}
+                      {item.label}
+                    </Link>
+                  </motion.li>
+                ))}
 
               </ul>
+
+              <div className="mt-8 border-t border-border/40 pt-6">
+                <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">Social</p>
+                <div className="mt-3 flex flex-wrap items-center gap-3">
+                  <Link
+                    href="https://github.com/rahulkumar-techo"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full border border-border/40 px-3 py-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                    aria-label="GitHub"
+                  >
+                    <Github className="h-4 w-4" />
+                    GitHub
+                  </Link>
+                  <Link
+                    href="https://www.linkedin.com/in/rahul-kumar-6a225127a/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full border border-border/40 px-3 py-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                    aria-label="LinkedIn"
+                  >
+                    <Linkedin className="h-4 w-4" />
+                    LinkedIn
+                  </Link>
+                  <Link
+                    href="https://www.instagram.com/mr_rpraja"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-2 rounded-full border border-border/40 px-3 py-2 text-sm text-muted-foreground hover:text-primary transition-colors"
+                    aria-label="Instagram"
+                  >
+                    <Instagram className="h-4 w-4" />
+                    Instagram
+                  </Link>
+                </div>
+              </div>
 
             </motion.nav>
           </motion.div>
