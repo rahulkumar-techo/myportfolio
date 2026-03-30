@@ -10,37 +10,45 @@ function isValidEmail(value: string) {
 }
 
 export async function POST(request: Request) {
-  const body = await request.json().catch(() => ({} as any));
-  const email = typeof body?.email === "string" ? body.email.trim() : "";
+  try {
+    const body = await request.json().catch(() => ({} as any));
+    const email = typeof body?.email === "string" ? body.email.trim() : "";
 
-  if (!email || !isValidEmail(email)) {
-    return NextResponse.json({ success: false, error: "Valid email is required." }, { status: 400 });
+    if (!email || !isValidEmail(email)) {
+      return NextResponse.json({ success: false, error: "Valid email is required." }, { status: 400 });
+    }
+
+    const existing = await getEmailSubscriber(email);
+    if (existing?.status === "subscribed") {
+      return NextResponse.json({ success: true, data: existing, status: "subscribed" });
+    }
+
+    const subscriber = await upsertEmailSubscriber({
+      email,
+      name: typeof body?.name === "string" ? body.name.trim() : "",
+      preferences: body?.preferences ?? undefined,
+      source: "website"
+    });
+
+    const baseUrl = getAppBaseUrl();
+    const confirmUrl = baseUrl
+      ? `${baseUrl}/notifications/confirm?token=${subscriber.verificationToken}`
+      : `/notifications/confirm?token=${subscriber.verificationToken}`;
+
+    await sendConfirmationMail({
+      user: {
+        name: subscriber.name || email.split("@")[0],
+        email: subscriber.email
+      },
+      confirmUrl
+    });
+
+    return NextResponse.json({ success: true, status: "pending" });
+  } catch (error) {
+    console.error("Failed to subscribe notification user", error);
+    return NextResponse.json(
+      { success: false, error: "Notification service is temporarily unavailable. Please try again later." },
+      { status: 503 }
+    );
   }
-
-  const existing = await getEmailSubscriber(email);
-  if (existing?.status === "subscribed") {
-    return NextResponse.json({ success: true, data: existing, status: "subscribed" });
-  }
-
-  const subscriber = await upsertEmailSubscriber({
-    email,
-    name: typeof body?.name === "string" ? body.name.trim() : "",
-    preferences: body?.preferences ?? undefined,
-    source: "website"
-  });
-
-  const baseUrl = getAppBaseUrl();
-  const confirmUrl = baseUrl
-    ? `${baseUrl}/notifications/confirm?token=${subscriber.verificationToken}`
-    : `/notifications/confirm?token=${subscriber.verificationToken}`;
-
-  await sendConfirmationMail({
-    user: {
-      name: subscriber.name || email.split("@")[0],
-      email: subscriber.email
-    },
-    confirmUrl
-  });
-
-  return NextResponse.json({ success: true, status: "pending" });
 }

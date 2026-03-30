@@ -43,7 +43,29 @@ export default async function ConfirmNotificationPage({ searchParams }: ConfirmP
     );
   }
 
-  const subscriber = await confirmEmailSubscriber(token);
+  let subscriber: Awaited<ReturnType<typeof confirmEmailSubscriber>> = null;
+
+  try {
+    subscriber = await confirmEmailSubscriber(token);
+  } catch (error) {
+    console.error("Notification confirmation failed", error);
+
+    return (
+      <main className="min-h-screen flex items-center justify-center px-6">
+        <div className="glass-card rounded-2xl p-8 max-w-lg text-center">
+          <h1 className="text-2xl font-bold text-foreground">Notification service unavailable</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            We could not confirm your subscription right now. Please try the same link again in a
+            few minutes.
+          </p>
+          <Link href="/" className="mt-4 inline-block text-primary">
+            Return to home
+          </Link>
+        </div>
+      </main>
+    );
+  }
+
   const confirmed = Boolean(subscriber);
 
   return (

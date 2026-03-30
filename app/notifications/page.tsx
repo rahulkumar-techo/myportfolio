@@ -15,7 +15,16 @@ export const metadata = buildPageMetadata({
 });
 
 export default async function NotificationsPage() {
-  const entries = await listNotificationFeedEntries(50);
+  let entries = [];
+  let feedUnavailable = false;
+
+  try {
+    entries = await listNotificationFeedEntries(50);
+  } catch (error) {
+    feedUnavailable = true;
+    console.error("Notification feed unavailable", error);
+  }
+
   const serializedEntries = entries.map((entry) => ({
     ...entry,
     createdAt: entry.createdAt instanceof Date ? entry.createdAt.toISOString() : String(entry.createdAt)
@@ -42,6 +51,11 @@ export default async function NotificationsPage() {
           </div>
 
           <NotificationFeed entries={serializedEntries} />
+          {feedUnavailable ? (
+            <div className="mx-auto mt-6 max-w-2xl rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-center text-sm text-amber-100">
+              The notification feed is temporarily unavailable. Please check back in a few minutes.
+            </div>
+          ) : null}
         </div>
       </section>
 
