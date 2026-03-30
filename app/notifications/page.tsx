@@ -15,7 +15,7 @@ export const metadata = buildPageMetadata({
 });
 
 export default async function NotificationsPage() {
-  let entries = [];
+  let entries :any[] = [];
   let feedUnavailable = false;
 
   try {
