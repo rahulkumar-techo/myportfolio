@@ -2,11 +2,12 @@ import Link from "next/link";
 import { confirmEmailSubscriber } from "@/repositories/notification-repository";
 import type { Metadata } from "next";
 import { siteUrl } from "@/utils/meta-data";
+import ConfirmationToast from "@/components/notifications/confirmation-toast";
 
 export const dynamic = "force-dynamic";
 
 type ConfirmPageProps = {
-  searchParams?: { token?: string };
+  searchParams?: Promise<{ token?: string | string[] }>;
 };
 
 export const metadata: Metadata = {
@@ -22,7 +23,9 @@ export const metadata: Metadata = {
 };
 
 export default async function ConfirmNotificationPage({ searchParams }: ConfirmPageProps) {
-  const token = searchParams?.token ?? "";
+  const resolvedSearchParams = searchParams ? await searchParams : undefined;
+  const tokenValue = resolvedSearchParams?.token;
+  const token = Array.isArray(tokenValue) ? tokenValue[0] ?? "" : tokenValue ?? "";
 
   if (!token) {
     return (
@@ -40,10 +43,12 @@ export default async function ConfirmNotificationPage({ searchParams }: ConfirmP
     );
   }
 
-  const confirmed = await confirmEmailSubscriber(token);
+  const subscriber = await confirmEmailSubscriber(token);
+  const confirmed = Boolean(subscriber);
 
   return (
     <main className="min-h-screen flex items-center justify-center px-6">
+      {confirmed ? <ConfirmationToast email={subscriber?.email ?? null} /> : null}
       <div className="glass-card rounded-2xl p-8 max-w-lg text-center">
         <h1 className="text-2xl font-bold text-foreground">
           {confirmed ? "Subscription confirmed" : "Confirmation link expired"}

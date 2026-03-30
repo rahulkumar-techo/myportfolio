@@ -8,6 +8,7 @@ import { Analytics } from '@vercel/analytics/next'
 import './globals.css'
 import AuthProvider from '@/components/provider/auth-provider'
 import { ThemeProvider } from '@/components/theme-provider'
+import { Toaster } from '@/components/ui/sonner'
 import { siteUrl } from "@/utils/meta-data"
 import NotificationPrompt from "@/components/notifications/notification-prompt"
 
@@ -110,6 +111,7 @@ export default function RootLayout({
           <AuthProvider>
             {children}
             <NotificationPrompt />
+            <Toaster closeButton richColors position="top-center" />
           </AuthProvider>
         </ThemeProvider>
 
