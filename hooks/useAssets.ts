@@ -2,10 +2,21 @@ import { useCallback, useEffect, useRef } from "react"
 import useSWR from "swr"
 import api from "@/lib/axios"
 import { fetchWithTimeout, readJsonResponse } from "@/lib/http"
-import { prepareImageForUpload } from "@/lib/image-upload"
 import type { AssetItem } from "@/lib/types"
 
 const fetcher = (url: string) => api.get(url).then((res) => res.data)
+const MAX_FILE_SIZE = 10 * 1024 * 1024
+const MAX_PDF_SIZE = 2 * 1024 * 1024
+
+function validateAssetFile(file: File) {
+  if (file.type === "application/pdf" && file.size > MAX_PDF_SIZE) {
+    throw new Error("PDF files must be 2MB or smaller.")
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    throw new Error("File must be 10MB or smaller.")
+  }
+}
 
 export function useAssets() {
   const { data, error, isLoading, mutate } = useSWR("/assets", fetcher)
@@ -193,14 +204,9 @@ const cleanupPendingUpload = useCallback(() => {
   }
 
   const uploadAsset = async (payload: { label: string; category: AssetItem["category"]; file: File }) => {
-    if (payload.file.size > 10 * 1024 * 1024) {
-      throw new Error("File must be 10MB or smaller.")
-    }
+    validateAssetFile(payload.file)
 
-    const isImage = payload.file.type.startsWith("image/")
-    const preparedFile = isImage ? await prepareImageForUpload(payload.file, "asset-image") : payload.file
-
-    const uploadResult = await uploadToCloudinary(preparedFile)
+    const uploadResult = await uploadToCloudinary(payload.file)
     if (!uploadResult.url) {
       throw new Error("Unable to upload asset.")
     }
@@ -219,7 +225,7 @@ const cleanupPendingUpload = useCallback(() => {
             publicId: uploadResult.publicId,
             url: uploadResult.url,
             originalName: payload.file.name,
-            fileType: preparedFile.type,
+            fileType: payload.file.type,
             size: uploadResult.bytes
           }
         })
@@ -280,13 +286,9 @@ const cleanupPendingUpload = useCallback(() => {
       return result.json.data as AssetItem
     }
 
-    if (payload.file.size > 10 * 1024 * 1024) {
-      throw new Error("File must be 10MB or smaller.")
-    }
+    validateAssetFile(payload.file)
 
-    const isImage = payload.file.type.startsWith("image/")
-    const preparedFile = isImage ? await prepareImageForUpload(payload.file, "asset-image") : payload.file
-    const uploadResult = await uploadToCloudinary(preparedFile)
+    const uploadResult = await uploadToCloudinary(payload.file)
     if (!uploadResult.url) {
       throw new Error("Unable to update asset.")
     }
@@ -306,7 +308,7 @@ const cleanupPendingUpload = useCallback(() => {
             publicId: uploadResult.publicId,
             url: uploadResult.url,
             originalName: payload.file.name,
-            fileType: preparedFile.type,
+            fileType: payload.file.type,
             size: uploadResult.bytes
           }
         })

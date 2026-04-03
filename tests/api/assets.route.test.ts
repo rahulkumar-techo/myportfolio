@@ -132,4 +132,35 @@ describe("/api/assets route", () => {
       url: "https://example.com/assets"
     });
   });
+
+  it("rejects PDFs larger than 2MB", async () => {
+    mockedRequireAdminApiSession.mockResolvedValue({
+      session: { user: { id: "admin-1" } },
+      response: null
+    } as any);
+
+    const request = new Request("http://localhost/api/assets", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        label: "Large Resume",
+        category: "cv",
+        upload: {
+          publicId: "asset-2",
+          url: "https://example.com/large-resume.pdf",
+          originalName: "Resume.pdf",
+          fileType: "application/pdf",
+          size: 2 * 1024 * 1024 + 1
+        }
+      })
+    });
+
+    const response = await POST(request);
+    const body = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(body.error).toBe("PDF files must be 2MB or smaller.");
+    expect(mockedCreateAsset).not.toHaveBeenCalled();
+    expect(mockedNotifySubscribers).not.toHaveBeenCalled();
+  });
 });

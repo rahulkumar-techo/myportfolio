@@ -52,6 +52,17 @@ export async function listPublicAssetsByOwnerId(ownerId: string) {
   return items.map((item: unknown) => toPlainAsset(item))
 }
 
+export async function getPublicAssetById(assetId: string) {
+  const ownerId = await getAssetOwnerId()
+  const asset = await AssetModel.findOne({ ownerId, id: assetId }).lean()
+
+  if (!asset) {
+    throw new Error("Asset not found")
+  }
+
+  return toPlainAsset(asset)
+}
+
 export async function createAsset(userId: string, asset: AssetItem) {
   const ownerId = await getAssetOwnerId(userId)
   const created = await AssetModel.create({

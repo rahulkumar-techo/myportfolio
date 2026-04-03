@@ -7,9 +7,10 @@ import Image from 'next/image';
 import { useMemo, useState } from 'react';
 import Footer from '@/components/footer';
 import { Button } from '@/components/ui/button';
-import { buildCloudinaryDownloadUrl, buildCloudinaryImageUrl, isCloudinaryUrl } from '@/lib/cloudinary-images';
+import { buildCloudinaryImageUrl } from '@/lib/cloudinary-images';
 import { usePublicAssets } from '@/hooks/usePublicAssets';
 import type { AssetItem } from '@/lib/types';
+import PdfPreview from '@/components/pdf-preview';
 
 const categoryOrder: AssetItem['category'][] = ['cv', 'achievement', 'image', 'certificate', 'other'];
 
@@ -27,19 +28,16 @@ function getFileExtension(asset: AssetItem) {
   return match ? match[1].toUpperCase() : 'FILE';
 }
 
-function buildCloudinaryPdfPreviewUrl(fileUrl: string) {
-  if (!fileUrl || !isCloudinaryUrl(fileUrl)) {
-    return '';
-  }
-
-  const markerIndex = fileUrl.indexOf('/upload/');
-  const prefix = fileUrl.slice(0, markerIndex + '/upload/'.length);
-  const suffix = fileUrl.slice(markerIndex + '/upload/'.length);
-  return `${prefix}f_jpg,pg_1,q_auto:good,w_900/${suffix}`;
-}
-
 function isPdf(asset: AssetItem) {
   return asset.fileType === 'application/pdf' || asset.fileUrl.toLowerCase().includes('.pdf');
+}
+
+function buildAssetViewUrl(assetId: string) {
+  return `/api/assets/file/${assetId}`;
+}
+
+function buildAssetDownloadUrl(assetId: string) {
+  return `/api/assets/file/${assetId}?download=1`;
 }
 
 export default function AssetsPage() {
@@ -140,14 +138,14 @@ export default function AssetsPage() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
               {filteredAssets.map((asset, index) => {
                 const Icon = assetIcon(asset);
-                const downloadUrl = buildCloudinaryDownloadUrl(asset.fileUrl);
+                const assetViewUrl = buildAssetViewUrl(asset.id);
+                const downloadUrl = buildAssetDownloadUrl(asset.id);
                 const fileExt = getFileExtension(asset);
                 const showImage = asset.fileType.startsWith('image/');
                 const showPdf = isPdf(asset);
                 const imagePreviewUrl = showImage
                   ? buildCloudinaryImageUrl(asset.fileUrl, 'asset-preview')
                   : '';
-                const pdfPreviewUrl = showPdf ? buildCloudinaryPdfPreviewUrl(asset.fileUrl) : '';
 
                 return (
                   <motion.div
@@ -169,13 +167,11 @@ export default function AssetsPage() {
                                 sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
                                 className="object-contain"
                               />
-                            ) : showPdf && pdfPreviewUrl ? (
-                              <Image
-                                src={pdfPreviewUrl}
+                            ) : showPdf ? (
+                              <PdfPreview
+                                src={assetViewUrl}
                                 alt={`${asset.label} preview`}
-                                fill
-                                sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
-                                className="object-contain"
+                                className="bg-white"
                               />
                             ) : (
                               <div className="flex h-full w-full flex-col items-center justify-center gap-3 text-muted-foreground">
@@ -192,7 +188,7 @@ export default function AssetsPage() {
                               variant="outline"
                               className="border-primary/40 text-primary hover:border-primary hover:bg-primary/10"
                             >
-                              <a href={asset.fileUrl} target="_blank" rel="noopener noreferrer">
+                              <a href={assetViewUrl} target="_blank" rel="noopener noreferrer">
                                 <ExternalLink className="mr-2 h-4 w-4" />
                                 Open
                               </a>
@@ -206,7 +202,7 @@ export default function AssetsPage() {
                         </div>
 
                         <Button asChild className="w-full bg-primary text-primary-foreground hover:bg-primary/90">
-                          <a href={downloadUrl} download={asset.originalName} rel="noopener">
+                          <a href={downloadUrl} rel="noopener">
                             <Download className="mr-2 h-4 w-4" />
                             Download
                           </a>

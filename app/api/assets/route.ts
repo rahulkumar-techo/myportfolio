@@ -2,7 +2,6 @@ import { NextResponse } from "next/server"
 import path from "path"
 import { requireAdminApiSession } from "@/lib/auth"
 import cloudinary from "@/lib/clodudinary"
-import { IMAGE_UPLOAD_PRESETS, type ImageUploadKind } from "@/lib/image-presets"
 import { createAsset, listPublicAssets } from "@/repositories/asset-repository"
 import { removeTempAssetUploadsByPublicIds } from "@/repositories/temp-asset-upload-repository"
 import type { AssetItem } from "@/lib/types"
@@ -13,6 +12,7 @@ export const runtime = "nodejs"
 export const maxDuration = 60
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024
+const MAX_PDF_SIZE = 2 * 1024 * 1024
 const ALLOWED_CATEGORIES = new Set(["cv", "achievement", "image", "certificate", "other"])
 const CLOUDINARY_FOLDER = "portfolio/assets"
 
@@ -27,7 +27,27 @@ function buildPublicId(originalName: string) {
   return `${Date.now()}-${baseName}`
 }
 
-function uploadToCloudinary(file: File, originalName: string, kind?: ImageUploadKind) {
+function isPdfFileType(fileType: string) {
+  return fileType === "application/pdf"
+}
+
+function getAssetSizeError(fileType: string, size: number) {
+  if (!Number.isFinite(size) || size <= 0) {
+    return "File size is invalid."
+  }
+
+  if (isPdfFileType(fileType) && size > MAX_PDF_SIZE) {
+    return "PDF files must be 2MB or smaller."
+  }
+
+  if (size > MAX_FILE_SIZE) {
+    return "File must be 10MB or smaller."
+  }
+
+  return null
+}
+
+function uploadToCloudinary(file: File, originalName: string) {
   return new Promise<{
     secure_url: string
     public_id: string
@@ -38,23 +58,14 @@ function uploadToCloudinary(file: File, originalName: string, kind?: ImageUpload
     cloudinary.config()
     const buffer = Buffer.from(await file.arrayBuffer())
     const publicId = buildPublicId(originalName)
-    const isImage = file.type.startsWith("image/")
     const stream = cloudinary.uploader.upload_stream(
       {
         folder: CLOUDINARY_FOLDER,
         public_id: publicId,
-        resource_type: isImage ? "image" : "auto",
-        format: isImage ? "webp" : undefined,
+        resource_type: "auto",
         use_filename: false,
         unique_filename: false,
-        overwrite: false,
-        context: kind
-          ? {
-              upload_kind: kind,
-              target_width: String(IMAGE_UPLOAD_PRESETS[kind].width),
-              target_height: String(IMAGE_UPLOAD_PRESETS[kind].height)
-            }
-          : undefined
+        overwrite: false
       },
       (error, result) => {
         if (error || !result) {
@@ -126,8 +137,10 @@ export async function POST(request: Request) {
     }
 
     const size = Number(upload?.size ?? upload?.bytes ?? 0)
-    if (!Number.isFinite(size) || size <= 0 || size > MAX_FILE_SIZE) {
-      return NextResponse.json({ success: false, error: "File must be 10MB or smaller." }, { status: 400 })
+    const fileType = String(upload?.fileType ?? "application/octet-stream")
+    const sizeError = getAssetSizeError(fileType, size)
+    if (sizeError) {
+      return NextResponse.json({ success: false, error: sizeError }, { status: 400 })
     }
 
     const originalName = sanitizeFileName(String(upload?.originalName ?? "asset"))
@@ -140,7 +153,7 @@ export async function POST(request: Request) {
       fileName: path.basename(upload.publicId),
       originalName,
       fileUrl: upload.url,
-      fileType: String(upload?.fileType ?? "application/octet-stream"),
+      fileType,
       size,
       uploadedAt: new Date().toISOString()
     } as AssetItem
@@ -178,7 +191,6 @@ export async function POST(request: Request) {
   const label = String(formData.get("label") ?? "").trim()
   const category = String(formData.get("category") ?? "other").trim()
   const file = formData.get("file")
-  const kindValue = String(formData.get("kind") ?? "").trim()
 
   if (!label) {
     return NextResponse.json({ success: false, error: "Label is required." }, { status: 400 })
@@ -192,19 +204,13 @@ export async function POST(request: Request) {
     return NextResponse.json({ success: false, error: "File is required." }, { status: 400 })
   }
 
-  if (file.size > MAX_FILE_SIZE) {
-    return NextResponse.json({ success: false, error: "File must be 10MB or smaller." }, { status: 400 })
-  }
-
-  const isImage = file.type.startsWith("image/")
-  const uploadKind = isImage && kindValue === "asset-image" ? ("asset-image" as const) : undefined
-
-  if (isImage && uploadKind && file.size > IMAGE_UPLOAD_PRESETS[uploadKind].maxBytes) {
-    return NextResponse.json({ success: false, error: "Optimized image assets must be under 2MB." }, { status: 400 })
+  const sizeError = getAssetSizeError(file.type || "application/octet-stream", file.size)
+  if (sizeError) {
+    return NextResponse.json({ success: false, error: sizeError }, { status: 400 })
   }
 
   const originalName = sanitizeFileName(file.name || "asset")
-  const uploadedFile = await uploadToCloudinary(file, originalName, uploadKind)
+  const uploadedFile = await uploadToCloudinary(file, originalName)
 
   const asset = {
     id: crypto.randomUUID(),
@@ -215,7 +221,7 @@ export async function POST(request: Request) {
     fileName: path.basename(uploadedFile.public_id),
     originalName,
     fileUrl: uploadedFile.secure_url,
-    fileType: isImage ? "image/webp" : file.type || "application/octet-stream",
+    fileType: file.type || "application/octet-stream",
     size: uploadedFile.bytes || file.size,
     uploadedAt: new Date().toISOString()
   } as AssetItem

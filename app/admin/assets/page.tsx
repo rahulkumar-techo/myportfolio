@@ -21,6 +21,10 @@ import {
 
 const categoryOptions: AssetItem['category'][] = ['cv', 'achievement', 'image', 'certificate', 'other']
 
+function buildAssetViewUrl(assetId: string) {
+  return `/api/assets/file/${assetId}`
+}
+
 function formatBytes(size: number) {
   if (size < 1024) {
     return `${size} B`
@@ -168,7 +172,7 @@ export default function AdminAssetsPage() {
               onChange={(event) => setSelectedFile(event.target.files?.[0] ?? null)}
               required
             />
-            <p className="text-xs text-muted-foreground">Images are converted to WebP and kept under 2MB when possible.</p>
+            <p className="text-xs text-muted-foreground">PDF files are stored and served as-is. PDFs must be 2MB or smaller.</p>
           </div>
 
           {submitError ? <p className="text-sm text-destructive">{submitError}</p> : null}
@@ -224,7 +228,7 @@ export default function AdminAssetsPage() {
                           {formatBytes(asset.size)} • {new Date(asset.uploadedAt).toLocaleString()}
                         </p>
                         <a
-                          href={asset.fileUrl}
+                          href={buildAssetViewUrl(asset.id)}
                           target="_blank"
                           rel="noreferrer"
                           className="mt-3 inline-flex text-sm text-primary hover:underline"

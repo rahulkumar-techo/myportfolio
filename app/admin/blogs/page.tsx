@@ -191,7 +191,7 @@ export default function AdminBlogsPage() {
         <p className="text-muted-foreground">Create and manage blog content for SEO and thought leadership.</p>
       </div>
 
-      <div className="grid flex-1 min-h-0 gap-6 overflow-hidden xl:grid-cols-[420px_minmax(0,1fr)]">
+      <div className="flex flex-1 min-h-0 flex-col gap-6 overflow-hidden">
         <BlogForm
           formData={formData}
           setFormData={setFormData}
