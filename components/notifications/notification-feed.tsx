@@ -237,7 +237,7 @@ export default function NotificationFeed({ entries }: NotificationFeedProps) {
                             <span className={cn("h-2 w-2 rounded-full", meta.dot)} />
                           ) : null}
                         </div>
-                        <p className="mt-1 text-sm text-slate-400 break-words">{entry.description}</p>
+                        <p className="mt-1 text-sm text-slate-400 wrap-break-word line-clamp-2">{entry.description}</p>
                       </div>
                     </div>
 

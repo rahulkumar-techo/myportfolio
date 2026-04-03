@@ -83,12 +83,15 @@ export default async function BlogPage() {
                     <h2 className="mt-3 text-xl font-semibold text-foreground group-hover:text-primary transition-colors">
                       {post.title}
                     </h2>
-                    <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+                    <p className="mt-2 text-sm text-muted-foreground leading-relaxed line-clamp-3">
                       {post.description}
                     </p>
-                    <div className="mt-4 flex flex-wrap gap-2 text-xs">
+                    <div className="mt-4 flex flex-nowrap gap-2 overflow-x-scroll no-scrollbar text-xs">
                       {post.tags.map((tag) => (
-                        <span key={tag} className="rounded-full bg-secondary px-3 py-1 text-muted-foreground">
+                        <span
+                          key={tag}
+                          className="shrink-0 rounded-full bg-secondary px-3 py-1 text-muted-foreground whitespace-nowrap"
+                        >
                           {tag}
                         </span>
                       ))}
